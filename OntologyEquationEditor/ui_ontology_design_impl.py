@@ -579,7 +579,7 @@ class UiOntologyDesign(QMainWindow):
       saveBackupFile(documentation_file)
 
     args = ['sh', f_name, location]
-    # print('ARGS: ', args)
+    print('ARGS: ', args)
     make_it = subprocess.Popen(
             args,
             # start_new_session=True,

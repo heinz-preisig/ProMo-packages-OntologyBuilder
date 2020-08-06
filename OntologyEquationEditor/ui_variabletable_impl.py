@@ -15,8 +15,8 @@ __author__ = "Preisig, Heinz A"
 
 MAX_HEIGHT = 800
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import roundButton
@@ -30,8 +30,8 @@ from OntologyBuilder.OntologyEquationEditor.resources import NEW_VAR
 from OntologyBuilder.OntologyEquationEditor.ui_documentation_impl import UI_DocumentationDialog
 from OntologyBuilder.OntologyEquationEditor.ui_physunits_impl import UI_PhysUnitsDialog
 from OntologyBuilder.OntologyEquationEditor.ui_symbol_impl import UI_SymbolDialog
-from OntologyBuilder.OntologyEquationEditor.variable_framework import Units
 from OntologyBuilder.OntologyEquationEditor.variable_framework import simulateDeletion
+from OntologyBuilder.OntologyEquationEditor.variable_framework import Units
 from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
 
 
@@ -111,7 +111,7 @@ class UI_VariableTableDialog(VariableTable):
 
   def show(self):
     self.reset_table()
-    QtGui.QDialog.show(self)
+    QtWidgets.QDialog.show(self)
     self.setToolTips("edit")
     self.raise_()
 
@@ -132,7 +132,7 @@ class UI_VariableTableDialog(VariableTable):
     e = d_equs_text.replace("\n", "\n   ")
     msg += "\n\nand consequently \n...variables:%s \n\n...equations %s" % (v, e)
 
-    reply = QtGui.QMessageBox.question(self, "choose", msg, YES, NO)  # QtGui.QMessageBox.Yes, QtGui.QMessageBox.No )
+    reply = QtWidgets.QMessageBox.question(self, "choose", msg, YES, NO)
     # print("reply :", reply)
     if reply == YES:
       print("yes")
@@ -145,14 +145,14 @@ class UI_VariableTableDialog(VariableTable):
       self.variables.removeEquation(id)
     for s in d_vars:
       self.variables.removeVariable(s)
-    self.variables.indexVariables() #indexEquationsInNetworks()
+    self.variables.indexVariables()  # indexEquationsInNetworks()
     self.reset_table()
     # self.makeTable()
 
   def __showNewVariableDialog(self):
     msg = "new port variable ?"
     if self.has_port_variables:
-      reply = QtGui.QMessageBox.question(self, "choose", msg, YES, NO)
+      reply = QtWidgets.QMessageBox.question(self, "choose", msg, YES, NO)
     else:
       reply = NO
 
@@ -178,7 +178,6 @@ class UI_VariableTableDialog(VariableTable):
     # print("debugg column chosen is: %s" % c)
     item = self.ui.tableVariable.item
     self.selected_variable_type = str(item(r, 0).text())  # DOC: here I know if a new dimension must be generated
-
 
     if c == 0:
       if self.selected_variable_type[0] == "*":

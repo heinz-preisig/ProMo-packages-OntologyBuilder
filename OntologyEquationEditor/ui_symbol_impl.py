@@ -16,8 +16,8 @@ __status__ = "beta"
 
 # from OntologyEquations.resources import NEW_VAR
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from OntologyBuilder.OntologyEquationEditor.resources import setValidator
 from OntologyBuilder.OntologyEquationEditor.ui_symbol import Ui_SymbolDialog
@@ -25,7 +25,7 @@ from OntologyBuilder.OntologyEquationEditor.ui_symbol import Ui_SymbolDialog
 ALLREADY_DEFINED = 'already defined -- give new variable'
 
 
-class UI_SymbolDialog(QtGui.QDialog):
+class UI_SymbolDialog(QtWidgets.QDialog):
   """
   dialog for a variable
   any new variable will also generate a new equation
@@ -38,13 +38,14 @@ class UI_SymbolDialog(QtGui.QDialog):
   def __init__(self):  # variables, phys_var): # equations, phys_var):
     """
     rename the physical variable.
-    Some funny things going on. One has to get the phys_var and change the label in there. Local referencing of the label
+    Some funny things going on. One has to get the phys_var and change the label in there. Local referencing of the
+    label
     does not work. Also if one passes the reference of the label and replaces the contents does not work.....
     """
     self.phys_var = None
     self.forbidden_symbol = None
 
-    QtGui.QDialog.__init__(self)
+    QtWidgets.QDialog.__init__(self)
     self.ui = Ui_SymbolDialog()
     self.ui.setupUi(self)
     self.setWindowTitle('edit variable symbol')
@@ -53,8 +54,6 @@ class UI_SymbolDialog(QtGui.QDialog):
     self.validator = setValidator(self.ui.lineSymbol)
     self.state_OK = False
     self.hide()
-
-
 
   def setUp(self, phys_var, forbidden_symbol):
     self.phys_var = phys_var

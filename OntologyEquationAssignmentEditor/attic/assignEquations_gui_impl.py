@@ -19,8 +19,8 @@ __version__ = "5.04"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 
 from Common.common_resources import M_None
 from Common.common_resources import getOntologyName

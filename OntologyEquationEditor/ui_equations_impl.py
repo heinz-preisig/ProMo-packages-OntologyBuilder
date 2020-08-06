@@ -17,27 +17,26 @@ __version__ = "6.00"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-from PyQt4.QtCore import pyqtSlot
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
+from Common.record_definitions import makeCompletEquationRecord
+from Common.record_definitions import makeCompleteVariableRecord
 # from Common.common_resources import globalEquationID
 # from Common.common_resources import globalVariableID
 from Common.record_definitions import RecordEquation
-from Common.record_definitions import makeCompletEquationRecord
-from Common.record_definitions import makeCompleteVariableRecord
 from Common.single_list_selector_impl import SingleListSelector
 from OntologyBuilder.OntologyEquationEditor.resources import CONSTANT
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_EQ
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_VAR
 from OntologyBuilder.OntologyEquationEditor.resources import OPERATOR_SNIPS
 from OntologyBuilder.OntologyEquationEditor.resources import PORT
-from OntologyBuilder.OntologyEquationEditor.resources import TEMPLATES
-from OntologyBuilder.OntologyEquationEditor.resources import UNDEF_EQ_NO
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.resources import renderIndexListFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.resources import setValidator
+from OntologyBuilder.OntologyEquationEditor.resources import TEMPLATES
+from OntologyBuilder.OntologyEquationEditor.resources import UNDEF_EQ_NO
 from OntologyBuilder.OntologyEquationEditor.tpg import LexicalError
 from OntologyBuilder.OntologyEquationEditor.tpg import SemanticError
 from OntologyBuilder.OntologyEquationEditor.tpg import SyntacticError
@@ -47,13 +46,13 @@ from OntologyBuilder.OntologyEquationEditor.ui_variabletable_pick_impl import UI
 from OntologyBuilder.OntologyEquationEditor.variable_framework import CompileSpace
 from OntologyBuilder.OntologyEquationEditor.variable_framework import Expression
 from OntologyBuilder.OntologyEquationEditor.variable_framework import IndexStructureError
+from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidentList
 from OntologyBuilder.OntologyEquationEditor.variable_framework import UnitError
 from OntologyBuilder.OntologyEquationEditor.variable_framework import Units
 from OntologyBuilder.OntologyEquationEditor.variable_framework import VarError
-from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidentList
 
 
-class UI_Equations(QtGui.QWidget):
+class UI_Equations(QtWidgets.QWidget):
   """
   user interface for the equation definition
   """
@@ -74,7 +73,7 @@ class UI_Equations(QtGui.QWidget):
     """
     Constructor
     """
-    QtGui.QWidget.__init__(self)
+    QtWidgets.QWidget.__init__(self)
     self.ui = Ui_Form()
     self.ui.setupUi(self)
     self.hide()
@@ -122,28 +121,28 @@ class UI_Equations(QtGui.QWidget):
       [source, sink] = self.network_for_expression.split(CONNECTION_NETWORK_SEPARATOR)
       networks = {source}
       enabled_var_types = {
-            self.network_for_variable: self.variable_types_variable,
-            source                   : self.variable_types_expression
-            }
+              self.network_for_variable: self.variable_types_variable,
+              source                   : self.variable_types_expression
+              }
     if self.what == "intraface":
       pass
       enabled_var_types = {
-            self.network_for_variable  : self.variable_types_variable,
-            self.network_for_expression: self.variable_types_expression
-            }
+              self.network_for_variable  : self.variable_types_variable,
+              self.network_for_expression: self.variable_types_expression
+              }
       network = self.network_for_variable
 
     else:
       # RULE: the variables from the interconnection nodes that potentially connect are also included as sources
       if self.network_for_variable != self.network_for_expression:
         enabled_var_types = {
-              self.network_for_variable  : self.variable_types_variable,
-              self.network_for_expression: self.variable_types_expression
-              }
+                self.network_for_variable  : self.variable_types_variable,
+                self.network_for_expression: self.variable_types_expression
+                }
       else:
         enabled_var_types = {
-              self.network_for_expression: self.variable_types_expression
-              }
+                self.network_for_expression: self.variable_types_expression
+                }
       network = self.network_for_variable
 
     self.variable_tables[network] = UI_VariableTablePick('Pick variable symbol \nnetwork %s' % network,
@@ -227,7 +226,7 @@ class UI_Equations(QtGui.QWidget):
     self.show()
     self.MSG("new variable")
 
-  @pyqtSlot(str, str)
+  # @pyqtSlot(str, str)
   def setupNewEquation(self, variable_ID):
     # variable_symbol = self.variables[variable_ID].label
     self.selected_variable_type = self.variables[variable_ID].type
@@ -242,7 +241,7 @@ class UI_Equations(QtGui.QWidget):
     self.ui.lineExpression.show()
     self.status_new_equation = True
     no_equations = len(self.variables[variable_ID].equations)
-    if no_equations > 1:  #TODO: variable needs to know if it is a port variable. Adjust deletion
+    if no_equations > 1:  # TODO: variable needs to know if it is a port variable. Adjust deletion
       self.ui.pushDeleteEquation.show()
     else:
       self.ui.pushDeleteEquation.hide()
@@ -349,7 +348,7 @@ class UI_Equations(QtGui.QWidget):
       # else:
       # print("debugging : ", expression)
       msg = 'modified expression OK\n index struct: %s\n units: %s' % (
-            pretty_check_var_indices, pretty_check_var_units)
+              pretty_check_var_indices, pretty_check_var_units)
       self.MSG(msg)
       #       print("debugging: ", msg)
 
@@ -388,9 +387,13 @@ class UI_Equations(QtGui.QWidget):
                                                 )
     # Note: think about allowing for editing an equation. It easily destroys the sequence.
     # Note:   by adding a term with a variable that dependes on "later" information......!!! (H)
-    # RULE: editing generates a new equation deleting the old one this retains the sequence which allows for incremental expansions
-    # TODO: does not really cover aall issues - if one changes an equation, all equations that depend on the variable would have to be re-irid recursively.
-    # TODO - so this implies that one can just as well do a graph analysis one one is done. Consequence is that the equation iri is not important at all in the context of ordering equations for maintaining the correct compuations sequence
+    # RULE: editing generates a new equation deleting the old one this retains the sequence which allows for
+    # incremental expansions
+    # TODO: does not really cover aall issues - if one changes an equation, all equations that depend on the variable
+    #  would have to be re-irid recursively.
+    # TODO - so this implies that one can just as well do a graph analysis one one is done. Consequence is that the
+    #  equation iri is not important at all in the context of ordering equations for maintaining the correct
+    #  compuations sequence
 
     equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)
     # old_equ_ID = self.current_eq_ID
@@ -410,8 +413,8 @@ class UI_Equations(QtGui.QWidget):
                                                    index_structures=self.checked_var.index_structures,
                                                    units=self.checked_var.units,
                                                    equations={
-                                                         equ_ID: equation_record
-                                                         },
+                                                           equ_ID: equation_record
+                                                           },
                                                    aliases={},
                                                    )
 
@@ -425,8 +428,8 @@ class UI_Equations(QtGui.QWidget):
       if old_equ_ID:
         del variable_record.equations[old_equ_ID]
       variable_record.equations.update({
-            equ_ID: equation_record
-            })
+              equ_ID: equation_record
+              })
 
     self.variables.indexVariables()
     self.update_space_information.emit()
@@ -501,7 +504,7 @@ class UI_Equations(QtGui.QWidget):
 
   def __selectedEquation(self, entry):
     # print('debugging got it', entry)
-    eq_no, reminder = entry.split(TEMPLATES['definition_delimiter'],1)
+    eq_no, reminder = entry.split(TEMPLATES['definition_delimiter'], 1)
     _reminder, eq_string = reminder.split(TEMPLATES["Equation_definition_delimiter"])
     if eq_no != UNDEF_EQ_NO:
       self.current_eq_ID = int(eq_no)

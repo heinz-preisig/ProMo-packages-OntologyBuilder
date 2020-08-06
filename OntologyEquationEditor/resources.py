@@ -18,9 +18,9 @@ __status__ = "beta"
 import os
 import subprocess
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
 from graphviz import Digraph
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 
 from Common.common_resources import invertDict
 from Common.resource_initialisation import DIRECTORIES
@@ -180,13 +180,13 @@ CODE[language] = {}
 ID_spacer = " "
 
 ID_delimiter = {
-      "delimiter": ID_spacer + "D_%s",
-      "operator" : ID_spacer + "O_%s",
-      "function" : ID_spacer + "F_%s",
-      "variable" : ID_spacer + "V_%s",
-      "index"    : ID_spacer + "I_%s",
-      "diff_node": ID_spacer + "diff_%s"
-      }
+        "delimiter": ID_spacer + "D_%s",
+        "operator" : ID_spacer + "O_%s",
+        "function" : ID_spacer + "F_%s",
+        "variable" : ID_spacer + "V_%s",
+        "index"    : ID_spacer + "I_%s",
+        "diff_node": ID_spacer + "diff_%s"
+        }
 
 delimiters = {d: ID_delimiter["delimiter"] % LIST_DELIMITERS.index(d) for d in LIST_DELIMITERS}
 CODE[language]["delimiter"] = delimiters
@@ -195,15 +195,15 @@ CODE[language]["function"] = {d: ID_delimiter["function"] % LIST_FUNCTIONS.index
 
 CODE[language]["combi"] = {}
 CODE[language]["combi"] = {
-      "single_argument": CODE[language]["delimiter"]["("] + "%s" + \
-                         CODE[language]["delimiter"][")"],
-      "tuple"          : CODE[language]["delimiter"]["("] + "%s" + \
-                         CODE[language]["delimiter"][","] + "%s" + \
-                         CODE[language]["delimiter"][")"],
-      "range"          : CODE[language]["delimiter"]["["] + "%s" + \
-                         CODE[language]["delimiter"][","] + "%s" + \
-                         CODE[language]["delimiter"]["]"]
-      }
+        "single_argument": CODE[language]["delimiter"]["("] + "%s" + \
+                           CODE[language]["delimiter"][")"],
+        "tuple"          : CODE[language]["delimiter"]["("] + "%s" + \
+                           CODE[language]["delimiter"][","] + "%s" + \
+                           CODE[language]["delimiter"][")"],
+        "range"          : CODE[language]["delimiter"]["["] + "%s" + \
+                           CODE[language]["delimiter"][","] + "%s" + \
+                           CODE[language]["delimiter"]["]"]
+        }
 
 # ------------------------------------------------------------------------------------
 CODE[language]["bracket"] = delimiters["("] + "%s" + delimiters[")"]
@@ -549,14 +549,15 @@ TwoPlace_TEMPLATE = ["+", "-",
                      ]
 ThreePlace_TEMPLATE = ["blockProd"]
 internal = LANGUAGES["internal_code"]
-Special_TEMPLATE = {"Integral"   : CODE[internal]['Integral'].format(integrand='var',
-                                                                     differential='t',
-                                                                     lower='l',
-                                                                     upper='u'),
-                    "BlockReduce": [],
-                    "Product"    : CODE[internal]["Product"].format(argument="a",
-                                                                    index="I")
-                    }
+Special_TEMPLATE = {
+        "Integral"   : CODE[internal]['Integral'].format(integrand='var',
+                                                         differential='t',
+                                                         lower='l',
+                                                         upper='u'),
+        "BlockReduce": [],
+        "Product"    : CODE[internal]["Product"].format(argument="a",
+                                                        index="I")
+        }
 
 # TODO: not nice needs fixing
 OPERATOR_SNIPS = []
@@ -664,6 +665,22 @@ def make_variable_equation_pngs(variables, ontology_name):
 
   header = os.path.join(ontology_location, "LaTeX", "resources", "header.tex")
 
+  header_file = open(header, 'w')
+
+  # RULE: make header for equation and variable latex compilations.
+  # math packages
+  # \usepackage{amsmath}
+  # \usepackage{amssymb}
+  # \usepackage{calligra}
+  # \usepackage{array}
+  # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
+  header_file.write(r"\usepackage{amsmath}")
+  header_file.write(r"\usepackage{amssymb}")
+  header_file.write(r"\usepackage{calligra}")
+  header_file.write(r"\usepackage{array}")
+  header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
+  header_file.close()
+
   for eq_ID in rhs:
     out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
 
@@ -672,12 +689,12 @@ def make_variable_equation_pngs(variables, ontology_name):
 
     try:  # reports an error after completing the last one -- no idea
       make_it = subprocess.Popen(
-            args,
-            start_new_session=True,
-            restore_signals=False,
-            # stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE
-            )
+              args,
+              start_new_session=True,
+              restore_signals=False,
+              # stdout=subprocess.PIPE,
+              # stderr=subprocess.PIPE
+              )
       out, error = make_it.communicate()
     except:
       pass
@@ -691,12 +708,12 @@ def make_variable_equation_pngs(variables, ontology_name):
 
     try:  # reports an error after completing the last one -- no idea
       make_it = subprocess.Popen(
-            args,
-            start_new_session=True,
-            restore_signals=False,
-            # stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE
-            )
+              args,
+              start_new_session=True,
+              restore_signals=False,
+              # stdout=subprocess.PIPE,
+              # stderr=subprocess.PIPE
+              )
       out, error = make_it.communicate()
     except:
       pass
@@ -800,7 +817,7 @@ class VarEqTree():
 
 class DotGraph(VarEqTree):
 
-  #pdfposter -p999x4A3 vars_equs.pdf try2.pdf
+  # pdfposter -p999x4A3 vars_equs.pdf try2.pdf
 
   def __init__(self, variables, indices, var_ID, ontology_name):
     self.ontology_name = ontology_name

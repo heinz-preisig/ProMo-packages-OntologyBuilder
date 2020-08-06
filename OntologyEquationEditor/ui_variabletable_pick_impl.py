@@ -15,7 +15,7 @@ __author__ = 'Preisig, Heinz A'
 
 MAX_HEIGHT = 800
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from Common.common_resources import roundButton
 from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable

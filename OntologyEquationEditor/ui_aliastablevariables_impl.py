@@ -14,8 +14,8 @@ __version__ = "6.00"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from Common.common_resources import roundButton
 from Common.resource_initialisation import FILES
@@ -26,7 +26,7 @@ from OntologyBuilder.OntologyEquationEditor.ui_aliastable import Ui_AliasTable
 MAX_HEIGHT = 800
 
 
-class UI_AliasTableVariables(QtGui.QWidget):
+class UI_AliasTableVariables(QtWidgets.QWidget):
   '''
   classdocs
   '''
@@ -37,7 +37,7 @@ class UI_AliasTableVariables(QtGui.QWidget):
     '''
     Constructor
     '''
-    QtGui.QWidget.__init__(self)
+    QtWidgets.QWidget.__init__(self)
     self.variables = variables  # all
     self.current_network = current_network
     self.variables_ID_list = self.variables.index_definition_networks_for_variable[self.current_network]
@@ -47,7 +47,6 @@ class UI_AliasTableVariables(QtGui.QWidget):
     self.setup()
     self.setWindowTitle("variable aliases")
     self.ui.tableWidget.itemChanged.connect(self.rename)
-
 
     roundButton(self.ui.pushFinished, "back", tooltip="go back")
     roundButton(self.ui.pushInfo, "info", tooltip="information")
@@ -62,13 +61,13 @@ class UI_AliasTableVariables(QtGui.QWidget):
     a = self.ui.tableWidget
     a.clear()
     a.setRowCount(0)
-    item = QtGui.QTableWidgetItem()
+    item = QtWidgets.QTableWidgetItem()
     item.setText("label")
     a.setHorizontalHeaderItem(0, item)
     col = 0
     for l in self.languages:  # label columns with languages
       a.setColumnCount(col + 1)
-      item = QtGui.QTableWidgetItem()
+      item = QtWidgets.QTableWidgetItem()
       item.setText(l)
       a.setHorizontalHeaderItem(col, item)
       col += 1
@@ -76,7 +75,7 @@ class UI_AliasTableVariables(QtGui.QWidget):
       row = a.rowCount()
       self.keep_IDs[row] = ID
       a.setRowCount(row + 1)
-      item = QtGui.QTableWidgetItem()
+      item = QtWidgets.QTableWidgetItem()
       item.setText(self.variables[ID].label)  # str(ID))
       a.setVerticalHeaderItem(row, item)
       col = 0
@@ -85,7 +84,7 @@ class UI_AliasTableVariables(QtGui.QWidget):
           s = aliases[ID][l]
         except:
           s = self.variables[ID].label
-        item = QtGui.QTableWidgetItem()
+        item = QtWidgets.QTableWidgetItem()
         item.setText(s)
         a.setItem(row, col, item)
         col += 1

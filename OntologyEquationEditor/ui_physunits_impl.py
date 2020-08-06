@@ -19,13 +19,13 @@ __version__ = "6.00"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from OntologyBuilder.OntologyEquationEditor.ui_physunits import Ui_PysUnitsDialog
 
 
-class UI_PhysUnitsDialog(QtGui.QDialog):
+class UI_PhysUnitsDialog(QtWidgets.QDialog):
   '''
   dialog for a variable
   '''
@@ -42,7 +42,7 @@ class UI_PhysUnitsDialog(QtGui.QDialog):
     self.physvar = None
 
     # set up dialog window with new title
-    QtGui.QDialog.__init__(self)
+    QtWidgets.QDialog.__init__(self)
     self.ui = Ui_PysUnitsDialog()
     self.ui.setupUi(self)
     # self.__initSpinBoxes()

@@ -24,10 +24,10 @@ import subprocess
 from collections import OrderedDict
 
 import pydotplus.graphviz as GV  # python3 -m pip install pydotplus
-from PyQt4 import QtCore
-from PyQt4.QtGui import QMainWindow
 from jinja2 import Environment  # sudo apt-get install python-jinja2
 from jinja2 import FileSystemLoader
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QMainWindow
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import getIcon
@@ -36,13 +36,13 @@ from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import roundButton
 from Common.common_resources import saveBackupFile
-from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from Common.ontology_container import OntologyContainer
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
+from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.tpg import LexicalError
 from OntologyBuilder.OntologyEquationEditor.tpg import SemanticError
@@ -54,18 +54,18 @@ from OntologyBuilder.OntologyEquationEditor.ui_equations_impl import UI_Equation
 from OntologyBuilder.OntologyEquationEditor.ui_ontology_design import Ui_OntologyDesigner
 from OntologyBuilder.OntologyEquationEditor.ui_variabletable_impl import UI_VariableTableDialog
 from OntologyBuilder.OntologyEquationEditor.variable_framework import IndexStructureError
-from OntologyBuilder.OntologyEquationEditor.variable_framework import UnitError
-from OntologyBuilder.OntologyEquationEditor.variable_framework import VarError
-from OntologyBuilder.OntologyEquationEditor.variable_framework import Variables  # Indices
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeCompiler
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidentList
+from OntologyBuilder.OntologyEquationEditor.variable_framework import UnitError
+from OntologyBuilder.OntologyEquationEditor.variable_framework import VarError
+from OntologyBuilder.OntologyEquationEditor.variable_framework import Variables  # Indices
 
 # RULE: fixed wired for initialisation -- needs to be more generic
 INITIALVARIABLE_TYPES = {
-      "initialise" : ["state", "frame"],
-      "connections": ["constant", "transposition"]
-      }
+        "initialise" : ["state", "frame"],
+        "connections": ["constant", "transposition"]
+        }
 
 CHOOSE_NETWORK = "choose network"
 CHOOSE_INTER_CONNECTION = "choose INTER connection"
@@ -104,12 +104,12 @@ class UiOntologyDesign(QMainWindow):
     self.ui.pushWrite.setIcon(getIcon('->'))
     self.setWindowTitle("OntologyFoundationEditor Design")
     roundButton(self.ui.pushInfo, "info", tooltip="information")
-    roundButton(self.ui.pushCompile,"compile", tooltip="compile")
+    roundButton(self.ui.pushCompile, "compile", tooltip="compile")
     self.radio = [
-          self.ui.radioVariables,
-          self.ui.radioVariablesAliases,
-          self.ui.radioIndicesAliases
-          ]
+            self.ui.radioVariables,
+            self.ui.radioVariablesAliases,
+            self.ui.radioIndicesAliases
+            ]
     [i.hide() for i in self.radio]
 
     self.ui.groupFiles.hide()
@@ -118,7 +118,7 @@ class UiOntologyDesign(QMainWindow):
     try:
       assert os.path.exists(DIRECTORIES["ontology_repository"])
     except:
-      print("directory %s does not exist"%DIRECTORIES["ontology_repository"])
+      print("directory %s does not exist" % DIRECTORIES["ontology_repository"])
 
     a = DIRECTORIES["ontology_repository"]
     self.ontology_name = getOntologyName(task="task_ontology_equations")
@@ -274,19 +274,19 @@ class UiOntologyDesign(QMainWindow):
     self.__hideTable()
     self.ui.combo_EditVariableTypes.clear()
     self.ui.combo_EditVariableTypes.addItems(
-          self.ontology_container.ontology_tree[self.current_network]["behaviour"]["graph"])
+            self.ontology_container.ontology_tree[self.current_network]["behaviour"]["graph"])
 
   def on_radioNode_clicked(self):
     self.__hideTable()
     self.ui.combo_EditVariableTypes.clear()
     self.ui.combo_EditVariableTypes.addItems(
-          self.ontology_container.ontology_tree[self.current_network]["behaviour"]["node"])
+            self.ontology_container.ontology_tree[self.current_network]["behaviour"]["node"])
 
   def on_radioArc_clicked(self):
     self.__hideTable()
     self.ui.combo_EditVariableTypes.clear()
     self.ui.combo_EditVariableTypes.addItems(
-          self.ontology_container.ontology_tree[self.current_network]["behaviour"]["arc"])
+            self.ontology_container.ontology_tree[self.current_network]["behaviour"]["arc"])
 
   def on_treeWidget_clicked(self, index):  # state network_selected
     self.current_network = self.ui.treeWidget.currentItem().name
@@ -344,7 +344,8 @@ class UiOntologyDesign(QMainWindow):
       network_for_expression = self.intraconnection_nws[nw]["left"]  # NOTE: this should be all from both sides
       # network_variable_source = network_for_expression
       # vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_variable]
-      # RULE: NOTE: the variable types are the same on the left, the right and the boudnary -- at least for the time being
+      # RULE: NOTE: the variable types are the same on the left, the right and the boudnary -- at least for the time
+      # being
       vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_expression]
       self.ui.combo_EditVariableTypes.clear()
       self.ui.combo_EditVariableTypes.addItems(vars_types_on_network_variable)
@@ -438,9 +439,11 @@ class UiOntologyDesign(QMainWindow):
       network = self.variables[lhs_var_ID].equations[equ_ID]["network"]
       var_label = self.variables[lhs_var_ID].label
       expression = renderExpressionFromGlobalIDToInternal(expression_ID, self.variables, self.indices)
-      self.compiled_equations[language][equ_ID] = {"lhs"    : var_label,
-                                                   "network": network,
-                                                   "rhs"    : expression}
+      self.compiled_equations[language][equ_ID] = {
+              "lhs"    : var_label,
+              "network": network,
+              "rhs"    : expression
+              }
 
     putData(self.compiled_equations[language], e_name)
 
@@ -469,9 +472,11 @@ class UiOntologyDesign(QMainWindow):
       try:
         # print("debugging --  expression being translated into language %s:"%language, expression)
         res = str(compiler(expression))
-        self.compiled_equations[language][equ_ID] = {"lhs"    : var_label,
-                                                     "network": network,
-                                                     "rhs"    : res}
+        self.compiled_equations[language][equ_ID] = {
+                "lhs"    : var_label,
+                "network": network,
+                "rhs"    : res
+                }
 
       except (SemanticError,
               SyntacticError,
@@ -482,8 +487,8 @@ class UiOntologyDesign(QMainWindow):
               VarError,
               ) as _m:
         print(
-              'checked expression failed %s : %s = %s -- %s' % (
-                    equ_ID, self.variables[lhs_var_ID].label, expression, _m))
+                'checked expression failed %s : %s = %s -- %s' % (
+                        equ_ID, self.variables[lhs_var_ID].label, expression, _m))
 
         compiler = makeCompiler(self.variables, self.indices, lhs_var_ID, equ_ID, language=language, verbose=100)
         try:
@@ -514,7 +519,8 @@ class UiOntologyDesign(QMainWindow):
     names_names = []
 
     j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
-    body = j2_env.get_template(FILES["OWL_template"]).render(variables=self.variables,ProMo="ProcessModeller_v7_04", ontology="flash_03")  # self.networks)
+    body = j2_env.get_template(FILES["OWL_template"]).render(variables=self.variables, ProMo="ProcessModeller_v7_04",
+                                                             ontology="flash_03")  # self.networks)
     f_name = FILES["OWL_variables"] % self.ontology_name
     f = open(f_name, 'w')
     f.write(body)
@@ -557,7 +563,7 @@ class UiOntologyDesign(QMainWindow):
     for e_type in self.variables.equation_type_list:
       j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
       ID = j2_env.get_template(FILES["latex_template_equations"]). \
-        render(equations=eqs[e_type],sequence=sorted(eqs[e_type].keys()))
+        render(equations=eqs[e_type], sequence=sorted(eqs[e_type].keys()))
       f_name = FILES["latex_equations"] % (self.ontology_location, str(e_type))
       f = open(f_name, 'w')
       f.write(ID)
@@ -575,11 +581,11 @@ class UiOntologyDesign(QMainWindow):
     args = ['sh', f_name, location]
     # print('ARGS: ', args)
     make_it = subprocess.Popen(
-          args,
-          # start_new_session=True,
-          # stdout=subprocess.PIPE,
-          # stderr=subprocess.PIPE
-          )
+            args,
+            # start_new_session=True,
+            # stdout=subprocess.PIPE,
+            # stderr=subprocess.PIPE
+            )
     out, error = make_it.communicate()
 
     self.__writeMessage("busy making var/eq images")
@@ -750,7 +756,8 @@ class UiOntologyDesign(QMainWindow):
                                                   choice in self.rules["variable_classes_having_port_variables"],
                                                   info_file=FILES["info_ontology_variable_table"]
                                                   )
-    self.table_variables.show()  # Note: resolved tooltip settings, did not work during initialisation of table (ui_variabletable_implement)
+    self.table_variables.show()  # Note: resolved tooltip settings, did not work during initialisation of table (
+    # ui_variabletable_implement)
 
     for choice in choice:
       try:
@@ -787,7 +794,7 @@ class UiOntologyDesign(QMainWindow):
     return OK
 
   def __setupIndicesAliasTable(self):
-    print("gotten here")
+    # print("gotten here")
     self.table_aliases_i = UI_AliasTableIndices(self.indices)  # , self.aliases_i)
     self.table_aliases_i.completed.connect(self.__updateAliases_Indices)
     self.table_aliases_i.completed.connect(self.finished_edit_table)
@@ -808,9 +815,8 @@ class UiOntologyDesign(QMainWindow):
 
     radios_ui = [self.ui.radioVariables, self.ui.radioVariablesAliases,
                  self.ui.radioIndicesAliases]
-    radios = ["variables",  "variable_aliases", "indices_aliase"]
+    radios = ["variables", "variable_aliases", "indices_aliase"]
     which = radios.index(active)
     for ui in radios_ui:
       ui.setChecked(False)
     radios_ui[which].setChecked(True)
-

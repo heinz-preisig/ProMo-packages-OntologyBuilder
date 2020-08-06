@@ -26,10 +26,7 @@ sys.path.extend([root, os.path.join(root, 'packages'), os.path.join(root, 'tasks
 
 from graphviz import Digraph
 from PyPDF2 import PdfFileMerger
-from PyQt4 import QtGui
 
-from Common.common_resources import getData
-from Common.common_resources import getOntologyName
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 
@@ -281,14 +278,14 @@ def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
 
   import subprocess
 
-  ontology=ontology_tree
+  ontology = ontology_tree
   dot_path = os.path.join(DIRECTORIES["ontology_repository"], ontology_name, DIRECTORIES["ontology_graphs_location"],
                           "%s")
   o_template = dot_path  # + ".gv"
-  o = FILES["ontology_file"]%ontology_name
+  o = FILES["ontology_file"] % ontology_name
   #
   # the tree of networks
-  f = o_template%"tree"
+  f = o_template % "tree"
   print(f)
   graph_attr = {}
   graph_attr["nodesep"] = "1"
@@ -305,7 +302,7 @@ def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
 
   print(ontology_hierarchy)
   if show != "summary":
-    simple_graph.view()                # generates pdf
+    simple_graph.view()  # generates pdf
     os.remove(f)
 
   #
@@ -314,13 +311,13 @@ def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
   structure_nodes = []
   graph_attr["rankdir"] = "LR"
   edge_attr["tailport"] = "e"
-  edge_attr["headport"] = "w"  #msg_box"
+  edge_attr["headport"] = "w"  # msg_box"
   graph_attr["nodesep"] = "0.4"
   graph_attr["ranksep"] = "0.8"
 
   node = "root"
   n = str(node)
-  f = o_template%n
+  f = o_template % n
   print(f)
   node_graph = Digraph(n, filename=f, graph_attr=graph_attr)
   node_graph.graph_attr = graph_attr
@@ -335,7 +332,7 @@ def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
   for node in tree:
     if node != "root":
       n = str(node)
-      f = o_template%n
+      f = o_template % n
       print(f)
       node_graph = Digraph(n, filename=f, graph_attr=graph_attr)
       ontology_hierarchy = singleNodeOnly(ontology, n, node_graph, behaviour_nodes, structure_nodes)
@@ -346,31 +343,31 @@ def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
   pdf_template = dot_path + ".pdf"
 
   merger = PdfFileMerger()
-  pdf = pdf_template%"tree"
+  pdf = pdf_template % "tree"
   merger.append(open(pdf, 'rb'))
-  pdf = pdf_template%str("root")
+  pdf = pdf_template % str("root")
   merger.append(open(pdf, 'rb'))
   for node in tree:
     if node != "root":
-      pdf = pdf_template%str(node)
+      pdf = pdf_template % str(node)
       merger.append(open(pdf, 'rb'))
-    o_ =o_template%str(node)
+    o_ = o_template % str(node)
     if os.path.exists(o_):
       os.remove(o_)
 
-  o = dot_path%"all_nodes" + ".pdf"
+  o = dot_path % "all_nodes" + ".pdf"
 
   merger.write(o)
   if show == "summary":
-    shell_file = FILES["latex_shell_ontology_view_exec"]%ontology_name
-    args = ['sh', shell_file, dot_path.replace("%s","")]
+    shell_file = FILES["latex_shell_ontology_view_exec"] % ontology_name
+    args = ['sh', shell_file, dot_path.replace("%s", "")]
     # print('ARGS: ', args)
     make_it = subprocess.Popen(
-          args,
-          # start_new_session=True,
-          # stdout=subprocess.PIPE,
-          # stderr=subprocess.PIPE
-          )
+            args,
+            # start_new_session=True,
+            # stdout=subprocess.PIPE,
+            # stderr=subprocess.PIPE
+            )
     out, error = make_it.communicate()
 
   print("file written to :", o)

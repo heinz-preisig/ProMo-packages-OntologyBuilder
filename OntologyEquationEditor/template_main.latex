@@ -96,7 +96,7 @@
 {% endraw %}
 
 {% for o in ontology -%}
-     \section{ {{ o }} } \input{ variables_{{ o }}.tex }
+     \section{ {{ o }} } \input{variables_{{ o }}.tex}
 {% endfor -%}
 
 {% raw %}
@@ -130,7 +130,7 @@
 {% endraw%}
 
 {% for o in ontology -%}
-    \IfFileExists{../ontology_graphs/graph__{{ o }}.ps{
+    \IfFileExists{../ontology_graphs/graph__{{ o }}.ps}{
     \subsection{ {{ o }} }
     \dotgrapha{../ontology_graphs/graph__{{ o }}.ps}
     }

@@ -20,34 +20,34 @@ __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
 import os
-from PyQt4 import QtCore
-from PyQt4 import QtGui
 
-from copy import copy
+from graphviz import Digraph
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
-from Common.common_resources import M_None
 from Common.common_resources import getOntologyName
+from Common.common_resources import M_None
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
 from Common.radio_selector_impl import RadioSelector
 from Common.record_definitions import EquationAssignment
 from Common.record_definitions import Interface
+from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
-from Common.resource_initialisation import checkAndFixResources
+from Common.treeid import Tree
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import ID_delimiter
 from OntologyBuilder.OntologyEquationEditor.resources import ID_spacer
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
-from Common.treeid import Tree
-from graphviz import Digraph
 
-import subprocess
 # from OntologyBuilder.OntologyEquationEditor.variable_framework import simulateDeletion
 
 MAX_HEIGHT = 800
+
 
 class VariableEquationTree(dict):
   def __init__(self, ID):
@@ -85,8 +85,8 @@ class VariableEquationTree(dict):
     simple_graph.graph_attr = graph_attr
     simple_graph.edge_attr = edge_attr
 
-    simple_graph.node(str(0), var_labels, style="filled", collor="blue" )
-    self.__walkTree(0,simple_graph)
+    simple_graph.node(str(0), var_labels, style="filled", collor="blue")
+    self.__walkTree(0, simple_graph)
 
     simple_graph.view()  # generates pdf
     os.remove(f)
@@ -100,7 +100,7 @@ class VariableEquationTree(dict):
           try:
             node_label = self.equ_labels[child].strip()
           except:
-            print (">>>>>>>>>>> no such node")
+            print(">>>>>>>>>>> no such node")
             node_label = "unknown"
         elif child in self["variable"]:
           colour = "cornsilk"
@@ -110,15 +110,16 @@ class VariableEquationTree(dict):
             print(" no such variable ID ", child)
             node_label = "unknown"
         else:
-          print (">>>>>>>>>>> no such node")
+          print(">>>>>>>>>>> no such node")
           node_label = "unknown"
 
         graph.node(str(child), node_label, style="filled", color=colour)
-        graph.edge(str(parent_node_ID),str(child))
+        graph.edge(str(parent_node_ID), str(child))
         self.__walkTree(child, graph)
 
     else:
       return
+
 
 class TreeNode(dict):
   def __init__(self, parents, type, contents):
@@ -130,26 +131,26 @@ class TreeNode(dict):
   def addChild(self, child):
     self["children"].append(child)
 
+
 class MakeVariableTree(dict):
   def __init__(self, variables):
-    self.variables=variables
+    self.variables = variables
     self.tree[ID] = TreeNode()
 
-  def nextEquation(self, ID, parent ):
+  def nextEquation(self, ID, parent):
     children = self.variables[ID]["equations"]
 
-   # for child in children:
-   #   self.tree[]
+  # for child in children:
+  #   self.tree[]
 
 
-
-class UI_EditorEquationAssignment(QtGui.QMainWindow):
+class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   # potential_issues : TODO : is the order important. Adding a network does leave us unordered compared to the old
   #  approach....???
 
   def __init__(self):
-    QtGui.QMainWindow.__init__(self)
+    QtWidgets.QMainWindow.__init__(self)
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
@@ -209,11 +210,12 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.inter_table_objects = {}
 
     # icons
-    self.icons = {"edit": QtGui.QIcon("%s/edit.png" % DIRECTORIES["icon_location"]),
-                  "OK"  : QtGui.QIcon("%s/accept.png" % DIRECTORIES["icon_location"]),
-                  "back": QtGui.QIcon("%s/back.png" % DIRECTORIES["icon_location"]),
-                  "left": QtGui.QIcon("%s/left-icon.png" % DIRECTORIES["icon_location"]),
-                  }
+    self.icons = {
+            "edit": QtGui.QIcon("%s/edit.png" % DIRECTORIES["icon_location"]),
+            "OK"  : QtGui.QIcon("%s/accept.png" % DIRECTORIES["icon_location"]),
+            "back": QtGui.QIcon("%s/back.png" % DIRECTORIES["icon_location"]),
+            "left": QtGui.QIcon("%s/left-icon.png" % DIRECTORIES["icon_location"]),
+            }
     self.ui.groupBoxEquations.hide()
     self.__makeEmptyDataStructures()
 
@@ -298,7 +300,7 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     return QtCore.QSize(width, min(height, MAX_HEIGHT))
 
   def __setItem(self, table_widget, row, col, text, icon=None):
-    item = QtGui.QTableWidgetItem()
+    item = QtWidgets.QTableWidgetItem()
 
     if icon:
       item.setIcon(icon)
@@ -398,7 +400,7 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
 
     var_equ_tree = VariableEquationTree(var_ID)
     sel_equs = []
-    self.makeTree(var_equ_tree,0,sel_equs,var_ID)
+    self.makeTree(var_equ_tree, 0, sel_equs, var_ID)
     print("debugging tree", var_equ_tree["ID_tree"])
     print("debugging tree variables", var_equ_tree["variable"])
     print("debugging tree equations", var_equ_tree["equation"])
@@ -411,7 +413,6 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
         lhs, incidence_list = self.incidence_dictionary[eq_ID]
         rhs = self.variables[lhs]["equations"][eq_ID]["rhs"]
         equ_labels[eq_ID] = renderExpressionFromGlobalIDToInternal(rhs, variables=self.variables, indices=self.indices)
-
 
     var_equ_tree.graphMe(self.ontology_name, var_labels, equ_labels)
 
@@ -432,9 +433,8 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
         lhs, incidence_list = self.incidence_dictionary[eq_id]
         self.makeTree(var_eq_tree, var_node_ID, d_equs, lhs)
 
-
   def workTree(self, var_ID):
-    d_equs = [] #set()
+    d_equs = []  # set()
 
     # - key: equation_ID(integer)
     # - value: (lhs - variable_ID, rhs - incidence list (integers) )
@@ -448,9 +448,8 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
       rhs = self.variables[lhs]["equations"][eq_ID]["rhs"]
       rhs_rendered = renderExpressionFromGlobalIDToInternal(rhs, variables=self.variables, indices=self.indices)
       lhs_rendered = self.variables[lhs]["aliases"]["internal_code"]
-      d_equs_text += "\n%s :: %s :=  %s" %(eq_ID, lhs_rendered, rhs_rendered)
+      d_equs_text += "\n%s :: %s :=  %s" % (eq_ID, lhs_rendered, rhs_rendered)
     return d_equs, d_equs_text
-
 
   def reduceVars(self, d_equs, var_ID):
     """
@@ -494,14 +493,13 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
       except:
         equations = self.variables[v]["equations"]  # variables from variable dict, the variable file format
       for e in equations:
-        if e in [97,63]:
+        if e in [97, 63]:
           print("debugging", e)
-        inc_list = equations[e]["incidence_list"] #self.makeIncidentList(equations[e]["rhs"])
+        inc_list = equations[e]["incidence_list"]  # self.makeIncidentList(equations[e]["rhs"])
         # c_ = copy(inc_list)
         # c__ = copy(inc_list)
         incidence_dictionary[e] = (v, inc_list)
         inv_incidence_dictionary[v].append(inc_list)
-
 
         # for i in inc_list:
         #   inv_incidence_dictionary_[int(i)].add(e)

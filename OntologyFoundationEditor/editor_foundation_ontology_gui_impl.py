@@ -31,20 +31,19 @@ from collections import OrderedDict
 from copy import copy
 from copy import deepcopy
 from distutils.dir_util import copy_tree
-from Common.common_resources import getIcon
-from Common.common_resources import roundButton
-from Common.record_definitions import Rules
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from Common.common_resources import getData
+from Common.common_resources import getIcon
 from Common.common_resources import getOntologyName
 # from Common.common_resources import globalEquationID # NOTE: removed for the time being. IDs are now local to ontology
 # from Common.common_resources import globalVariableID # NOTE: removed for the time being. IDs are now local to ontology
 from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import putDataOrdered
+from Common.common_resources import roundButton
 from Common.common_resources import saveBackupFile
 from Common.qt_resources import NO
 from Common.qt_resources import YES
@@ -52,15 +51,16 @@ from Common.radio_selector_impl import RadioSelector
 from Common.record_definitions import OntologyContainerFile
 from Common.record_definitions import RecordProMoIRI
 from Common.record_definitions import VariableFile
+from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resource_initialisation import ONTOLOGY_VERSION
 from Common.resource_initialisation import VARIABLE_EQUATIONS_VERSION
-from Common.resource_initialisation import checkAndFixResources
 from Common.ui_string_dialog_impl import UI_String
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyFoundationEditor.editor_foundation_ontology_gui import Ui_MainWindow
 from OntologyBuilder.OntologyFoundationEditor.onto_graph_creator import makeOntologyDotGraph
+
 
 # RULE: defining the tree structure, and its components
 class Behaviour(OrderedDict):
@@ -116,23 +116,24 @@ def askForString(prompt, placeholdertext="", limiting_list=[]):  #
   model_name = ui_ask.getText()
   return model_name
 
+
 # =====================================================================================================================
 
-class UI_EditorFoundationOntology(QtGui.QMainWindow):
+class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
 
   # potential_issues : Note : is the order important. Adding a network does leave us unordered compared to the old
   #  approach....???
 
   def __init__(self):
-    QtGui.QMainWindow.__init__(self)
+    QtWidgets.QMainWindow.__init__(self)
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
     roundButton(self.ui.pushInfo, "info", tooltip="information")
-    roundButton(self.ui.pushGraph,"dot_graph", tooltip="make ProMo ontology graphs")
-    roundButton(self.ui.pushSave,"save", tooltip="save ProMo base ontology")
+    roundButton(self.ui.pushGraph, "dot_graph", tooltip="make ProMo ontology graphs")
+    roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
 
-    ontology_name, ontologies = getOntologyName(new=True, task="task_ontology_foundation",reject_icon="new.png")
+    ontology_name, ontologies = getOntologyName(new=True, task="task_ontology_foundation", reject_icon="new.png")
 
     self.ontology = OntologyContainerFile(ONTOLOGY_VERSION)
     self.ontology_tree = self.ontology["ontology_tree"]
@@ -159,7 +160,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
 
       self.__createRoot()
       self.ontology_dir = DIRECTORIES["ontology_location"] % ontology_name
-      self.__writeMessage("make directory tree %s"% self.ontology_dir)
+      self.__writeMessage("make directory tree %s" % self.ontology_dir)
       src = DIRECTORIES["new_ontology_starting_set"]
       copy_tree(src, self.ontology_dir)
       self.ontology_file = FILES["ontology_file"] % ontology_name
@@ -172,9 +173,10 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
       variable_file = FILES["variables_file"] % ontology_name
       if OS.path.exists(variable_file):
         # print("debugging -- found equation file", variable_file)
-        reply = QtGui.QMessageBox.question(self, "choose",
-                                           "There is a variable file \n -- do you want to delete it and restart the whole process?",
-                                           YES, NO)
+        reply = QtWidgets.QMessageBox.question(self, "choose",
+                                               "There is a variable file \n -- do you want to delete it and restart "
+                                               "the whole process?",
+                                               YES, NO)
         if reply == YES:
           self.lock_delete = False
           old, new = saveBackupFile(variable_file)
@@ -184,7 +186,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
           self.lock_delete = True
 
       else:
-        self.__writeMessage("did not find equation file %s" %variable_file)
+        self.__writeMessage("did not find equation file %s" % variable_file)
         self.lock_delete = False
 
       self.__makeOntology()
@@ -235,13 +237,13 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
     self.ui.pushNewStructureElement.resize(size)
 
     self.radio = {
-          "structure_node" : None,
-          "structure_arc"  : None,
-          "structure_token": None,
-          "behaviour_graph": None,
-          "behaviour_node" : None,
-          "behaviour_arc"  : None
-          }
+            "structure_node" : None,
+            "structure_arc"  : None,
+            "structure_token": None,
+            "behaviour_graph": None,
+            "behaviour_node" : None,
+            "behaviour_arc"  : None
+            }
 
     # starting up ===============
     # self.__makeTreeView()
@@ -278,528 +280,528 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
     """
     ui = self.ui
     actions = {  #
-          "0"                                : [  #
-                ui.groupBoxFile,
-                ui.pushSave,
-                ui.treeWidget,
-                ui.tabWidget,
-                ui.groupBoxNetwork,
-                ui.radioButtonInter,
-                ui.radioButtonIntra,
-                ui.pushAddChild,
-                ui.pushRemoveChild,
-                ui.groupBoxStructureComponents,
-                ui.groupBoxBehaviourComponents,
-                ui.listViewStructure,
-                ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                ui.pushNewBehaviourElement,
-                ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          "start"                            : [  #
-                ui.groupBoxFile,
-                ui.pushSave,
-                ui.tabWidget,
-                ui.groupBoxNetwork,
-                ui.radioButtonHasPortVariables,
-                ],
-          "new_variable_file"                : [
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                ui.tabWidget,
-                ui.groupBoxNetwork,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "removed_branch"                   : [  #
-                ui.tabWidget,
-                ui.groupBoxNetwork,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "network_selected"                 : [  #
-                ui.listViewStructure,
-                ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                ui.pushNewBehaviourElement,
-                ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          "network_selected_no_tokens"       : [  #
-                ui.listViewStructure,
-                ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                ui.radioButtonStructureArc,
-                ui.pushNewBehaviourElement,
-                ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "add_child_selected"               : [  #
-                ui.groupBoxNetwork,
-                ui.tabWidget,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "block_delete"                     : [  #
-                ui.pushRemoveChild,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_selected"                                : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.tabWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupBoxStructureComponents,
-                ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                # ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          "behaviour_selected"                                : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.tabWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                # ui.pushDeleteBehaviourElement,
-                # ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          "structure_node_selected"          : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_token_selected"         : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_node_prop_selected"     : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                # ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_token_prop_selected"    : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_node_prop_ext_selected" : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                # ui.pushDeleteStructureElementExtension,
-                # ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_token_prop_ext_selected": [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                # ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_arc_selected"           : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                # ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_arc_token_selected"     : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                # ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_arc_token_prop_selected": [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                # ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "structure_arc_prop_ext_selected"  : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                ui.listViewBehaviour,
-                ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                # ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                # ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "behaviour_component_selected"     : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          "behaviour_prop_selected"          : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                # ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          "behaviour_prop_selected_node"          : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupChildDefine,
-                # ui.groupBoxStructure,
-                # ui.groupBoxBehaviour,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                ui.pushNewStructureElementExtension,
-                ui.pushDeleteStructureElement,
-                ui.pushDeleteStructureElementExtension,
-                # ui.pushDeleteBehaviourElement,
-                ui.widgetToken,
-                # ui.radioButtonHasPortVariables,
-                ],
-          "saved"                            : [  #
-                # ui.groupBoxFile,
-                # ui.pushSave,
-                # ui.treeWidget,
-                ui.tabWidget,
-                # ui.groupBoxNetwork,
-                # ui.radioButtonInter,
-                # ui.radioButtonIntra,
-                # ui.pushAddChild,
-                # ui.pushRemoveChild,
-                # ui.groupBoxStructureComponents,
-                # ui.groupBoxBehaviourComponents,
-                # ui.listViewStructure,
-                # ui.listViewStructureExtension,
-                # ui.listViewBehaviour,
-                # ui.pushNewBehaviourElement,
-                # ui.pushNewStructureElement,
-                # ui.pushNewStructureElementExtension,
-                # ui.pushDeleteStructureElement,
-                # ui.pushDeleteStructureElementExtension,
-                # ui.pushDeleteBehaviourElement,
-                # ui.widgetToken,
-                ui.radioButtonHasPortVariables,
-                ],
-          }
+            "0"                                : [  #
+                    ui.groupBoxFile,
+                    ui.pushSave,
+                    ui.treeWidget,
+                    ui.tabWidget,
+                    ui.groupBoxNetwork,
+                    ui.radioButtonInter,
+                    ui.radioButtonIntra,
+                    ui.pushAddChild,
+                    ui.pushRemoveChild,
+                    ui.groupBoxStructureComponents,
+                    ui.groupBoxBehaviourComponents,
+                    ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    ui.pushNewBehaviourElement,
+                    ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "start"                            : [  #
+                    ui.groupBoxFile,
+                    ui.pushSave,
+                    ui.tabWidget,
+                    ui.groupBoxNetwork,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "new_variable_file"                : [
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    ui.tabWidget,
+                    ui.groupBoxNetwork,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "removed_branch"                   : [  #
+                    ui.tabWidget,
+                    ui.groupBoxNetwork,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "network_selected"                 : [  #
+                    ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    ui.pushNewBehaviourElement,
+                    ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "network_selected_no_tokens"       : [  #
+                    ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    ui.radioButtonStructureArc,
+                    ui.pushNewBehaviourElement,
+                    ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "add_child_selected"               : [  #
+                    ui.groupBoxNetwork,
+                    ui.tabWidget,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "block_delete"                     : [  #
+                    ui.pushRemoveChild,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_selected"               : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.tabWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupBoxStructureComponents,
+                    ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    # ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "behaviour_selected"               : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.tabWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    # ui.pushDeleteBehaviourElement,
+                    # ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "structure_node_selected"          : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_token_selected"         : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_node_prop_selected"     : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    # ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_token_prop_selected"    : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_node_prop_ext_selected" : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    # ui.pushDeleteStructureElementExtension,
+                    # ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_token_prop_ext_selected": [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    # ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_arc_selected"           : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    # ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_arc_token_selected"     : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    # ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_arc_token_prop_selected": [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    # ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "structure_arc_prop_ext_selected"  : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    ui.listViewBehaviour,
+                    ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    # ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    # ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "behaviour_component_selected"     : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "behaviour_prop_selected"          : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    # ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            "behaviour_prop_selected_node"     : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupChildDefine,
+                    # ui.groupBoxStructure,
+                    # ui.groupBoxBehaviour,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    ui.pushNewStructureElementExtension,
+                    ui.pushDeleteStructureElement,
+                    ui.pushDeleteStructureElementExtension,
+                    # ui.pushDeleteBehaviourElement,
+                    ui.widgetToken,
+                    # ui.radioButtonHasPortVariables,
+                    ],
+            "saved"                            : [  #
+                    # ui.groupBoxFile,
+                    # ui.pushSave,
+                    # ui.treeWidget,
+                    ui.tabWidget,
+                    # ui.groupBoxNetwork,
+                    # ui.radioButtonInter,
+                    # ui.radioButtonIntra,
+                    # ui.pushAddChild,
+                    # ui.pushRemoveChild,
+                    # ui.groupBoxStructureComponents,
+                    # ui.groupBoxBehaviourComponents,
+                    # ui.listViewStructure,
+                    # ui.listViewStructureExtension,
+                    # ui.listViewBehaviour,
+                    # ui.pushNewBehaviourElement,
+                    # ui.pushNewStructureElement,
+                    # ui.pushNewStructureElementExtension,
+                    # ui.pushDeleteStructureElement,
+                    # ui.pushDeleteStructureElementExtension,
+                    # ui.pushDeleteBehaviourElement,
+                    # ui.widgetToken,
+                    ui.radioButtonHasPortVariables,
+                    ],
+            }
     self.actions = actions
     self.labels = {
-          "0"                              : {
-                "structure": "",
-                "extension": ""
-                },
-          "start"                          : {
-                "structure": "",
-                "extension": ""
-                },
-          "structure_node_selected"        : {
-                "structure": "dynamics",
-                "extension": "distribution nature"
-                },
-          "structure_token_selected"       : {
-                "structure": "token",
-                "extension": "refinement"
-                },
-          "structure_arc_selected"         : {
-                "structure": "mechanism",
-                "extension": "nature"
-                },
-          "structure_arc_token_selected"   : {
-                "structure": "mechanism",
-                "extension": "nature"
-                },
-          "structure_arc_prop_ext_selected": {
-                "structure": "mechanism",
-                "extension": "nature"
-                },
-          }
+            "0"                              : {
+                    "structure": "",
+                    "extension": ""
+                    },
+            "start"                          : {
+                    "structure": "",
+                    "extension": ""
+                    },
+            "structure_node_selected"        : {
+                    "structure": "dynamics",
+                    "extension": "distribution nature"
+                    },
+            "structure_token_selected"       : {
+                    "structure": "token",
+                    "extension": "refinement"
+                    },
+            "structure_arc_selected"         : {
+                    "structure": "mechanism",
+                    "extension": "nature"
+                    },
+            "structure_arc_token_selected"   : {
+                    "structure": "mechanism",
+                    "extension": "nature"
+                    },
+            "structure_arc_prop_ext_selected": {
+                    "structure": "mechanism",
+                    "extension": "nature"
+                    },
+            }
 
   def __createRoot(self):
 
     model_name = "root"
     self.current_network = model_name
-    self.__writeMessage("create root: %s" %model_name)
+    self.__writeMessage("create root: %s" % model_name)
     self.ontology_tree[model_name] = Ontology(model_name, None, None)
 
   def __makeTreeDepthFirstList(self, branch_root, nodes):
@@ -869,9 +871,9 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
                   v = "%s-%s-%s-%s" % (branch, component, variable, extension)
                   self.variables[nw].append(v)
           else:
-            for component in self.ontology_tree[nw][branch]:
-              for variable in self.ontology_tree[nw][branch][component]:
-                v = "%s-%s-%s" % (branch, component, variable)
+            for component_ in self.ontology_tree[nw][branch]:
+              for variable in self.ontology_tree[nw][branch][component_]:
+                v = "%s-%s-%s" % (branch, component_, variable)
                 self.variables[nw].append(v)
 
   # def __addItemToTreeWidget(self, parent, nodeID):
@@ -914,7 +916,6 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
     self.__writeMessage("error - no such radio button")
     return None
 
-
   def __writeMessage(self, message):
     self.ui.msgWindow.clear()
     self.ui.msgWindow.setText(message)
@@ -933,44 +934,44 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
           if v == v_nw:
             return nw  # first one it is
 
-  def __single_click(self, call_slot):
+  # def __single_click(self, call_slot):
+  #
+  #   if self.click_count == 2:
+  #     # print("debugging -- do nothing")
+  #     self.click_count = 1
+  #   else:
+  #     self.clickTimer.start(300)
+  #     QtWidgets.QWidget.connect(self.clickTimer, QtCore.SIGNAL("timeout()"), call_slot)
+  #     self.call_slot_single_click = call_slot
+  #
+  # def __double_clicked(self, call_slot_double_click):
+  #   self.__single_click(self.__click_reset)
+  #   # print("debugging -- double click ", self.clickTimer.isActive())
+  #   QtWidgets.QWidget.disconnect(self.clickTimer, QtCore.SIGNAL("timeout()"), self.call_slot_single_click)
+  #   self.click_count = 2
+  #   self.clickTimer.stop()
+  #   self.__on_listViewX_clicked(call_slot_double_click)
+  #
+  # def __click_reset(self):
+  #   self.clickTimer.stop()
+  #   self.click_count = 1
+  #   QtWidgets.QWidget.disconnect(self.clickTimer, QtCore.SIGNAL("timeout()"), self.call_slot_single_click)
 
-    if self.click_count == 2:
-      # print("debugging -- do nothing")
-      self.click_count = 1
-    else:
-      self.clickTimer.start(300)
-      QtGui.QWidget.connect(self.clickTimer, QtCore.SIGNAL("timeout()"), call_slot)
-      self.call_slot_single_click = call_slot
-
-  def __double_clicked(self, call_slot_double_click):
-    self.__single_click(self.__click_reset)
-    # print("debugging -- double click ", self.clickTimer.isActive())
-    QtGui.QWidget.disconnect(self.clickTimer, QtCore.SIGNAL("timeout()"), self.call_slot_single_click)
-    self.click_count = 2
-    self.clickTimer.stop()
-    self.__on_listViewX_clicked(call_slot_double_click)
-
-  def __click_reset(self):
-    self.clickTimer.stop()
-    self.click_count = 1
-    QtGui.QWidget.disconnect(self.clickTimer, QtCore.SIGNAL("timeout()"), self.call_slot_single_click)
-
-  def __on_listViewX_clicked(self, listView):  # TODO :  check this for what it is doing if anything....?
-
-    variable_name = listView.currentItem().text()
-    # print("name name      :", variable_name)
-    # print("variables      :", self.variables[variable_name])
-    # # print("structure clicked current network:",self.current_network)
-    # network, component = self.variables[variable_name]
-    #
-    # tree_depth_first_list = self.__makeTreeDepthFirstList()
-    # # for nw in tree_depth_first_list:
-    #
-    # tree_item = self.tree_items[network]
-    # self.ui.treeWidget.setCurrentItem(tree_item)
-    # self.current_network = network
-    # self._on_nework_selected()
+  # def __on_listViewX_clicked(self, listView):  # TODO :  check this for what it is doing if anything....?
+  #
+  #   variable_name = listView.currentItem().text()
+  # print("name name      :", variable_name)
+  # print("variables      :", self.variables[variable_name])
+  # # print("structure clicked current network:",self.current_network)
+  # network, component = self.variables[variable_name]
+  #
+  # tree_depth_first_list = self.__makeTreeDepthFirstList()
+  # # for nw in tree_depth_first_list:
+  #
+  # tree_item = self.tree_items[network]
+  # self.ui.treeWidget.setCurrentItem(tree_item)
+  # self.current_network = network
+  # self._on_nework_selected()
 
   def __clearLayout(self, layout):
     while layout.count():
@@ -1056,7 +1057,8 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
 
     pass
 
-  # def on_treeWidget_itemSelectionChanged(self,index):  # TODO: gave a pyqt error: missing 1 required positional argument: 'index'
+  # def on_treeWidget_itemSelectionChanged(self,index):  # TODO: gave a pyqt error: missing 1 required positional
+  #  argument: 'index'
   #   print("debugging : entered")
   #   self.on_treeWidget_clicked(index)
 
@@ -1090,7 +1092,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
       data = VariableFile(variables, indices, VARIABLE_EQUATIONS_VERSION, ProMoIRI)
       putData(data, variables_f_name)
 
-    self.__writeMessage("saved file : %s"%variables_f_name)
+    self.__writeMessage("saved file : %s" % variables_f_name)
 
   def on_pushAddChild_pressed(self):
     self.__ui_status("add_child_selected")
@@ -1100,7 +1102,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
       self.__ui_status("network_selected")
       return
     if model_name in self.ontology_tree:
-      self.__writeMessage("error -- name -- %s -- is already defined"%model_name)
+      self.__writeMessage("error -- name -- %s -- is already defined" % model_name)
       return
 
     print("model name: ", model_name)
@@ -1122,7 +1124,8 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
 
     print("deugging -- delete : ", self.current_network)
     parent = self.ontology_tree[self.current_network]["parents"][0]
-    self.ontology_tree[parent]["children"].remove(self.current_network)  # remove from children list of the parent node
+    self.ontology_tree[parent]["children"].remove(
+            self.current_network)  # remove from children list of the parent node
 
     del self.ontology_tree[self.current_network]  # finally delete node itself
     # self.__makeTreeView()
@@ -1214,13 +1217,12 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
   def on_radioButtonHasPortVariables_toggled(self, position):
     # print("debugging -- radio button position: ", position)
     variable_classes_having_port_variables = set(self.ontology["rules"]["variable_classes_having_port_variables"])
-    if position :
+    if position:
       variable_classes_having_port_variables.add(self.current_behaviour_variable)
     else:
       variable_classes_having_port_variables.difference_update()
-    self.ontology["rules"]["variable_classes_having_port_variables"] = sorted(variable_classes_having_port_variables)
-
-
+    self.ontology["rules"]["variable_classes_having_port_variables"] = sorted(
+            variable_classes_having_port_variables)
 
   def on_radioButtonBehaviourNode_toggled(self, position):
     self.radio["behaviour_node"] = position
@@ -1253,7 +1255,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
     variable_name = self.ui.listViewStructure.currentItem().text()
     self.current_structure_variable = variable_name
     component = self.__whichComponent("structure")
-    self.__single_click(self.__click_reset)
+    ###self.__single_click(self.__click_reset)
     if component == "arc":
       # get token
       # tokens = self.radio_selectors_token.getListOfCheckedLabelInGroup("tokens")
@@ -1269,7 +1271,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
     self.__makeList(self.ui.listViewStructureExtension, the_list)
 
   def on_listViewStructure_doubleClicked(self):
-    self.__double_clicked(self.ui.listViewStructure)
+    ###self.__double_clicked(self.ui.listViewStructure)
     self.current_structure_variable = self.ui.listViewStructure.currentItem().text()
     if self.current_structure_component == "arc":
       v = "%s-%s-%s-%s" % (self.branch, self.current_structure_component, self.current_arc_token,
@@ -1285,8 +1287,8 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
     variable_name = self.ui.listViewStructureExtension.currentItem().text()
     self.current_structure_extension_variable = variable_name
     print("debugging -- extension selected : ", variable_name)
-    # component = self.__whichComponent("structure")
-    self.__single_click(self.__click_reset)
+    component = self.__whichComponent("structure")
+    ###self.__single_click(self.__click_reset)
     if component == "node":
       self.__ui_status("structure_node_prop_ext_selected")
     elif component == "token":
@@ -1295,7 +1297,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
       self.__ui_status("structure_arc_prop_ext_selected")
 
   def on_listViewStructureExtension_doubleClicked(self):
-    self.__double_clicked(self.ui.listViewStructureExtension)
+    ###self.__double_clicked(self.ui.listViewStructureExtension)
     self.current_structure_extension_variable = self.ui.listViewStructureExtension.currentItem().text()
     if self.current_structure_component == "arc":
       v = "%s-%s-%s-%s-%s" % (self.branch, self.current_structure_component, self.current_arc_token,
@@ -1313,12 +1315,12 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
   def on_listViewBehaviour_clicked(self):
     variable_name = self.ui.listViewBehaviour.currentItem().text()
     self.current_behaviour_variable = variable_name
-    self.__single_click(self.__click_reset)
+    ### self.__single_click(self.__click_reset)
 
     variable_name = self.ui.listViewBehaviour.currentItem().text()
     # print("debugging -- behaviour selected : ", variable_name)
     # print("debugging -- selected component :",self.current_behaviour_component )
-    if self.current_behaviour_component == "node": # ....RULE: variable classes related to node may have port variables
+    if self.current_behaviour_component == "node":  # ....RULE: variable classes related to node may have port variables
       self.__ui_status("behaviour_prop_selected_node")
       if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_having_port_variables"]:
         self.ui.radioButtonHasPortVariables.setChecked(True)
@@ -1328,7 +1330,7 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
       self.__ui_status("behaviour_prop_selected")
 
   def on_listViewBehaviour_doubleClicked(self):
-    self.__double_clicked(self.ui.listViewBehaviour)
+    ###self.__double_clicked(self.ui.listViewBehaviour)
     v = "%s-%s-%s" % (self.branch, self.current_behaviour_component, self.current_behaviour_variable)
     nw = self.__findAndSwitchToDefinitionNetwork(v)
     # print("debugging -- set network:", nw)
@@ -1343,7 +1345,6 @@ class UI_EditorFoundationOntology(QtGui.QMainWindow):
       self.__ui_status("structure_selected")
     elif index == 1:
       self.__ui_status("behaviour_selected")
-
 
   def on_pushNewBehaviourElement_pressed(self):
     new_element = askForString("new behaviour element")

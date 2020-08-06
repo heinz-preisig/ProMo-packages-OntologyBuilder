@@ -52,13 +52,14 @@ from OntologyBuilder.OntologyEquationEditor.resources import CODE
 from OntologyBuilder.OntologyEquationEditor.resources import ID_delimiter
 from OntologyBuilder.OntologyEquationEditor.resources import ID_spacer
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
-from OntologyBuilder.OntologyEquationEditor.resources import TEMPLATES
+from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
+from OntologyBuilder.OntologyEquationEditor.resources import renderIndexListFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.resources import TEMP_VARIABLE
+from OntologyBuilder.OntologyEquationEditor.resources import TEMPLATES
 from OntologyBuilder.OntologyEquationEditor.resources import UNITARY_INVERSE_UNITS
 from OntologyBuilder.OntologyEquationEditor.resources import UNITARY_LOOSE_UNITS
 from OntologyBuilder.OntologyEquationEditor.resources import UNITARY_NO_UNITS
 from OntologyBuilder.OntologyEquationEditor.resources import UNITARY_RETAIN_UNITS
-from OntologyBuilder.OntologyEquationEditor.resources import renderIndexListFromGlobalIDToInternal, renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.tpg import *
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -229,14 +230,14 @@ def simulateDeletion(variables, var_ID, indices):
   d_equs_text = ""
   for var_ID in d_vars:
     label = variables[var_ID].label
-    d_vars_text += "\n %s"%label
+    d_vars_text += "\n %s" % label
   for eq_ID in d_equs:
     lhs, incidence_list = incidence_dictionary[eq_ID]
     equation = variables[lhs].equations[eq_ID]
     rhs = equation["rhs"]
     rhs_rendered = renderExpressionFromGlobalIDToInternal(rhs, variables=variables, indices=indices)
     # print("debugging -- rhs", rhs, rhs_rendered)
-    d_equs_text += "\n %s"%rhs_rendered
+    d_equs_text += "\n %s" % rhs_rendered
 
   return d_vars, d_equs, d_vars_text, d_equs_text
 
@@ -500,8 +501,10 @@ class Variables(OrderedDict):
     reset what-defined ProMoIRI, which is a simple enumeration variable
     :return:
     """
-    self.ProMoIRI = {"variable": 0,
-                     "equation": 0}
+    self.ProMoIRI = {
+            "variable": 0,
+            "equation": 0
+            }
     return self.ProMoIRI
 
   def newProMoVariableIRI(self):
@@ -522,7 +525,7 @@ class Variables(OrderedDict):
     """
     if ID:
       self[ID] = PhysicalVariable(**kwargs)  # NOTE: no check on existence done -- must happen on defining
-      self[ID].indices=self.ontology_container.indices # variable does not know the indices dictionary on definition.
+      self[ID].indices = self.ontology_container.indices  # variable does not know the indices dictionary on definition.
       self.indexVariables()
     else:
       raise VarError("no variable ID defined")
@@ -1113,7 +1116,7 @@ class Operator(PhysicalVariable):
 
     return sorted(index_structures)
 
-  def expandProduct_indexing(self,a,b):
+  def expandProduct_indexing(self, a, b):
 
     _s = set()
     for i in a.index_structures:
@@ -1182,7 +1185,7 @@ class Add(BinaryOperator):
       pretty_b_indices = renderIndexListFromGlobalIDToInternal(b.index_structures, self.space.indices)
       raise IndexStructureError("add incompatible index structures %s"
                                 % CODE[self.space.language][op] % (
-                                      pretty_a_indices, pretty_b_indices))
+                                        pretty_a_indices, pretty_b_indices))
 
 
 class KhatriRao(BinaryOperator):
@@ -1317,7 +1320,8 @@ class ReduceBlockProduct(BinaryOperator):
       for i in to_reduce_index_list:
         if i != self.reducing_index_ID:
           self.index_structures.append(i)
-      # self.index_structures = to_reduce_index_list.remove(self.reducing_index_ID) # NOTE: this failed -- python error ???
+      # self.index_structures = to_reduce_index_list.remove(self.reducing_index_ID) # NOTE: this failed -- python
+      # error ???
     else:
       raise IndexStructureError("Index error a.index: %s, b.index: %s"
                                 % (a.index_structures, b.index_structures))
@@ -1361,7 +1365,7 @@ class ExpandProduct(BinaryOperator):
     #   _s.add(i)
 
     # self.index_structures = generateIndexSeq(list(_s), self.space.indices)
-    self.index_structures = self.expandProduct_indexing(a,b) #sorted(list(_s))
+    self.index_structures = self.expandProduct_indexing(a, b)  # sorted(list(_s))
     pass
 
   def __str__(self):
@@ -1497,7 +1501,8 @@ class Power(BinaryOperator):
 #     if "index_structures" not in a.__dir__():
 #       print("another problem")
 #     if self.to_reduce_index_ID not in a.index_structures:
-#       VarError("blockpruduct error - product set to be reduced %s not in variable %s" % (reduce_index, to_reduce_index))
+#       VarError("blockpruduct error - product set to be reduced %s not in variable %s" % (reduce_index,
+#       to_reduce_index))
 #
 #     else:
 #       # case where the block index is not a block index, but a base index
@@ -1569,7 +1574,7 @@ class MaxMin(BinaryOperator):
       pretty_b_indices = renderIndexListFromGlobalIDToInternal(b.index_structures, self.space.indices)
       raise IndexStructureError("add incompatible index structures %s"
                                 % CODE[self.space.language][op] % (
-                                      pretty_a_indices, pretty_b_indices))
+                                        pretty_a_indices, pretty_b_indices))
 
   def __str__(self):
     language = self.space.language
@@ -1625,7 +1630,7 @@ class Product(Operator):
     if (not argument.units.isZero()) or (not index.units.isZero()):
       raise UnitError('units of basis and exponent must be zero',
                       argument.units, index.units)
-    
+
     self.units = copy.deepcopy(argument.units)  # ............................... retains units
     self.index_structures = sorted(argument.index_structures)  # ................ retain indices
 
@@ -1759,11 +1764,12 @@ class Integral(Operator):
       pretty_xl_indices = renderIndexListFromGlobalIDToInternal(xl.index_structures, self.indices)
       pretty_xu_indices = renderIndexListFromGlobalIDToInternal(xu.index_structures, self.indices)
       raise IndexStructureError(
-            'interval -- incompatible index structures %s != %s != %s' %
-            (pretty_x_indices, pretty_xl_indices, pretty_xu_indices))
+              'interval -- incompatible index structures %s != %s != %s' %
+              (pretty_x_indices, pretty_xl_indices, pretty_xu_indices))
 
     # if index label is also one of the indices in the variable being integrated, then that one is reduced over
-    # RULE: if the integrant has a index that is the differential space of the integration variable then the integral is dealt with as an innere product
+    # RULE: if the integrant has a index that is the differential space of the integration variable then the integral
+    # is dealt with as an innere product
 
     index_structures = sorted(y.index_structures)
     indices = self.space.indices
@@ -1803,8 +1809,7 @@ class TotDifferential(Operator):
     units = [xu - yu for xu, yu in zip(xunits, yunits)]
     self.units = Units(ALL=units)
 
-    self.index_structures = self.diffFraction_indexing(x,y)
-
+    self.index_structures = self.diffFraction_indexing(x, y)
 
   def __str__(self):
     return CODE[self.space.language]["TotalDiff"] % (self.x, self.y)
@@ -1827,10 +1832,7 @@ class ParDifferential(Operator):
     units = [xu - yu for xu, yu in zip(xunits, yunits)]
     self.units = Units(ALL=units)
 
-    self.index_structures = self.diffFraction_indexing(x,y)
-
-
-
+    self.index_structures = self.diffFraction_indexing(x, y)
 
   def __str__(self):
     return CODE[self.space.language]["ParDiff"] % (self.x, self.y)
@@ -1881,7 +1883,6 @@ class Stack(Operator):
     s += CODE[language]["delimiter"][")"]
 
     return s
-
 
 
 # Note: that functions are defined in different places for the time being including resource
@@ -1965,5 +1966,3 @@ class Expression(VerboseParser):
     VerboseParser.__init__(self)
     self.space.eq_variable_incidence_list = []
     self.verbose = verbose
-
-

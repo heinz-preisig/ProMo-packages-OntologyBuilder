@@ -18,13 +18,13 @@ __version__ = "6.00"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from OntologyBuilder.OntologyEquationEditor.ui_documentation import Ui_DocumentationDialog
 
 
-class UI_DocumentationDialog(QtGui.QDialog):
+class UI_DocumentationDialog(QtWidgets.QDialog):
   """
       define documentation of a physical variable
   """
@@ -38,7 +38,7 @@ class UI_DocumentationDialog(QtGui.QDialog):
     @param current_variable_type: physical variable
     """
     self.phys_var = phys_var
-    QtGui.QDialog.__init__(self)
+    QtWidgets.QDialog.__init__(self)
     self.ui = Ui_DocumentationDialog()
     self.ui.setupUi(self)
     self.setWindowTitle('edit documentation')

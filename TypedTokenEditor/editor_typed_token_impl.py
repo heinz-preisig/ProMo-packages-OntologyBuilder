@@ -20,8 +20,8 @@ __status__ = "beta"
 
 from collections import OrderedDict
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from Common.common_resources import getData
 from Common.common_resources import getOntologyName
@@ -30,7 +30,6 @@ from Common.common_resources import putData
 from Common.ontology_container import OntologyContainer
 from Common.resource_initialisation import FILES
 from OntologyBuilder.TypedTokenEditor.editor_typed_token import Ui_MainWindow
-
 
 SPACING = 20
 INSTANCES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", ]
@@ -70,18 +69,18 @@ class TypedTokenData(OrderedDict):
     # print("debugging")
 
 
-class TypedRadioButton(QtGui.QRadioButton):
+class TypedRadioButton(QtWidgets.QRadioButton):
   def __init__(self, ID, typed_token):
-    QtGui.QRadioButton.__init__(self, ID)
+    QtWidgets.QRadioButton.__init__(self, ID)
     self.ID = ID
     self.typed_token = typed_token
     self.setFixedHeight(SPACING)
     self.setAutoExclusive(False)
 
 
-class Ui_TokenEditor(QtGui.QMainWindow):
+class Ui_TokenEditor(QtWidgets.QMainWindow):
   def __init__(self):
-    QtGui.QMainWindow.__init__(self)
+    QtWidgets.QMainWindow.__init__(self)
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
@@ -90,7 +89,7 @@ class Ui_TokenEditor(QtGui.QMainWindow):
     ontology = OntologyContainer(ontology_name)  # DIRECTORIES["ontology_location"] % ontology_name)
     self.networks = ontology.leave_networks_list
 
-    self.typed_token_file_spec = FILES["typed_token_file"]%ontology_name
+    self.typed_token_file_spec = FILES["typed_token_file"] % ontology_name
 
     self.DATA = TypedTokenData()
 
@@ -164,7 +163,7 @@ class Ui_TokenEditor(QtGui.QMainWindow):
       self.ui.spinConverstion.setMinimum(0)
       self.ui.spinConverstion.setMaximum(len(conversions) - 1)
       for c in conversions:
-        s = "%s --> %s"%(c["reactants"], c["products"])
+        s = "%s --> %s" % (c["reactants"], c["products"])
         self.ui.comboConversion.addItem(s)
       self.ui.spinConverstion.show()
       self.ui.comboConversion.show()
@@ -178,9 +177,8 @@ class Ui_TokenEditor(QtGui.QMainWindow):
       # remove it from the gui
       widgetToRemove.setParent(None)
 
-  @QtCore.pyqtSignature('QString')
   def on_comboTokenWithTypedTokens_activated(self, token):
-    s = str(token)
+    s = self.ui.comboTokenWithTypedTokens.currentText()  # str(token)
     if s == M_None: return
 
     self.token = s
@@ -237,27 +235,27 @@ class Ui_TokenEditor(QtGui.QMainWindow):
     self.__cleanLayout(self.ui.formReactants)
     self.__cleanLayout(self.ui.formProducts)
     self.radioButtonsTokens = {
-          "reactants": {},
-          "products" : {}
-          }
+            "reactants": {},
+            "products" : {}
+            }
     for no in range(int(no_of_typed_tokens)):
       self.radioButtonsTokens[token] = {}
       t = INSTANCES[no]
-      label = "%s :: %s"%(token, t)
+      label = "%s :: %s" % (token, t)
       r = TypedRadioButton(label, t)
       self.radioButtonsTokens["reactants"][no] = r
-      self.ui.formReactants.setWidget(no, QtGui.QFormLayout.LabelRole, r)
+      self.ui.formReactants.setWidget(no, QtWidgets.QFormLayout.LabelRole, r)
       r = TypedRadioButton(label, t)
       self.radioButtonsTokens["products"][no] = r
-      self.ui.formProducts.setWidget(no, QtGui.QFormLayout.LabelRole, r)
+      self.ui.formProducts.setWidget(no, QtWidgets.QFormLayout.LabelRole, r)
 
-  @QtCore.pyqtSignature('int')
+  @QtCore.pyqtSlot(int)
   def on_spinConverstion_valueChanged(self, index):
     # print(" change index: ", index)
     self.ui.comboConversion.setCurrentIndex(index)
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboConversion_activated(self, set_products):
+  def on_comboConversion_activated(self, index):
+    set_products = self.ui.comboConversion.currentText()
     r, p = self.products = set_products.split('-->')
     index = self.ui.comboConversion.currentIndex()
     self.ui.spinConverstion.setValue(index)

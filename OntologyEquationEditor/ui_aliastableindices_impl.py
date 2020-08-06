@@ -20,12 +20,10 @@ __status__ = "beta"
 
 MAX_HEIGHT = 800
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
-from Common.common_resources import BUTTON_ICON_SIZE
-from Common.common_resources import BUTTON_ICON_STYLE_ROUND
-from Common.common_resources import getIcon, roundButton
+from Common.common_resources import roundButton
 from Common.resource_initialisation import FILES
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import CODE
@@ -34,7 +32,7 @@ from OntologyBuilder.OntologyEquationEditor.resources import renderIndexListFrom
 from OntologyBuilder.OntologyEquationEditor.ui_aliastable import Ui_AliasTable
 
 
-class UI_AliasTableIndices(QtGui.QWidget):
+class UI_AliasTableIndices(QtWidgets.QWidget):
   '''
   classdocs
   '''
@@ -45,7 +43,7 @@ class UI_AliasTableIndices(QtGui.QWidget):
     '''
     Constructor
     '''
-    QtGui.QWidget.__init__(self)
+    QtWidgets.QWidget.__init__(self)
     self.indices = indices
     self.languages = LANGUAGES['aliasing']
     self.ui = Ui_AliasTable()
@@ -62,12 +60,12 @@ class UI_AliasTableIndices(QtGui.QWidget):
     a = self.ui.tableWidget
     a.clear()
     a.setRowCount(0)
-    item = QtGui.QTableWidgetItem()
+    item = QtWidgets.QTableWidgetItem()
     item.setText("label")
     a.setHorizontalHeaderItem(0, item)
     col = 0
     a.setColumnCount(col + 1)
-    item = QtGui.QTableWidgetItem()
+    item = QtWidgets.QTableWidgetItem()
     item.setText("label")
     a.setHorizontalHeaderItem(col, item)
 
@@ -77,10 +75,10 @@ class UI_AliasTableIndices(QtGui.QWidget):
         row = a.rowCount()
         a.setRowCount(row + 1)
         self.keep_symbol[row] = symbol  # self.indices[symbol]["label"]  # not row+1 !
-        item = QtGui.QTableWidgetItem()
+        item = QtWidgets.QTableWidgetItem()
         item.setText(str(symbol))
         a.setVerticalHeaderItem(row, item)
-        item = QtGui.QTableWidgetItem()
+        item = QtWidgets.QTableWidgetItem()
         item.setText(self.indices[symbol]["aliases"][LANGUAGES["internal_code"]])
         a.setItem(row, col, item)
     self.__resize()

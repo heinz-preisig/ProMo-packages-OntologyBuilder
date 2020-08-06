@@ -1,4 +1,3 @@
-
 # Copyright 2004,2009 Toby Dickenson
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -20,8 +19,9 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import sys, pprint
 import modulefinder
+import pprint
+import sys
 
 
 class mymf(modulefinder.ModuleFinder):
@@ -46,7 +46,7 @@ class mymf(modulefinder.ModuleFinder):
         self._depgraph.setdefault(self._last_caller.__name__, {})[r.__name__] = 1
     return r
 
-  def load_module(self, fqname, fp, pathname,  a):
+  def load_module(self, fqname, fp, pathname, a):
     (suffix, mode, type) = a
     r = modulefinder.ModuleFinder.load_module(self, fqname, fp, pathname,
                                               (suffix, mode, type))
@@ -61,7 +61,7 @@ def main(argv):
   debug = 0
   exclude = []
   mf = mymf(path, debug, exclude)
-  mf.run_script("ProMo_OntologyEquationComposer.py") #argv[0])
+  mf.run_script("ProMo_OntologyEquationComposer.py")  # argv[0])
   pprint.pprint({'depgraph': mf._depgraph, 'types': mf._types})
 
 

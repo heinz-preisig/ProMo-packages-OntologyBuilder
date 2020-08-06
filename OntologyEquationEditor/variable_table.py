@@ -15,16 +15,16 @@ __author__ = 'Preisig, Heinz A'
 
 MAX_HEIGHT = 800
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
-from OntologyBuilder.OntologyEquationEditor.resources import TOOLTIPS
 from OntologyBuilder.OntologyEquationEditor.resources import renderIndexListFromGlobalIDToInternal
+from OntologyBuilder.OntologyEquationEditor.resources import TOOLTIPS
 from OntologyBuilder.OntologyEquationEditor.ui_variabletable import Ui_Dialog
 
 
-class VariableTable(QtGui.QDialog):
+class VariableTable(QtWidgets.QDialog):
   """
   dialog for a variable
   emits a signal on completion
@@ -62,14 +62,13 @@ class VariableTable(QtGui.QDialog):
     self.hide_vars = hide_vars
     self.hide_columns = hide_columns
 
-    QtGui.QDialog.__init__(self)
+    QtWidgets.QDialog.__init__(self)
     self.ui = Ui_Dialog()
     self.ui.setupUi(self)
     # self.ui.labelNetwork.setText(title)
     self.setWindowTitle(title)
     self.reset_table()
     self.hide()
-
 
   #
 
@@ -138,7 +137,7 @@ class VariableTable(QtGui.QDialog):
           _l = len(v.equations)
           self.__addQtTableItem(tab, str(_l), rowCount, 5)
           self.__addQtTableItem(tab, 'x', rowCount, 6)
-          self.__addQtTableItem(tab, v.network,rowCount,7)
+          self.__addQtTableItem(tab, v.network, rowCount, 7)
           rowCount += 1
 
     self.variables_in_table = list(variable_ID_list)
@@ -164,7 +163,7 @@ class VariableTable(QtGui.QDialog):
     width += tab.verticalHeader().sizeHint().width()
     width += tab.verticalScrollBar().sizeHint().width()
     width += tab.frameWidth() * 2
-    width -= 12   # NOTE: manual fix
+    width -= 12  # NOTE: manual fix
 
     height = 0
     for i in range(tab.rowCount()):
@@ -178,7 +177,7 @@ class VariableTable(QtGui.QDialog):
 
   @staticmethod
   def __addQtTableItem(tab, s, row, col):
-    item = QtGui.QTableWidgetItem(s)
+    item = QtWidgets.QTableWidgetItem(s)
     tab.setRowCount(row + 1)
     tab.setItem(row, col, item)
 

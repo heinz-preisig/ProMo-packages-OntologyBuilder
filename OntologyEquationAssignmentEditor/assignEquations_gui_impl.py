@@ -44,110 +44,15 @@ from OntologyBuilder.OntologyEquationEditor.resources import ID_spacer
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
 
+from OntologyBuilder.OntologyEquationEditor.resources import DotGraph
+
 # from OntologyBuilder.OntologyEquationEditor.variable_framework import simulateDeletion
 
 MAX_HEIGHT = 800
 
 
-class VariableEquationTree(dict):
-  def __init__(self, ID):
-    self["ID_tree"] = Tree(0)
-    self["variable"] = [ID]
-    self["equation"] = []
-
-  def addNode(self, what, parent):
-    node_ID = self["ID_tree"].addChild(parent)
-    self[what].append(node_ID)
-    return node_ID
-
-  def graphMe(self, ontology_name, var_labels, equ_labels):
-
-    self.var_labels = var_labels
-    self.equ_labels = equ_labels
-
-    dot_path = os.path.join(DIRECTORIES["ontology_repository"], ontology_name, DIRECTORIES["ontology_graphs_location"],
-                            "%s")
-    o_template = dot_path  # + ".gv"
-    # o = FILES["ontology_file"] % ontology_name
-    #
-    # the tree of networks
-    f = o_template % "vars_equs"
-    print(f)
-    graph_attr = {}
-    graph_attr["nodesep"] = "1"
-    graph_attr["ranksep"] = "0.3"
-    # graph_attr.edge_attr["color"] = "blue"
-    graph_attr["splines"] = "false"  # ""polyline"
-    edge_attr = {}
-    # edge_attr["tailport"] = "s"
-    # edge_attr["headport"] = "n"
-    simple_graph = Digraph("T", filename=f)
-    simple_graph.graph_attr = graph_attr
-    simple_graph.edge_attr = edge_attr
-
-    simple_graph.node(str(0), var_labels, style="filled", collor="blue")
-    self.__walkTree(0, simple_graph)
-
-    simple_graph.view()  # generates pdf
-    os.remove(f)
-
-  def __walkTree(self, parent_node_ID, graph):
-    children = self["ID_tree"][parent_node_ID]["children"]
-    if children:
-      for child in children:
-        if child in self["equation"]:
-          colour = "cyan"
-          try:
-            node_label = self.equ_labels[child].strip()
-          except:
-            print(">>>>>>>>>>> no such node")
-            node_label = "unknown"
-        elif child in self["variable"]:
-          colour = "cornsilk"
-          try:
-            node_label = self.var_labels[child]
-          except:
-            print(" no such variable ID ", child)
-            node_label = "unknown"
-        else:
-          print(">>>>>>>>>>> no such node")
-          node_label = "unknown"
-
-        graph.node(str(child), node_label, style="filled", color=colour)
-        graph.edge(str(parent_node_ID), str(child))
-        self.__walkTree(child, graph)
-
-    else:
-      return
-
-
-class TreeNode(dict):
-  def __init__(self, parents, type, contents):
-    self["parents"] = parents
-    self["children"] = []
-    self["type"] = type
-    self["contents"] = contents
-
-  def addChild(self, child):
-    self["children"].append(child)
-
-
-class MakeVariableTree(dict):
-  def __init__(self, variables):
-    self.variables = variables
-    self.tree[ID] = TreeNode()
-
-  def nextEquation(self, ID, parent):
-    children = self.variables[ID]["equations"]
-
-  # for child in children:
-  #   self.tree[]
-
-
 class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
-  # potential_issues : TODO : is the order important. Adding a network does leave us unordered compared to the old
-  #  approach....???
 
   def __init__(self):
     QtWidgets.QMainWindow.__init__(self)
@@ -393,140 +298,120 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     list = self.radio.getMarked()
     var_ID, eq_ID = self.inverse_dictionary[list[0]]
     print("debugging -- exited", list, var_ID, eq_ID)
-    # rel_vars, rel_equs, rel_vars_text, rel_equs_text = simulateDeletion(self.variables, var_ID, self.indices)
-    # rel_equs, rel_equs_text = self.workTree(var_ID)
-    # print("debugging equs", rel_equs )
-    # print("debugging equs", rel_equs_text )
+    var_equ_tree = DotGraph(self.variables, self.indices, var_ID, self.ontology_name)
+  #
+  #
+  # def makeTree(self, var_eq_tree, parent_var_ID, d_equs, var_ID):
+  #   """
+  #   interate to find all equations and variables
+  #   :tree: bipartite var/eq tree
+  #   :param d_equs: set of equations to be deleted - list of IDs (integers)
+  #   :param var_ID: variable ID (integer)
+  #   :return: None
+  #   """
+  #
+  #   for eq_id in self.inv_incidence_dictionary[var_ID]:
+  #     if eq_id not in d_equs:
+  #       d_equs.append(eq_id)
+  #       equ_node_ID = var_eq_tree.addNode("equation", parent_var_ID)
+  #       var_node_ID = var_eq_tree.addNode("variable", equ_node_ID)
+  #       lhs, incidence_list = self.incidence_dictionary[eq_id]
+  #       self.makeTree(var_eq_tree, var_node_ID, d_equs, lhs)
+  #
+  # def workTree(self, var_ID):
+  #   d_equs = []  # set()
+  #
+  #   # - key: equation_ID(integer)
+  #   # - value: (lhs - variable_ID, rhs - incidence list (integers) )
+  #
+  #   self.incidence_dictionary, self.inv_incidence_dictionary = self.makeIncidenceDictionaries()
+  #   self.reduceVars(d_equs, var_ID)
+  #
+  #   d_equs_text = ""
+  #   for eq_ID in d_equs:
+  #     lhs, incidence_list = self.incidence_dictionary[eq_ID]
+  #     rhs = self.variables[lhs]["equations"][eq_ID]["rhs"]
+  #     rhs_rendered = renderExpressionFromGlobalIDToInternal(rhs, variables=self.variables, indices=self.indices)
+  #     lhs_rendered = self.variables[lhs]["aliases"]["internal_code"]
+  #     d_equs_text += "\n%s :: %s :=  %s" % (eq_ID, lhs_rendered, rhs_rendered)
+  #   return d_equs, d_equs_text
+  #
+  # def reduceVars(self, d_equs, var_ID):
+  #   """
+  #   interate to find all equations and variables to be deleted
+  #   in most of the cases everything is deleted except the state variables
+  #     because the equations are all dependent on each other.
+  #   :param inv_incidence_dictionary:  "inverse" incidence dictionary
+  #   :param variables: variables (dictionary)
+  #   :param incidence_dictionary: incidence dictionary (var, incidence list)
+  #   :param d_vars: set of variables to be deleted - list of IDs (integers)
+  #   :param d_equs: set of equations to be deleted - list of IDs (integers)
+  #   :param var_ID: variable ID (integer)
+  #   :return: None
+  #   """
+  #
+  #   for eq_id in self.inv_incidence_dictionary[var_ID]:
+  #     if eq_id not in d_equs:
+  #       d_equs.append(eq_id)
+  #       lhs, incidence_list = self.incidence_dictionary[eq_id]
+  #       self.reduceVars(d_equs, lhs)
 
-    var_equ_tree = VariableEquationTree(var_ID)
-    sel_equs = []
-    self.makeTree(var_equ_tree, 0, sel_equs, var_ID)
-    print("debugging tree", var_equ_tree["ID_tree"])
-    print("debugging tree variables", var_equ_tree["variable"])
-    print("debugging tree equations", var_equ_tree["equation"])
+  # def makeIncidenceDictionaries(self):
+  #   """
+  #   variables may be defined by several equations
+  #
+  #   :param variables: variable dictionary with integrated equation dictionary
+  #   :param expression_network: network on which the expression is defined
+  #   :return: incidence_dictionary
+  #             - key: equation_ID (integer)
+  #             - value: (lhs-variable_ID, rhs-incidence list (integers) )
+  #            inverse incidence matrix as dictionary
+  #             - key : variable ID (integer)
+  #             - value: list of equations (integer)
+  #   """
+  #   incidence_dictionary = {}
+  #   # inv_incidence_dictionary_ = {v: set() for v in self.variables.keys()}
+  #   inv_incidence_dictionary = {v: [] for v in self.variables.keys()}
+  #   for v in self.variables:
+  #     try:
+  #       equations = self.variables[v].equations  # variables as class Variables
+  #     except:
+  #       equations = self.variables[v]["equations"]  # variables from variable dict, the variable file format
+  #     for e in equations:
+  #       if e in [97, 63]:
+  #         print("debugging", e)
+  #       inc_list = equations[e]["incidence_list"]  # self.makeIncidentList(equations[e]["rhs"])
+  #       # c_ = copy(inc_list)
+  #       # c__ = copy(inc_list)
+  #       incidence_dictionary[e] = (v, inc_list)
+  #       inv_incidence_dictionary[v].append(inc_list)
+  #
+  #       # for i in inc_list:
+  #       #   inv_incidence_dictionary_[int(i)].add(e)
+  #       # equations[e]["incidence_list"] = c__
+  #
+  #   # inv_incidence_dictionary = {}
+  #   # for v in inv_incidence_dictionary
+  #   #   inv_incidence_dictionary[v] = sorted(list(inv_incidence_dictionary_[var_ID]))
+  #
+  #   return incidence_dictionary, inv_incidence_dictionary
 
-    var_labels = {}
-    equ_labels = {}
-    for var_ID in self.variables:
-      var_labels[var_ID] = self.variables[var_ID]["aliases"]["internal_code"]
-      for eq_ID in self.variables[var_ID]["equations"]:
-        lhs, incidence_list = self.incidence_dictionary[eq_ID]
-        rhs = self.variables[lhs]["equations"][eq_ID]["rhs"]
-        equ_labels[eq_ID] = renderExpressionFromGlobalIDToInternal(rhs, variables=self.variables, indices=self.indices)
-
-    var_equ_tree.graphMe(self.ontology_name, var_labels, equ_labels)
-
-  def makeTree(self, var_eq_tree, parent_var_ID, d_equs, var_ID):
-    """
-    interate to find all equations and variables
-    :tree: bipartite var/eq tree
-    :param d_equs: set of equations to be deleted - list of IDs (integers)
-    :param var_ID: variable ID (integer)
-    :return: None
-    """
-
-    for eq_id in self.inv_incidence_dictionary[var_ID]:
-      if eq_id not in d_equs:
-        d_equs.append(eq_id)
-        equ_node_ID = var_eq_tree.addNode("equation", parent_var_ID)
-        var_node_ID = var_eq_tree.addNode("variable", equ_node_ID)
-        lhs, incidence_list = self.incidence_dictionary[eq_id]
-        self.makeTree(var_eq_tree, var_node_ID, d_equs, lhs)
-
-  def workTree(self, var_ID):
-    d_equs = []  # set()
-
-    # - key: equation_ID(integer)
-    # - value: (lhs - variable_ID, rhs - incidence list (integers) )
-
-    self.incidence_dictionary, self.inv_incidence_dictionary = self.makeIncidenceDictionaries()
-    self.reduceVars(d_equs, var_ID)
-
-    d_equs_text = ""
-    for eq_ID in d_equs:
-      lhs, incidence_list = self.incidence_dictionary[eq_ID]
-      rhs = self.variables[lhs]["equations"][eq_ID]["rhs"]
-      rhs_rendered = renderExpressionFromGlobalIDToInternal(rhs, variables=self.variables, indices=self.indices)
-      lhs_rendered = self.variables[lhs]["aliases"]["internal_code"]
-      d_equs_text += "\n%s :: %s :=  %s" % (eq_ID, lhs_rendered, rhs_rendered)
-    return d_equs, d_equs_text
-
-  def reduceVars(self, d_equs, var_ID):
-    """
-    interate to find all equations and variables to be deleted
-    in most of the cases everything is deleted except the state variables
-      because the equations are all dependent on each other.
-    :param inv_incidence_dictionary:  "inverse" incidence dictionary
-    :param variables: variables (dictionary)
-    :param incidence_dictionary: incidence dictionary (var, incidence list)
-    :param d_vars: set of variables to be deleted - list of IDs (integers)
-    :param d_equs: set of equations to be deleted - list of IDs (integers)
-    :param var_ID: variable ID (integer)
-    :return: None
-    """
-
-    for eq_id in self.inv_incidence_dictionary[var_ID]:
-      if eq_id not in d_equs:
-        d_equs.append(eq_id)
-        lhs, incidence_list = self.incidence_dictionary[eq_id]
-        self.reduceVars(d_equs, lhs)
-
-  def makeIncidenceDictionaries(self):
-    """
-    variables may be defined by several equations
-
-    :param variables: variable dictionary with integrated equation dictionary
-    :param expression_network: network on which the expression is defined
-    :return: incidence_dictionary
-              - key: equation_ID (integer)
-              - value: (lhs-variable_ID, rhs-incidence list (integers) )
-             inverse incidence matrix as dictionary
-              - key : variable ID (integer)
-              - value: list of equations (integer)
-    """
-    incidence_dictionary = {}
-    # inv_incidence_dictionary_ = {v: set() for v in self.variables.keys()}
-    inv_incidence_dictionary = {v: [] for v in self.variables.keys()}
-    for v in self.variables:
-      try:
-        equations = self.variables[v].equations  # variables as class Variables
-      except:
-        equations = self.variables[v]["equations"]  # variables from variable dict, the variable file format
-      for e in equations:
-        if e in [97, 63]:
-          print("debugging", e)
-        inc_list = equations[e]["incidence_list"]  # self.makeIncidentList(equations[e]["rhs"])
-        # c_ = copy(inc_list)
-        # c__ = copy(inc_list)
-        incidence_dictionary[e] = (v, inc_list)
-        inv_incidence_dictionary[v].append(inc_list)
-
-        # for i in inc_list:
-        #   inv_incidence_dictionary_[int(i)].add(e)
-        # equations[e]["incidence_list"] = c__
-
-    # inv_incidence_dictionary = {}
-    # for v in inv_incidence_dictionary
-    #   inv_incidence_dictionary[v] = sorted(list(inv_incidence_dictionary_[var_ID]))
-
-    return incidence_dictionary, inv_incidence_dictionary
-
-  def makeIncidentList(self, equation_ID_coded_string):
-    """
-    make incidence list for a ID-coded expression
-    extracts all variables into a list
-    :param equation_ID_coded_string:
-    :return: sorted incidence list of variable IDs [integers
-    """
-    incidence_list = []
-    splited = equation_ID_coded_string.split(ID_spacer)
-    for i in splited:
-      test_string = ID_spacer + i
-      # print("debugging", test_string, ID_delimiter["variable"])
-      if test_string[0:2] == ID_delimiter["variable"][0:2]:
-        inc = i.strip(ID_delimiter["variable"])
-        incidence_list.append(inc)
-    return sorted(set(incidence_list))
+  # def makeIncidentList(self, equation_ID_coded_string):
+  #   """
+  #   make incidence list for a ID-coded expression
+  #   extracts all variables into a list
+  #   :param equation_ID_coded_string:
+  #   :return: sorted incidence list of variable IDs [integers
+  #   """
+  #   incidence_list = []
+  #   splited = equation_ID_coded_string.split(ID_spacer)
+  #   for i in splited:
+  #     test_string = ID_spacer + i
+  #     # print("debugging", test_string, ID_delimiter["variable"])
+  #     if test_string[0:2] == ID_delimiter["variable"][0:2]:
+  #       inc = i.strip(ID_delimiter["variable"])
+  #       incidence_list.append(inc)
+  #   return sorted(set(incidence_list))
 
   def __resetEquation(self):
     self.radio_selectors["equations"].uncheckGroup("equations")
@@ -634,9 +519,9 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     self.__makeInterfaceVariableClassList()
 
-    self.current_inface_variable_class = self.ui.comboBoxinterfaceVariableClasses.currentText()
+    self.current_inface_variable_class = self.ui.comboBoxInterfacesVariableClasses.currentText()
 
-  @QtCore.pyqtSignature("int")
+  # @QtCore.pyqtSignature("int")
   def on_tabWidget_currentChanged(self, index):
     # print("index: ", index)
     if index == 0:
@@ -663,20 +548,23 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     print("write file")
     self.ontology_container.writeMe()
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboBoxNodeVariableClasses_currentIndexChanged(self, entry):
+  # @QtCore.pyqtSignature('QString')
+  def on_comboBoxNodeVariableClasses_currentIndexChanged(self, index):
     # print("debugging got node class entry :", entry)
+    entry = self.ui.comboBoxNodeVariableClasses.currentText()
     self.current_node_variable_class = entry
     self.__makeEquations(entry, -1)
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboBoxArcVariableClasses_currentIndexChanged(self, entry):
+  # @QtCore.pyqtSignature('QString')
+  def on_comboBoxArcVariableClasses_currentIndexChanged(self, index):
+    entry = self.ui.comboBoxArcVariableClasses()
     print(" got arc class entry :", entry)
     self.current_arc_variable_class = entry
     self.__makeEquations(entry, -1)
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboBoxInterfaceVariableClasses_currentIndexChanged(self, entry):
+  # @QtCore.pyqtSignature('QString')
+  def on_comboBoxInterfacesVariableClasses_currentIndexChanged(self, index):
+    entry = self.ui.comboBoxInterfacesVariableClasses.currentText()
     print(" got interface class entry :", entry)
     self.current_interface_variable_class = entry
     self.__makeEquations(entry, -1, autoexclusive=False)

@@ -111,18 +111,14 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
       width += tab.columnWidth(i)
 
     width += tab.verticalHeader().sizeHint().width()
-
     width += tab.verticalScrollBar().sizeHint().width()
     width += tab.frameWidth() * 2
-    width -= 12  # NOTE: manual fix
 
     height = 0
     for i in range(tab.rowCount()):
       height += tab.rowHeight(i)
     height += tab.horizontalHeader().sizeHint().height()
-    height += tab.horizontalScrollBar().sizeHint().width()
     height += tab.frameWidth() * 2
-    height -= 60  # NOTE: manual fix
 
     return QtCore.QSize(width, min(height, MAX_HEIGHT))
 

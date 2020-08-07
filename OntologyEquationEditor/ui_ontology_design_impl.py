@@ -317,7 +317,7 @@ class UiOntologyDesign(QMainWindow):
 
   @QtCore.pyqtSlot(int)
   def on_tabWidget_currentChanged(self, which):
-    print("changed tab")
+    # print("debugging -- changed tab")
     self.ui.combo_EditVariableTypes.hide()
 
   def __setupEdit(self, what):
@@ -341,15 +341,20 @@ class UiOntologyDesign(QMainWindow):
       vars_types_on_network_expression = self.ontology_container.interfaces[nw]["left_variable_classes"]
     elif what in "intraface":
       network_for_variable = nw  # self.intraconnection_nws[nw]["right"]
-      network_for_expression = self.intraconnection_nws[nw]["left"]  # NOTE: this should be all from both sides
+      _types = self.ontology_container.variable_types_on_networks
+      _left = self.intraconnection_nws[nw]["left"]
+      _right = self.intraconnection_nws[nw]["right"]
+      _set = set(_types[_left]) | set(_types[_right])
+      network_for_expression = nw
+      # network_for_expression = list(_set) #self.intraconnection_nws[nw]["left"]  # NOTE: this should be all from both sides
       # network_variable_source = network_for_expression
       # vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_variable]
       # RULE: NOTE: the variable types are the same on the left, the right and the boudnary -- at least for the time
       # being
-      vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_expression]
+      vars_types_on_network_variable = sorted(_set) #self.ontology_container.variable_types_on_networks[network_for_expression]
       self.ui.combo_EditVariableTypes.clear()
       self.ui.combo_EditVariableTypes.addItems(vars_types_on_network_variable)
-      vars_types_on_network_expression = self.ontology_container.variable_types_on_networks[network_for_expression]
+      vars_types_on_network_expression = list(_set) #self.ontology_container.variable_types_on_networks[network_for_expression]
     else:
       self.ui.radioNode.toggle()
       self.on_radioNode_clicked()
@@ -578,6 +583,8 @@ class UiOntologyDesign(QMainWindow):
     if not self.compile_only:
       saveBackupFile(documentation_file)
 
+    self.__writeMessage("busy making var/eq images", append=True)
+
     args = ['sh', f_name, location]
     print('ARGS: ', args)
     make_it = subprocess.Popen(
@@ -588,9 +595,8 @@ class UiOntologyDesign(QMainWindow):
             )
     out, error = make_it.communicate()
 
-    self.__writeMessage("busy making var/eq images")
     make_variable_equation_pngs(self.ontology_container.vars, self.ontology_name)
-    self.__writeMessage("Wrote {} output".format(language))
+    self.__writeMessage("Wrote {} output".format(language), append=True)
 
   def __getAllEquationsPerType(self, language):
     eqs = {}
@@ -742,8 +748,8 @@ class UiOntologyDesign(QMainWindow):
       network_variable = self.current_network  # self.interconnection_nws[self.current_network]["right"]
       network_expression = network_variable  # self.interconnection_nws[self.current_network]["left"]
     elif self.current_network in self.intraconnection_nws:
-      network_variable = self.intraconnection_nws[self.current_network]["right"]
-      network_expression = self.intraconnection_nws[self.current_network]["left"]
+      network_variable = self.current_network #self.intraconnection_nws[self.current_network]["right"]
+      network_expression = self.current_network #self.intraconnection_nws[self.current_network]["left"]
     else:
       network_variable = self.current_network
       network_expression = self.current_network
@@ -789,7 +795,7 @@ class UiOntologyDesign(QMainWindow):
       OK = True
     else:
       self.__writeMessage(" no variables in this network %s" % self.current_network)
-      self.table_aliases_v.hide()
+      # self.table_aliases_v.hide()
       OK = False
     return OK
 
@@ -800,8 +806,9 @@ class UiOntologyDesign(QMainWindow):
     self.table_aliases_i.completed.connect(self.finished_edit_table)
     self.table_aliases_i.show()
 
-  def __writeMessage(self, message):
-    self.ui.msgWindow.clear()
+  def __writeMessage(self, message, append=False):
+    if not append:
+      self.ui.msgWindow.clear()
     self.ui.msgWindow.setText(message)
 
   def __updateAliases_Variables(self):

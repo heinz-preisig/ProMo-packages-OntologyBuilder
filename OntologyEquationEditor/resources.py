@@ -691,7 +691,7 @@ def make_variable_equation_pngs(variables, ontology_name):
       make_it = subprocess.Popen(
               args,
               start_new_session=True,
-              restore_signals=False,
+              # restore_signals=False,
               # stdout=subprocess.PIPE,
               # stderr=subprocess.PIPE
               )

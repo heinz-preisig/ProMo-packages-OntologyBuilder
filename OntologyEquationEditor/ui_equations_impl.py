@@ -27,7 +27,6 @@ from Common.record_definitions import makeCompleteVariableRecord
 # from Common.common_resources import globalVariableID
 from Common.record_definitions import RecordEquation
 from Common.single_list_selector_impl import SingleListSelector
-from OntologyBuilder.OntologyEquationEditor.resources import CONSTANT
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_EQ
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_VAR
 from OntologyBuilder.OntologyEquationEditor.resources import OPERATOR_SNIPS
@@ -226,9 +225,7 @@ class UI_Equations(QtWidgets.QWidget):
     self.show()
     self.MSG("new variable")
 
-  # @pyqtSlot(str, str)
   def setupNewEquation(self, variable_ID):
-    # variable_symbol = self.variables[variable_ID].label
     self.selected_variable_type = self.variables[variable_ID].type
     self.setupEquationList(variable_ID)
     self.ui.groupEquationEditor.show()
@@ -237,14 +234,8 @@ class UI_Equations(QtWidgets.QWidget):
     self.status_new_variable = False
     self.ui.pushAccept.hide()
 
-    # self.ui.lineNewVariable.setReadOnly(True)
     self.ui.lineExpression.show()
     self.status_new_equation = True
-    no_equations = len(self.variables[variable_ID].equations)
-    if no_equations > 1:  # TODO: variable needs to know if it is a port variable. Adjust deletion
-      self.ui.pushDeleteEquation.show()
-    else:
-      self.ui.pushDeleteEquation.hide()
     self.ui.lineDocumentation.show()
     self.MSG("new equation")
 
@@ -518,17 +509,8 @@ class UI_Equations(QtWidgets.QWidget):
 
   def __setupEditEquation(self):
     self.__setupEditAndDelete()
-    # TODO: rule for constants --> document
-    # TODO: this could be contradicting port variables
     v = self.selected_variable
-    if self.selected_variable_type == CONSTANT:  # RULE: constants cannot have more than one definition
-      min_l = 0
-    else:
-      min_l = 1
-
-    equation_list = sorted(v.equations.keys())
-    if len(equation_list) > min_l:
-      self.ui.pushDeleteEquation.show()
+    self.ui.pushDeleteEquation.show()
     self.show()
 
   def __defGivenVariable(self):

@@ -59,7 +59,7 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.ontology_container = OntologyContainer(self.ontology_name)
     self.ontology_tree = self.ontology_container.ontology_tree
     self.interfaces = self.ontology_container.interfaces
-    self.variables = self.ontology_container.vars  # readVariables()
+    self.variables = self.ontology_container.variables  # readVariables()
     self.incidence_dictionary, self.inv_incidence_dictionary = makeIncidenceDictionaries(self.variables)
 
     self.equation_dictionary = {}

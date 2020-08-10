@@ -154,7 +154,7 @@ class UiOntologyDesign(QMainWindow):
 
     self.indices = self.ontology_container.indices  # readIndices()  # indices
     self.variables = Variables(self.ontology_container)
-    self.variables.importVariables(self.ontology_container.vars, self.indices)  # also link the indices for compilation
+    self.variables.importVariables(self.ontology_container.variables, self.indices)  # also link the indices for compilation
 
     # ### converting version 6 --> 7:
     # if self.ontology_container.version_variable_equation == "6":
@@ -595,7 +595,7 @@ class UiOntologyDesign(QMainWindow):
             )
     out, error = make_it.communicate()
 
-    make_variable_equation_pngs(self.ontology_container.vars, self.ontology_name)
+    make_variable_equation_pngs(self.ontology_container.variables, self.ontology_name)
     self.__writeMessage("Wrote {} output".format(language), append=True)
 
   def __getAllEquationsPerType(self, language):

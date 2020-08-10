@@ -969,9 +969,12 @@ class PhysicalVariable():
     self.equation_list.append(str(equation_ID))
 
   def removeEquation(self, equation_ID):
-    if len(self.equations) == 1:
+    print(self.port_variable)
+    if self.port_variable:
+      del self.equations[equation_ID]
+    elif len(self.equations) == 1:
       # print("debugging - should not come here, this means one has to delete the variable")
-      raise EquationDeleteError()
+      raise EquationDeleteError("cannot delete")
       pass
     else:
       del self.equations[equation_ID]

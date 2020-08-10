@@ -125,6 +125,13 @@ class UI_VariableTableDialog(VariableTable):
     self.protected_variable_types = variable_types
 
   def __showDeleteDialog(self, selected_ID):
+    port_variable = self.variables[selected_ID].port_variable
+    if port_variable:
+      reply1 = QtWidgets.QMessageBox.question(self, "choose", "this is a port variable -- do you want to delete it ?", YES, NO)
+      if reply1 == NO:
+        return
+    del reply1
+
     var_symbol = self.variables[selected_ID].label
     msg = "deleting variable : %s" % var_symbol
     d_vars, d_equs, d_vars_text, d_equs_text = simulateDeletion(self.variables, selected_ID, self.indices)
@@ -132,12 +139,12 @@ class UI_VariableTableDialog(VariableTable):
     e = d_equs_text.replace("\n", "\n   ")
     msg += "\n\nand consequently \n...variables:%s \n\n...equations %s" % (v, e)
 
-    reply = QtWidgets.QMessageBox.question(self, "choose", msg, YES, NO)
-    # print("reply :", reply)
-    if reply == YES:
-      print("yes")
+    reply2 = QtWidgets.QMessageBox.question(self, "choose", msg, YES, NO)
+    if reply2 == YES:
+      # print("debugging -- yes")
       self.__deleteVariable(d_vars, d_equs)
       self.reset_table()
+    del reply2
 
   def __deleteVariable(self, d_vars, d_equs):
     print("going to delete: \n...variables:%s \n...equations %s" % (d_vars, d_equs))
@@ -147,7 +154,6 @@ class UI_VariableTableDialog(VariableTable):
       self.variables.removeVariable(s)
     self.variables.indexVariables()  # indexEquationsInNetworks()
     self.reset_table()
-    # self.makeTable()
 
   def __showNewVariableDialog(self):
     msg = "new port variable ?"

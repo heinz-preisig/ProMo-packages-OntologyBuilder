@@ -14,6 +14,7 @@
 __author__ = 'Preisig, Heinz A'
 
 MAX_HEIGHT = 800
+MAX_WIDTH  = 1000
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -161,17 +162,21 @@ class VariableTable(QtWidgets.QDialog):
     for i in range(tab.columnCount()):
       width += tab.columnWidth(i)
     width += tab.verticalHeader().sizeHint().width()
-    width += tab.verticalScrollBar().sizeHint().width()
     width += tab.frameWidth() * 2
-    width -= 12  # NOTE: manual fix
+    if width > MAX_WIDTH:
+      width += tab.verticalScrollBar().sizeHint().width()
+    width -= 0  # NOTE: manual fix
 
     height = 0
     for i in range(tab.rowCount()):
       height += tab.rowHeight(i)
     height += tab.horizontalHeader().sizeHint().height()
-    height += tab.horizontalScrollBar().sizeHint().width()
     height += tab.frameWidth() * 2
-    height -= 60  # NOTE: manual fix
+    if height > MAX_HEIGHT :
+      height += tab.horizontalScrollBar().sizeHint().height()
+    height -= 0  # NOTE: manual fix
+
+
 
     return QtCore.QSize(width, min(height, MAX_HEIGHT))
 

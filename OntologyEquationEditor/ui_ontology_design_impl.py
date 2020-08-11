@@ -583,7 +583,7 @@ class UiOntologyDesign(QMainWindow):
     if not self.compile_only:
       saveBackupFile(documentation_file)
 
-    self.__writeMessage("busy making var/eq images", append=True)
+    self.__writeMessage("busy making var/eq images")
 
     args = ['sh', f_name, location]
     print('ARGS: ', args)
@@ -594,6 +594,8 @@ class UiOntologyDesign(QMainWindow):
             # stderr=subprocess.PIPE
             )
     out, error = make_it.communicate()
+    print("debugging -- ",out, error)
+    # make_it.wait()
 
     make_variable_equation_pngs(self.ontology_container.variables, self.ontology_name)
     self.__writeMessage("Wrote {} output".format(language), append=True)
@@ -810,6 +812,8 @@ class UiOntologyDesign(QMainWindow):
     if not append:
       self.ui.msgWindow.clear()
     self.ui.msgWindow.setText(message)
+    self.show()
+    self.ui.msgWindow.show()
 
   def __updateAliases_Variables(self):
     pass

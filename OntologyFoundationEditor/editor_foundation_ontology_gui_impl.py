@@ -133,7 +133,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     roundButton(self.ui.pushGraph, "dot_graph", tooltip="make ProMo ontology graphs")
     roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
 
-    ontology_name, ontologies = getOntologyName(new=True, task="task_ontology_foundation", reject_icon="new.png")
+    ontology_name, ontologies = getOntologyName(new=True, task="task_ontology_foundation", left_icon="new.png")
 
     self.ontology = OntologyContainerFile(ONTOLOGY_VERSION)
     self.ontology_tree = self.ontology["ontology_tree"]

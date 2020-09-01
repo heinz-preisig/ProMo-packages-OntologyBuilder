@@ -289,7 +289,7 @@ class UiOntologyDesign(QMainWindow):
             self.ontology_container.ontology_tree[self.current_network]["behaviour"]["arc"])
 
   def on_treeWidget_clicked(self, index):  # state network_selected
-    self.current_network = self.ui.treeWidget.currentItem().name
+    self.current_network = str(self.ui.treeWidget.currentItem().name)
     self.__writeMessage("current network selected: %s" % self.current_network)
     # print(">>> ", self.ui.radioVariablesAliases.isDown(), self.ui.radioVariablesAliases.isChecked())
     if self.ui.radioVariablesAliases.isChecked():

@@ -68,7 +68,7 @@
      <string>type</string>
     </property>
     <property name="whatsThis">
-     <string>click for new variable</string>
+     <string>click to shift variable type</string>
     </property>
    </column>
    <column>

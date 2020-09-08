@@ -104,7 +104,7 @@ class UI_VariableTableDialog(VariableTable):
 
     roundButton(buttons["back"], "back", tooltip="go back")
     roundButton(buttons["info"], "info", tooltip="information")
-    roundButton(buttons["new"], "new", tooltip="new variable")
+    roundButton(buttons["new"], "dependent_variable", tooltip="new dependent variable")
     roundButton(buttons["port"], "port", tooltip="new port variable")
     for b in hidden:
       buttons[b].hide()

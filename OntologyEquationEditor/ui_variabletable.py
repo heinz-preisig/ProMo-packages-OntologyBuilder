@@ -111,7 +111,7 @@ class Ui_Dialog(object):
         self.tableVariable.setSortingEnabled(False)
         item = self.tableVariable.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "type"))
-        item.setWhatsThis(_translate("Dialog", "click for new variable"))
+        item.setWhatsThis(_translate("Dialog", "click to shift variable type"))
         item = self.tableVariable.horizontalHeaderItem(1)
         item.setText(_translate("Dialog", "symbol"))
         item.setWhatsThis(_translate("Dialog", "click for rename"))

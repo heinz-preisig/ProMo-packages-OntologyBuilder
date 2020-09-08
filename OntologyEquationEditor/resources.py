@@ -44,7 +44,7 @@ BLOCK_INDEX_SEPARATOR = " & "
 TOOLTIPS = {}
 
 TOOLTIPS["edit"] = {}
-TOOLTIPS["edit"]["type"] = "click for new variable"
+TOOLTIPS["edit"]["type"] = "click to shift variable type"
 TOOLTIPS["edit"]["symbol"] = "click to modify symbol"
 TOOLTIPS["edit"]["description"] = "modify description"
 TOOLTIPS["edit"]["units"] = "time, lenth, amount, mass, temp, current, light\nmay only be modified for _new_ variable"

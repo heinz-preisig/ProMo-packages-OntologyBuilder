@@ -20,6 +20,7 @@ from PyQt5 import QtWidgets
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import roundButton
+from Common.single_list_selector_impl import SingleListSelector
 # from Common.common_resources import globalVariableID
 from Common.qt_resources import NO
 from Common.qt_resources import YES
@@ -51,14 +52,15 @@ class UI_VariableTableDialog(VariableTable):
                title,
                variables,
                indices,
+               variable_types_on_networks,
                network,
                network_expression,
                choice,
-               has_port_variables,
                disabled_variables=[],
                hide_vars=[],
                hide_columns=[],
-               info_file=None):
+               info_file=None,
+               hidden=[]):
     """
     constructs a dialog window based on QDialog
     @param title:     title string: indicates the tree's nature
@@ -77,6 +79,7 @@ class UI_VariableTableDialog(VariableTable):
     """
 
     enabled_variable_types = [choice]
+    self.variable_types_on_networks = variable_types_on_networks
 
     VariableTable.__init__(self,
                            title,
@@ -91,13 +94,22 @@ class UI_VariableTableDialog(VariableTable):
                            info_file=info_file
                            )
 
-    roundButton(self.ui.pushFinished, "back", tooltip="go back")
-    roundButton(self.ui.pushInfo, "info", tooltip="information")
+    buttons = {}
+    buttons["back"] = self.ui.pushFinished
+    buttons["info"] = self.ui.pushInfo
+    buttons["new"]  = self.ui.pushNew
+    buttons["port"] = self.ui.pushPort
+
+    roundButton(buttons["back"] , "back", tooltip="go back")
+    roundButton(buttons["info"], "info", tooltip="information")
+    roundButton(buttons["new"], "new", tooltip="new variable")
+    roundButton(buttons["port"], "port", tooltip="new port variable")
+    for b in hidden:
+      buttons[b].hide()
 
     self.network_expression = network_expression
     self.variable_list = []
     self.disabled_variables = disabled_variables
-    self.has_port_variables = has_port_variables
     self.variables_in_table = []
     self.label_ID_dict = {}  # for changing / choosing index set
     self.reset_table()
@@ -155,22 +167,45 @@ class UI_VariableTableDialog(VariableTable):
     self.variables.indexVariables()  # indexEquationsInNetworks()
     self.reset_table()
 
-  def __showNewVariableDialog(self):
-    msg = "new port variable ?"
-    if self.has_port_variables:
-      reply = QtWidgets.QMessageBox.question(self, "choose", msg, YES, NO)
-    else:
-      reply = NO
-
-    if reply == YES:
-      print("yes")
+  def on_pushNew_pressed(self):
       self.defineGivenVariable()
-    elif reply == NO:
-      print("no")
-      self.__defineNewVarWithEquation()
+
+  def on_pushPort_pressed(self):
+    self.__defineNewVarWithEquation()
+
+  def __change_variable_type_dialogue(self):
+    self.selected_variable_type
+    variable_types = list(set(self.variable_types_on_networks[self.network]))
+    self.selector = SingleListSelector(variable_types)
+    self.selector.exec_()
+    selection, button = self.selector.getSelection()
+    if button == "left":
+      return
+    elif self.selected_variable_type == selection:
+      return
     else:
-      print("none")
-    self.reset_table()
+      self.variables[self.selected_ID].shiftType(selection)
+      self.variables.indexVariables()
+      self.close()
+
+
+
+  # def __showNewVariableDialog(self):
+  #   msg = "new port variable ?"
+  #   if self.has_port_variables:
+  #     reply = QtWidgets.QMessageBox.question(self, "choose", msg, YES, NO)
+  #   else:
+  #     reply = NO
+  #
+  #   if reply == YES:
+  #     print("yes")
+  #     self.defineGivenVariable()
+  #   elif reply == NO:
+  #     print("no")
+  #     self.__defineNewVarWithEquation()
+  #   else:
+  #     print("none")
+  #   self.reset_table()
 
   def __defineNewVarWithEquation(self):
     self.new_variable.emit(self.selected_variable_type)
@@ -185,11 +220,6 @@ class UI_VariableTableDialog(VariableTable):
     item = self.ui.tableVariable.item
     self.selected_variable_type = str(item(r, 0).text())  # DOC: here I know if a new dimension must be generated
 
-    if c == 0:
-      if self.selected_variable_type[0] == "*":
-        self.__defineNewVarWithEquation()  # RULE: first character in variable class name is * --> gen index
-      self.__showNewVariableDialog()
-      return
 
     # picking only
     self.selected_variable_symbol = str(item(r, 1).text())
@@ -201,7 +231,14 @@ class UI_VariableTableDialog(VariableTable):
     # do not allow changing of units and index sets once in use or is defined via equation
 
     selected_ID = self.variables_in_table[r]
+    self.selected_ID = selected_ID
     v = self.variables[selected_ID]
+
+
+    if c == 0:
+      self.__change_variable_type_dialogue()
+      return
+
     l = len(v.equations)
     not_yet_used = (self.variables.inv_incidence_dictionary[selected_ID] == []) and \
                    (len(self.variables[selected_ID].equations.keys()) == 0)

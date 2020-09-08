@@ -361,7 +361,7 @@ class UiOntologyDesign(QMainWindow):
       network_for_variable = nw
       network_for_expression = nw
 
-      vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_variable]
+      vars_types_on_network_variable = sorted(self.ontology_container.variable_types_on_networks[network_for_variable])
 
       interface_variable_list = []
       oc = self.variables.ontology_container
@@ -372,11 +372,12 @@ class UiOntologyDesign(QMainWindow):
           # print("debugging -- inter_nw", inter_nw)
 
       network_variable_source = network_for_expression
-      vars_types_on_network_expression = self.ontology_container.variable_types_on_networks[network_variable_source]
+      vars_types_on_network_expression = sorted(self.ontology_container.variable_types_on_networks[network_variable_source])
       for nw in interface_variable_list:
         for var_type in self.ontology_container.variable_types_on_interfaces[nw]:
           vars_types_on_network_expression.append(var_type)
       vars_types_on_network_expression = list(set(vars_types_on_network_expression))
+
 
     self.ui_eq = UI_Equations(what,  # what: string "network" | "interface" | "intraface"
                               self.variables,
@@ -409,7 +410,7 @@ class UiOntologyDesign(QMainWindow):
 
     self.current_variable_type = selection
     self.ui.groupEdit.show()
-    self.__setupVariableTable(selection)
+    self.__setupVariableTable()
     self.table_variables.show()
 
     self.ui.combo_EditVariableTypes.show()
@@ -745,7 +746,8 @@ class UiOntologyDesign(QMainWindow):
     except:
       pass
 
-  def __setupVariableTable(self, choice):
+  def __setupVariableTable(self):
+    choice=self.current_variable_type
     if self.current_network in self.interconnection_nws:
       network_variable = self.current_network  # self.interconnection_nws[self.current_network]["right"]
       network_expression = network_variable  # self.interconnection_nws[self.current_network]["left"]
@@ -755,14 +757,23 @@ class UiOntologyDesign(QMainWindow):
     else:
       network_variable = self.current_network
       network_expression = self.current_network
+
+    if choice[0] == "*":
+      hide = ["port"]
+    elif choice not in self.rules["variable_classes_having_port_variables"]:
+      hide = ["port"]
+    else:
+      hide = []
+
     self.table_variables = UI_VariableTableDialog("create & edit variables",
                                                   self.variables,
                                                   self.indices,
+                                                  self.variable_types_on_networks,
                                                   network_variable,
                                                   network_expression,
                                                   choice,
-                                                  choice in self.rules["variable_classes_having_port_variables"],
-                                                  info_file=FILES["info_ontology_variable_table"]
+                                                  info_file=FILES["info_ontology_variable_table"],
+                                                  hidden=hide,
                                                   )
     self.table_variables.show()  # Note: resolved tooltip settings, did not work during initialisation of table (
     # ui_variabletable_implement)
@@ -781,7 +792,7 @@ class UiOntologyDesign(QMainWindow):
 
   def __updateVariableTable(self):
     self.table_variables.close()
-    self.__setupVariableTable(self.current_variable_type)
+    self.__setupVariableTable()
     self.table_variables.show()
 
   def __setupVariablesAliasTable(self):

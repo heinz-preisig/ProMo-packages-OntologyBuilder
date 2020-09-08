@@ -41,7 +41,9 @@ class UI_VariableTablePick(VariableTable):
                enabled_types=['ALL'],
                hide_vars=[],
                hide_columns=[],
-               info_file=None):
+               info_file=None,
+               hidden=[]
+               ):
     """
     constructs a dialog window based on QDialog for picking variables
     @param title:     title string: indicates the tree's nature
@@ -69,11 +71,20 @@ class UI_VariableTablePick(VariableTable):
                            enabled_types,
                            hide_vars,
                            hide_columns,
-                           info_file=info_file)
+                           info_file=info_file
+                           )
+    buttons = {}
+    buttons["back"] = self.ui.pushFinished
+    buttons["info"] = self.ui.pushInfo
+    buttons["new"] = self.ui.pushNew
+    buttons["port"] = self.ui.pushPort
 
-    roundButton(self.ui.pushFinished, "back", tooltip="go back")
-    roundButton(self.ui.pushInfo, "info", tooltip="information")
-
+    roundButton(buttons["back"], "back", tooltip="go back")
+    roundButton(buttons["info"], "info", tooltip="information")
+    roundButton(buttons["new"], "new", tooltip="new variable")
+    roundButton(buttons["port"], "port", tooltip="new port variable")
+    for b in hidden:
+      buttons[b].hide()
     self.variable_list = []
     self.hide_columns = hide_columns
 

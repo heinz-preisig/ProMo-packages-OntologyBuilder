@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>883</width>
-    <height>282</height>
+    <width>1143</width>
+    <height>285</height>
    </rect>
   </property>
   <property name="contextMenuPolicy">
@@ -22,7 +22,7 @@
   <widget class="QTableWidget" name="tableVariable">
    <property name="geometry">
     <rect>
-     <x>70</x>
+     <x>210</x>
      <y>10</y>
      <width>801</width>
      <height>261</height>
@@ -113,17 +113,14 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>51</width>
-     <height>91</height>
+     <x>11</x>
+     <y>11</y>
+     <width>180</width>
+     <height>42</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout" rowstretch="50,50" columnstretch="0" columnminimumwidth="0">
-    <property name="sizeConstraint">
-     <enum>QLayout::SetFixedSize</enum>
-    </property>
-    <item row="0" column="0">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
      <widget class="QPushButton" name="pushFinished">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -148,8 +145,58 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item>
      <widget class="QPushButton" name="pushInfo">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>40</horstretch>
+        <verstretch>40</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushNew">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>40</horstretch>
+        <verstretch>40</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushPort">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
         <horstretch>40</horstretch>

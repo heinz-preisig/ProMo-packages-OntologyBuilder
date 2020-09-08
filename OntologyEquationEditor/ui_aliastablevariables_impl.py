@@ -24,6 +24,7 @@ from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
 from OntologyBuilder.OntologyEquationEditor.ui_aliastable import Ui_AliasTable
 
 MAX_HEIGHT = 800
+MAX_WIDTH  = 1000
 
 
 class UI_AliasTableVariables(QtWidgets.QWidget):
@@ -93,7 +94,6 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
 
   def __resize(self):
     tab = self.ui.tableWidget
-    tab.resizeColumnsToContents()
     # fitting window
     tab.resizeColumnsToContents()
     tab.resizeRowsToContents()
@@ -113,12 +113,17 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
     width += tab.verticalHeader().sizeHint().width()
     width += tab.verticalScrollBar().sizeHint().width()
     width += tab.frameWidth() * 2
+    if width > MAX_WIDTH:
+      width += tab.verticalScrollBar().sizeHint().width()
+    width -= 0  # NOTE: manual fix
 
     height = 0
     for i in range(tab.rowCount()):
       height += tab.rowHeight(i)
     height += tab.horizontalHeader().sizeHint().height()
     height += tab.frameWidth() * 2
+    if height > MAX_HEIGHT :
+      height += tab.horizontalScrollBar().sizeHint().height()
 
     return QtCore.QSize(width, min(height, MAX_HEIGHT))
 

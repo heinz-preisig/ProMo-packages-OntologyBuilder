@@ -985,6 +985,11 @@ class PhysicalVariable():
       if language != "global_ID":
         self.aliases[language] = label
 
+  def shiftType(self, type):
+    self.type = type
+    # print("debugging -- shifting type")
+
+
   def setLanguage(self, language):
     self.language = language
 

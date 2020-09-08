@@ -176,7 +176,9 @@ class UI_Equations(QtWidgets.QWidget):
       pass
     self.close()
 
+  @QtCore.pyqtSlot(str)
   def __insertSnipp(self, text):
+    # print("debugging inserting snipp :", text)
     # TODO: fix templates
     try:
       starting, ending = self.text_range
@@ -407,6 +409,7 @@ class UI_Equations(QtWidgets.QWidget):
                                                            equ_ID: equation_record
                                                            },
                                                    aliases={},
+                                                   port_variable=False,
                                                    )
 
       self.variables.addNewVariable(ID=var_ID, **variable_record)

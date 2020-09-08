@@ -432,9 +432,11 @@ class UiOntologyDesign(QMainWindow):
       except (EditorError) as error:
         self.__writeMessage(error.msg)
 
+
     self.__makeRenderedOutput()
 
   def __makeRenderedOutput(self):
+    self.__writeMessage("generating variable and equation pictures")
     language = LANGUAGES["global_ID_to_internal"]
     incidence_dictionary, inv_incidence_dictionary = makeIncidenceDictionaries(self.variables)
     e_name = FILES["coded_equations"] % (self.ontology_location, language)
@@ -785,7 +787,7 @@ class UiOntologyDesign(QMainWindow):
         enabled_columns = ENABLED_COLUMNS[self.state]["others"]
       self.table_variables.enable_column_selection(enabled_columns)
 
-    self.ui_eq.def_given_variable.connect(self.table_variables.defineGivenVariable)
+    # self.ui_eq.def_given_variable.connect(self.table_variables.defineGivenVariable)
     self.table_variables.completed.connect(self.finished_edit_table)
     self.table_variables.new_variable.connect(self.ui_eq.setupNewVariable)
     self.table_variables.new_equation.connect(self.ui_eq.setupNewEquation)
@@ -825,6 +827,7 @@ class UiOntologyDesign(QMainWindow):
     self.ui.msgWindow.setText(message)
     self.show()
     self.ui.msgWindow.show()
+    self.ui.msgWindow.update()
 
   def __updateAliases_Variables(self):
     pass

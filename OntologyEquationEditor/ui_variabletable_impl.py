@@ -20,11 +20,11 @@ from PyQt5 import QtWidgets
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import roundButton
-from Common.single_list_selector_impl import SingleListSelector
 # from Common.common_resources import globalVariableID
 from Common.qt_resources import NO
 from Common.qt_resources import YES
 from Common.record_definitions import makeCompleteVariableRecord
+from Common.single_list_selector_impl import SingleListSelector
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_VAR
@@ -80,6 +80,7 @@ class UI_VariableTableDialog(VariableTable):
 
     enabled_variable_types = [choice]
     self.variable_types_on_networks = variable_types_on_networks
+    self.selected_variable_type = choice
 
     VariableTable.__init__(self,
                            title,
@@ -94,13 +95,14 @@ class UI_VariableTableDialog(VariableTable):
                            info_file=info_file
                            )
 
-    buttons = {}
-    buttons["back"] = self.ui.pushFinished
-    buttons["info"] = self.ui.pushInfo
-    buttons["new"]  = self.ui.pushNew
-    buttons["port"] = self.ui.pushPort
+    buttons = {
+            "back": self.ui.pushFinished,
+            "info": self.ui.pushInfo,
+            "new" : self.ui.pushNew,
+            "port": self.ui.pushPort
+            }
 
-    roundButton(buttons["back"] , "back", tooltip="go back")
+    roundButton(buttons["back"], "back", tooltip="go back")
     roundButton(buttons["info"], "info", tooltip="information")
     roundButton(buttons["new"], "new", tooltip="new variable")
     roundButton(buttons["port"], "port", tooltip="new port variable")
@@ -113,6 +115,9 @@ class UI_VariableTableDialog(VariableTable):
     self.variables_in_table = []
     self.label_ID_dict = {}  # for changing / choosing index set
     self.reset_table()
+
+    self.enabled_columns = None
+    self.selected_variable_symbol = None
 
     self.ui_symbol = UI_SymbolDialog()
     self.ui_symbol.finished.connect(self.reset_table)
@@ -139,7 +144,8 @@ class UI_VariableTableDialog(VariableTable):
   def __showDeleteDialog(self, selected_ID):
     port_variable = self.variables[selected_ID].port_variable
     if port_variable:
-      reply1 = QtWidgets.QMessageBox.question(self, "choose", "this is a port variable -- do you want to delete it ?", YES, NO)
+      reply1 = QtWidgets.QMessageBox.question(self, "choose", "this is a port variable -- do you want to delete it ?",
+                                              YES, NO)
       if reply1 == NO:
         return
     del reply1
@@ -160,21 +166,20 @@ class UI_VariableTableDialog(VariableTable):
 
   def __deleteVariable(self, d_vars, d_equs):
     print("going to delete: \n...variables:%s \n...equations %s" % (d_vars, d_equs))
-    for id in d_equs:
-      self.variables.removeEquation(id)
+    for v_id in d_equs:
+      self.variables.removeEquation(v_id)
     for s in d_vars:
       self.variables.removeVariable(s)
     self.variables.indexVariables()  # indexEquationsInNetworks()
     self.reset_table()
 
   def on_pushNew_pressed(self):
-      self.defineGivenVariable()
-
-  def on_pushPort_pressed(self):
     self.__defineNewVarWithEquation()
 
+  def on_pushPort_pressed(self):
+    self.definePortVariable()
+
   def __change_variable_type_dialogue(self):
-    self.selected_variable_type
     variable_types = list(set(self.variable_types_on_networks[self.network]))
     self.selector = SingleListSelector(variable_types)
     self.selector.exec_()
@@ -187,8 +192,6 @@ class UI_VariableTableDialog(VariableTable):
       self.variables[self.selected_ID].shiftType(selection)
       self.variables.indexVariables()
       self.close()
-
-
 
   # def __showNewVariableDialog(self):
   #   msg = "new port variable ?"
@@ -220,7 +223,6 @@ class UI_VariableTableDialog(VariableTable):
     item = self.ui.tableVariable.item
     self.selected_variable_type = str(item(r, 0).text())  # DOC: here I know if a new dimension must be generated
 
-
     # picking only
     self.selected_variable_symbol = str(item(r, 1).text())
 
@@ -233,7 +235,6 @@ class UI_VariableTableDialog(VariableTable):
     selected_ID = self.variables_in_table[r]
     self.selected_ID = selected_ID
     v = self.variables[selected_ID]
-
 
     if c == 0:
       self.__change_variable_type_dialogue()
@@ -282,7 +283,7 @@ class UI_VariableTableDialog(VariableTable):
       self.__showDeleteDialog(selected_ID)
     return
 
-  def defineGivenVariable(self):
+  def definePortVariable(self):
     var_ID = self.variables.newProMoVariableIRI()  # globalVariableID(update=True)
     #
     # NOTE: there is something fundamentally wrong as when using the default things go utterly wrong.. python ???
@@ -295,6 +296,7 @@ class UI_VariableTableDialog(VariableTable):
                                                  units=Units(),
                                                  equations={},
                                                  aliases={},
+                                                 port_variable=True,
                                                  )
 
     self.variables.addNewVariable(ID=var_ID, **variable_record)

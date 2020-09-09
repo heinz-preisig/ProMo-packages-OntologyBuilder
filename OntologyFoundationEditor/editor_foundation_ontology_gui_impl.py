@@ -36,14 +36,14 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 from Common.common_resources import getData
-from Common.common_resources import getIcon
+from Common.resources_icons import getIcon
 from Common.common_resources import getOntologyName
 # from Common.common_resources import globalEquationID # NOTE: removed for the time being. IDs are now local to ontology
 # from Common.common_resources import globalVariableID # NOTE: removed for the time being. IDs are now local to ontology
 from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import putDataOrdered
-from Common.common_resources import roundButton
+from Common.resources_icons import roundButton
 from Common.common_resources import saveBackupFile
 from Common.qt_resources import NO
 from Common.qt_resources import YES
@@ -133,7 +133,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     roundButton(self.ui.pushGraph, "dot_graph", tooltip="make ProMo ontology graphs")
     roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
 
-    ontology_name, ontologies = getOntologyName(new=True, task="task_ontology_foundation", left_icon="new.png")
+    ontology_name, ontologies = getOntologyName(new=True, task="task_ontology_foundation", left_icon="new")
 
     self.ontology = OntologyContainerFile(ONTOLOGY_VERSION)
     self.ontology_tree = self.ontology["ontology_tree"]

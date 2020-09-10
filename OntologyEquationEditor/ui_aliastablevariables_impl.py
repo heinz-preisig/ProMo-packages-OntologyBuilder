@@ -17,14 +17,14 @@ __status__ = "beta"
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-from Common.common_resources import roundButton
 from Common.resource_initialisation import FILES
+from Common.resources_icons import roundButton
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
 from OntologyBuilder.OntologyEquationEditor.ui_aliastable import Ui_AliasTable
 
 MAX_HEIGHT = 800
-MAX_WIDTH  = 1000
+MAX_WIDTH = 1000
 
 
 class UI_AliasTableVariables(QtWidgets.QWidget):
@@ -122,7 +122,7 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
       height += tab.rowHeight(i)
     height += tab.horizontalHeader().sizeHint().height()
     height += tab.frameWidth() * 2
-    if height > MAX_HEIGHT :
+    if height > MAX_HEIGHT:
       height += tab.horizontalScrollBar().sizeHint().height()
 
     return QtCore.QSize(width, min(height, MAX_HEIGHT))

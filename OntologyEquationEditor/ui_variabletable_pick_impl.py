@@ -17,7 +17,7 @@ MAX_HEIGHT = 800
 
 from PyQt5 import QtCore
 
-from Common.common_resources import roundButton
+from Common.resources_icons import roundButton
 from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
 
 

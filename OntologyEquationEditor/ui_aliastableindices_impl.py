@@ -19,12 +19,13 @@ __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
 MAX_HEIGHT = 800
+MAX_WIDTH = 1000
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-from Common.common_resources import roundButton
 from Common.resource_initialisation import FILES
+from Common.resources_icons import roundButton
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import CODE
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
@@ -85,7 +86,6 @@ class UI_AliasTableIndices(QtWidgets.QWidget):
 
   def __resize(self):
     tab = self.ui.tableWidget
-    tab.resizeColumnsToContents()
     # fitting window
     tab.resizeColumnsToContents()
     tab.resizeRowsToContents()
@@ -97,24 +97,26 @@ class UI_AliasTableIndices(QtWidgets.QWidget):
     self.resize(s)
 
   def __tabSizeHint(self):
+
     tab = self.ui.tableWidget
     width = 0
     for i in range(tab.columnCount()):
       width += tab.columnWidth(i)
 
     width += tab.verticalHeader().sizeHint().width()
-
     width += tab.verticalScrollBar().sizeHint().width()
     width += tab.frameWidth() * 2
-    width -= 12  # NOTE: manual fix
+    if width > MAX_WIDTH:
+      width += tab.verticalScrollBar().sizeHint().width()
+    width -= 0  # NOTE: manual fix
 
     height = 0
     for i in range(tab.rowCount()):
       height += tab.rowHeight(i)
     height += tab.horizontalHeader().sizeHint().height()
-    height += tab.horizontalScrollBar().sizeHint().width()
     height += tab.frameWidth() * 2
-    height -= 60  # NOTE: manual fix
+    if height > MAX_HEIGHT:
+      height += tab.horizontalScrollBar().sizeHint().height()
 
     return QtCore.QSize(width, min(height, MAX_HEIGHT))
 

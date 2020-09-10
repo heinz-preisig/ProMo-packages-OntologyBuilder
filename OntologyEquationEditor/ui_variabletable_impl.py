@@ -19,7 +19,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
-from Common.common_resources import roundButton
+from Common.resources_icons import roundButton
 # from Common.common_resources import globalVariableID
 from Common.qt_resources import NO
 from Common.qt_resources import YES

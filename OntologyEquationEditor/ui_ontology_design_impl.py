@@ -30,11 +30,11 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
-from Common.common_resources import getIcon
+from Common.resources_icons import getIcon
 from Common.common_resources import getOntologyName
 from Common.common_resources import makeTreeView
 from Common.common_resources import putData
-from Common.common_resources import roundButton
+from Common.resources_icons import roundButton
 from Common.common_resources import saveBackupFile
 from Common.ontology_container import OntologyContainer
 from Common.resource_initialisation import DIRECTORIES

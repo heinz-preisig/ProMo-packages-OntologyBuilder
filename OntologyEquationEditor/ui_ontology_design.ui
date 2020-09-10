@@ -182,83 +182,120 @@
      <x>20</x>
      <y>10</y>
      <width>381</width>
-     <height>131</height>
+     <height>171</height>
     </rect>
    </property>
    <property name="title">
     <string>Ontology</string>
    </property>
-   <widget class="QPushButton" name="pushInfo">
-    <property name="geometry">
-     <rect>
-      <x>320</x>
-      <y>40</y>
-      <width>40</width>
-      <height>40</height>
-     </rect>
-    </property>
-    <property name="toolTip">
-     <string>press for information</string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushCompile">
-    <property name="geometry">
-     <rect>
-      <x>320</x>
-      <y>80</y>
-      <width>40</width>
-      <height>40</height>
-     </rect>
-    </property>
-    <property name="toolTip">
-     <string>press to compile</string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>40</y>
-      <width>133</width>
-      <height>83</height>
+      <y>30</y>
+      <width>341</width>
+      <height>131</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QRadioButton" name="radioVariables">
-       <property name="toolTip">
-        <string>select to edit variables</string>
-       </property>
-       <property name="text">
-        <string>variables</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QRadioButton" name="radioVariables">
+         <property name="toolTip">
+          <string>select to edit variables</string>
+         </property>
+         <property name="text">
+          <string>variables</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioVariablesAliases">
+         <property name="toolTip">
+          <string>select to edit variable aliases</string>
+         </property>
+         <property name="text">
+          <string>variable aliases</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioIndicesAliases">
+         <property name="toolTip">
+          <string>select to edit index aliases</string>
+         </property>
+         <property name="text">
+          <string> index aliases</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioVariablesAliases">
-       <property name="toolTip">
-        <string>select to edit variable aliases</string>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
-       <property name="text">
-        <string>variable aliases</string>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
        </property>
-      </widget>
+      </spacer>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioIndicesAliases">
-       <property name="toolTip">
-        <string>select to edit index aliases</string>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
        </property>
-       <property name="text">
-        <string> index aliases</string>
-       </property>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="pushInfo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>press for information</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushCompile">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>press to compile</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -267,7 +304,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>160</y>
+     <y>190</y>
      <width>301</width>
      <height>61</height>
     </rect>

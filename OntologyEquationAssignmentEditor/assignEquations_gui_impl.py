@@ -105,7 +105,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.arc_indicator_item = None
     self.last_arc_coordinate = None
     self.intra_indicator_item = None
-    self.last_interface_coordinat = None
+    self.last_interface_coordinate = None
     self.inter_indicator_item = None
     self.last_inter_coordinate = None
 

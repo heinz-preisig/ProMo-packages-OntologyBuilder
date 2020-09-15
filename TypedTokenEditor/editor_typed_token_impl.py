@@ -87,7 +87,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
     # attach ontology
     ontology_name = getOntologyName()
     ontology = OntologyContainer(ontology_name)  # DIRECTORIES["ontology_location"] % ontology_name)
-    self.networks = ontology.leave_networks_list
+    self.networks = ontology.list_leave_networks
 
     self.typed_token_file_spec = FILES["typed_token_file"] % ontology_name
 

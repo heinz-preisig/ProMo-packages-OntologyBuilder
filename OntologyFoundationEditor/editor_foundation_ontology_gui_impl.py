@@ -1320,7 +1320,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     variable_name = self.ui.listViewBehaviour.currentItem().text()
     # print("debugging -- behaviour selected : ", variable_name)
     # print("debugging -- selected component :",self.current_behaviour_component )
-    if self.current_behaviour_component == "node":  # ....RULE: variable classes related to node may have port variables
+    if self.current_behaviour_component in ["node", "graph"]:  # ....RULE: variable classes related to node and graph may have port variables
       self.__ui_status("behaviour_prop_selected_node")
       if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_having_port_variables"]:
         self.ui.radioButtonHasPortVariables.setChecked(True)

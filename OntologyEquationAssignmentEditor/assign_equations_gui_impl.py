@@ -56,21 +56,25 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     checkAndFixResources(self.ontology_name, stage="ontology_stage_2")
 
     self.ontology_container = OntologyContainer(self.ontology_name)
-    # self.ontology_tree = self.ontology_container.ontology_tree
-    # self.interfaces = self.ontology_container.interfaces
-    # self.ontology_container.variables = self.ontology_container.variables
-    # self.ontology_container.indices = self.ontology_container.indices
     self.incidence_dictionary, self.inv_incidence_dictionary = makeIncidenceDictionaries(self.ontology_container.variables)
 
     self.equation_dictionary = {}
     self.__makeEquationDictionary()
-    # self.equation_assignment = self.ontology_container.equation_assignment
 
     self.radio_selectors = {}
 
-    self.current_component = None  # node or arc
 
     self.current_equation_IDs = {}  # hash: radio button index     value: equation_ID_str
+    self.ui.tabWidget.setCurrentIndex(0)
+    self.current_tab = 0
+    self.tabs = ["node", "arc", "intra", "inter"]
+
+    self.selected_node = None
+    self.selected_arc = None
+    self.selected_intra = None
+    self.selected_inter = None
+
+
 
     # self.current_node_network = None
     # self.previous_node_network = None
@@ -121,7 +125,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   def __makeEmptyDataStructures(self):
 
-    empty_equation_assignment = EquationAssignment()
+    # empty_equation_assignment = EquationAssignment()
 
     # object_keys_networks = self.ontology_container.object_key_list_networks
     # object_keys_intra = self.ontology_container.object_key_list_intra
@@ -140,25 +144,30 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     intra_node_list = self.ontology_container.list_intra_node_objects_with_token
     inter_node_list = self.ontology_container.list_inter_node_objects
 
-    self.radio_selectors["networks"] = self.__makeAndAddSelector(network_node_list,
-                                                                 self.radioReceiverNodes,
+    reduced_network_node_list = []
+    for i in network_node_list:
+      if "constant" not in i:
+        reduced_network_node_list.append(i)
+
+    self.radio_selectors["networks"] = self.__makeAndAddSelector(reduced_network_node_list,
+                                                                 self.radioReceiverObject,
                                                                  -1,  # RULE: none selected initially
                                                                  self.ui.frameNodeTop,
                                                                  self.ui.verticalLayoutNodeTop)
 
-    self.radio_selectors["networks"] = self.__makeAndAddSelector(arc_list,
+    self.radio_selectors["arcs"] = self.__makeAndAddSelector(arc_list,
                                                                  self.radioReceiverArcs,
                                                                  -1,  # RULE: none selected initially
                                                                  self.ui.frameArcTop,
                                                                  self.ui.verticalLayoutArcTop)
 
-    self.radio_selectors["networks"] = self.__makeAndAddSelector(intra_node_list,
+    self.radio_selectors["intra"] = self.__makeAndAddSelector(intra_node_list,
                                                                  self.radioReceiverIntra,
                                                                  -1,  # RULE: none selected initially
                                                                  self.ui.frameIntraTop,
                                                                  self.ui.verticalLayoutIntraTop)
 
-    self.radio_selectors["networks"] = self.__makeAndAddSelector(inter_node_list,
+    self.radio_selectors["inter"] = self.__makeAndAddSelector(inter_node_list,
                                                                  self.radioReceiverInter,
                                                                  -1,  # RULE: none selected initially
                                                                  self.ui.frameInterTop,
@@ -184,7 +193,11 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     layout.addWidget(radio_selector)
     return radio_selector
 
-  def radioReceiverNodes(self, checked): #token_class, token, token_string, toggle):
+  def on_tabWidget_currentChanged(self, index):
+    print("debugging -- new tab", index)
+    self.current_tab = index
+
+  def radioReceiverObject(self, checked):
     # if toggle:
       print("debugging -- nodes", checked)
       self.__makeEquationList()
@@ -210,6 +223,10 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
       print("debugging -- inter")
       pass
 
+  def radioReceiverEquations(self, checked):
+    print("debugging -- node equations checked", checked)
+    pass
+
 
   def __makeEquationList(self):
     equation_list = {}
@@ -233,10 +250,17 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
                                                                              self.ontology_container.indices)
         var_ID = equation_list[eq_ID][0]
         rendered_variable = self.ontology_container.variables[equation_list[eq_ID][0]]["aliases"]["internal_code"]
-        print(rendered_variable, rendered_expressions[eq_ID])
+        print("debugging -- rendered equation info", rendered_variable, rendered_expressions[eq_ID])
         s = "%s := %s" % (rendered_variable, rendered_expressions[eq_ID])
         radio_item_list.append(s)
         self.inverse_dictionary[s] = (var_ID, eq_ID)
+
+      self.radio_selectors["nodes"] = self.__makeAndAddSelector(radio_item_list,
+                                                                self.radioReceiverEquations,
+                                                                -1,  # RULE: none selected initially
+                                                                self.ui.frameNodeBottom,
+                                                                self.ui.verticalLayoutNodeBottom,
+                                                                )
       # self.radio = UI_RadioSelector(radio_item_list, [], allowed=1)
       # self.radio.setWindowTitle("select one")
       # self.radio.rejected.connect(self.__gotState)

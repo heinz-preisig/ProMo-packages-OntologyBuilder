@@ -19,15 +19,12 @@ __version__ = "5.04"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-import os
-
-from graphviz import Digraph
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 from Common.common_resources import getOntologyName
-from Common.common_resources import M_None
+from Common.common_resources import M_None, TEMPLATE_NODE_OBJECT
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
 from Common.radio_selector_impl import RadioSelector
@@ -36,15 +33,11 @@ from Common.record_definitions import Interface
 from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
-from Common.treeid import Tree
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
-from OntologyBuilder.OntologyEquationEditor.resources import ID_delimiter
-from OntologyBuilder.OntologyEquationEditor.resources import ID_spacer
+from OntologyBuilder.OntologyEquationEditor.resources import DotGraphVariableEquations
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
-
-from OntologyBuilder.OntologyEquationEditor.resources import DotGraph
 
 # from OntologyBuilder.OntologyEquationEditor.variable_framework import simulateDeletion
 
@@ -52,7 +45,6 @@ MAX_HEIGHT = 800
 
 
 class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
-
 
   def __init__(self):
     QtWidgets.QMainWindow.__init__(self)
@@ -121,7 +113,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
             "back": QtGui.QIcon("%s/back.png" % DIRECTORIES["icon_location"]),
             "left": QtGui.QIcon("%s/left-icon.png" % DIRECTORIES["icon_location"]),
             }
-    self.ui.groupBoxEquations.hide()
+
     self.__makeEmptyDataStructures()
 
   def __makeEquationDictionary(self):
@@ -298,7 +290,32 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     list = self.radio.getMarked()
     var_ID, eq_ID = self.inverse_dictionary[list[0]]
     print("debugging -- exited", list, var_ID, eq_ID)
-    var_equ_tree = DotGraph(self.variables, self.indices, var_ID, self.ontology_name)
+    var_equ_tree = DotGraphVariableEquations(self.variables, self.indices, var_ID, self.ontology_name)
+    print("debugging -- dotgrap done")
+    buddies = set()
+    for var_ID in var_equ_tree.tree.IDs:
+      o, str_ID = var_ID.split("_")
+      ID = int(str_ID)
+      if o == "variable":
+        network = self.variables[ID]['network']
+        if network in self.ontology_container.list_leave_networks:
+          buddies.add((ID, network))
+
+        # print("debugging --", network)
+      # print("debugging -- buddies", self.buddies)
+
+    nw, component, dynamics, nature, token = self.selected_node_key
+    node_object = TEMPLATE_NODE_OBJECT %(dynamics, nature)
+
+    self.ontology_container.equation_assignment[node_object] = {
+            "tree"   : var_equ_tree.tree.tree,
+            "IDs"    : var_equ_tree.tree.IDs,
+            "nodes"  : var_equ_tree.tree.nodes,
+            "buddies": buddies
+            }
+
+    print("debugging -- end of buddies")
+
   #
   #
   # def makeTree(self, var_eq_tree, parent_var_ID, d_equs, var_ID):
@@ -453,15 +470,15 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     #   self.current_equation_IDs[index] = ID
     #   index += 1
 
-    self.radio_selectors["equations"] = self.__makeAndAddRadioSelector("equations",
-                                                                       equations,
-                                                                       self.radioReceiverEquations,
-                                                                       selection,
-                                                                       self.ui.horizontalLayoutEquations,
-                                                                       autoexclusive=autoexclusive)
-
-    self.radio_selectors["equations"].show()
-    self.ui.groupBoxEquations.show()
+    # self.radio_selectors["equations"] = self.__makeAndAddRadioSelector("equations",
+    #                                                                    equations,
+    #                                                                    self.radioReceiverEquations,
+    #                                                                    selection,
+    #                                                                    self.ui.horizontalLayoutEquations,
+    #                                                                    autoexclusive=autoexclusive)
+    #
+    # self.radio_selectors["equations"].show()
+    # self.ui.groupBoxEquations.show()
 
   def on_tableNodes_cellPressed(self, row, column):
 

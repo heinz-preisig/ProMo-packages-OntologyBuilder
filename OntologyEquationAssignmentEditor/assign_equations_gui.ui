@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1538</width>
-    <height>892</height>
+    <width>782</width>
+    <height>705</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,10 +38,10 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>10</y>
+      <x>30</x>
+      <y>20</y>
       <width>551</width>
-      <height>841</height>
+      <height>661</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -51,411 +51,251 @@
      <attribute name="title">
       <string>node</string>
      </attribute>
-     <widget class="QTableWidget" name="tableNodes">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QFrame" name="frameNodeTop">
       <property name="geometry">
        <rect>
-        <x>40</x>
+        <x>20</x>
         <y>20</y>
-        <width>501</width>
-        <height>741</height>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
       </property>
-      <column>
-       <property name="text">
-        <string>network</string>
+      <widget class="QWidget" name="verticalLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
        </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>type</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>nature</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>token</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>edit</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
+       <layout class="QVBoxLayout" name="verticalLayoutNodeTop"/>
+      </widget>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QFrame" name="frameNodeBottom">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>770</y>
-        <width>501</width>
-        <height>29</height>
+        <x>20</x>
+        <y>330</y>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QComboBox" name="comboBoxNodeVariableClasses">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushNodeSave">
-         <property name="text">
-          <string>save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutNodeBottom"/>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_arc">
      <attribute name="title">
       <string>arc</string>
      </attribute>
-     <widget class="QTableWidget" name="tableArcs">
+     <widget class="QFrame" name="frameArcTop">
       <property name="geometry">
        <rect>
-        <x>40</x>
+        <x>20</x>
         <y>20</y>
-        <width>501</width>
-        <height>741</height>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
       </property>
-      <column>
-       <property name="text">
-        <string>network</string>
+      <widget class="QWidget" name="verticalLayoutWidget_11">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
        </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>mechanism</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>nature</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>token</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>edit</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
+       <layout class="QVBoxLayout" name="verticalLayoutArcTop"/>
+      </widget>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QFrame" name="frameArcBottom">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>770</y>
-        <width>501</width>
-        <height>29</height>
+        <x>20</x>
+        <y>330</y>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QComboBox" name="comboBoxArcVariableClasses">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushArcSave">
-         <property name="text">
-          <string>save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_3">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutArcBottom"/>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_intraface">
      <attribute name="title">
       <string>intraface</string>
      </attribute>
-     <widget class="QTableWidget" name="tableIntrafaces">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QFrame" name="frameIntraTop">
       <property name="geometry">
        <rect>
-        <x>40</x>
+        <x>20</x>
         <y>20</y>
-        <width>311</width>
-        <height>741</height>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
       </property>
-      <column>
-       <property name="text">
-        <string>network</string>
+      <widget class="QWidget" name="verticalLayoutWidget_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
        </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>token</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>edit</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
+       <layout class="QVBoxLayout" name="verticalLayoutIntraTop"/>
+      </widget>
      </widget>
-     <widget class="QWidget" name="layoutWidget_2">
+     <widget class="QFrame" name="frameIntraBottom">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>770</y>
-        <width>501</width>
-        <height>29</height>
+        <x>20</x>
+        <y>330</y>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QComboBox" name="comboBoxIntrafacesVariableClasses">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushIntrafaceSave">
-         <property name="text">
-          <string>save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_4">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutIntraBottom"/>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_interface">
      <attribute name="title">
       <string>interface</string>
      </attribute>
-     <widget class="QTableWidget" name="tableInterfaces">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QFrame" name="frameInterTop">
       <property name="geometry">
        <rect>
-        <x>40</x>
+        <x>20</x>
         <y>20</y>
-        <width>221</width>
-        <height>741</height>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
       </property>
-      <column>
-       <property name="text">
-        <string>network</string>
+      <widget class="QWidget" name="verticalLayoutWidget_6">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
        </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>edit</string>
-       </property>
-       <property name="textAlignment">
-        <set>AlignHCenter|AlignVCenter|AlignCenter</set>
-       </property>
-      </column>
+       <layout class="QVBoxLayout" name="verticalLayoutInterTop"/>
+      </widget>
      </widget>
-     <widget class="QWidget" name="layoutWidget_3">
+     <widget class="QFrame" name="frameInterBottom">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>770</y>
-        <width>501</width>
-        <height>29</height>
+        <x>20</x>
+        <y>330</y>
+        <width>511</width>
+        <height>281</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QComboBox" name="comboBoxInterfacesVariableClasses">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushInterfaceSave">
-         <property name="text">
-          <string>save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_7">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>491</width>
+         <height>261</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutInterBottom"/>
+      </widget>
      </widget>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBoxEquations">
+   <widget class="QPushButton" name="pushNodeSave">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>10</y>
-      <width>911</width>
-      <height>841</height>
+      <x>640</x>
+      <y>40</y>
+      <width>101</width>
+      <height>25</height>
      </rect>
     </property>
-    <property name="title">
-     <string>Equations</string>
+    <property name="text">
+     <string>save</string>
     </property>
-    <widget class="QWidget" name="horizontalLayoutWidget_10">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>441</width>
-       <height>801</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayoutEquations">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetNoConstraint</enum>
-      </property>
-     </layout>
-    </widget>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

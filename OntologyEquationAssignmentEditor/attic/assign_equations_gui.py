@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'assign_equations_gui.ui'
+# Form implementation generated from reading ui file 'assign_equations_gui_v7.ui'
 #
 # Created by: PyQt5 UI code generator 4.12.1
 #

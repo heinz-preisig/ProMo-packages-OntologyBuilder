@@ -751,6 +751,22 @@ def parseLine(line):
 
 
 class VarEqTree():
+  """
+  Generate a variable equation tree starting with a variable
+
+  self. tree is an object tree with
+  tree :
+      tree.tree :: a recursive dictionary
+                  primary hash :: enumerated object (variable | equation)
+                  secondary hash :: ancestor & children
+      tree.nodes :: a dictionary with
+                  hash :: IDs identifiers of type enumberation (integers)
+                  value :: variable_<variable ID> | equation_<equation_ID>
+                  a recursive dictionary
+      tree.IDs :: inverse of tree.nodes
+                  hash :: variable_<variable ID> | equation_<equation_ID>
+                  value :: IDs identifiers of type enumberation (integers)
+  """
   def __init__(self, variables, var_ID):
     self.TEMPLATE_VARIABLE = "variable_%s"
     self.TEMPLATE_EQUATION = "equation_%s"
@@ -815,7 +831,7 @@ class VarEqTree():
     return self.variables[int(var_ID)]["equations"][eq_ID]["incidence_list"]
 
 
-class DotGraph(VarEqTree):
+class DotGraphVariableEquations(VarEqTree):
 
   # pdfposter -p999x4A3 vars_equs.pdf try2.pdf
 

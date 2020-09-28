@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>782</width>
-    <height>705</height>
+    <width>1093</width>
+    <height>844</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,10 +38,10 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>20</y>
+      <x>10</x>
+      <y>70</y>
       <width>551</width>
-      <height>661</height>
+      <height>741</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -55,7 +55,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>20</y>
+        <y>100</y>
         <width>511</width>
         <height>281</height>
        </rect>
@@ -75,14 +75,18 @@
          <height>261</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayoutNodeTop"/>
+       <layout class="QVBoxLayout" name="verticalLayoutNodeTop">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout"/>
+        </item>
+       </layout>
       </widget>
      </widget>
      <widget class="QFrame" name="frameNodeBottom">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>330</y>
+        <y>410</y>
         <width>511</width>
         <height>281</height>
        </rect>
@@ -105,6 +109,16 @@
        <layout class="QVBoxLayout" name="verticalLayoutNodeBottom"/>
       </widget>
      </widget>
+     <widget class="QComboBox" name="comboNodeNetworks">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>40</y>
+        <width>251</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_arc">
      <attribute name="title">
@@ -114,7 +128,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>20</y>
+        <y>100</y>
         <width>511</width>
         <height>281</height>
        </rect>
@@ -141,7 +155,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>330</y>
+        <y>410</y>
         <width>511</width>
         <height>281</height>
        </rect>
@@ -164,6 +178,16 @@
        <layout class="QVBoxLayout" name="verticalLayoutArcBottom"/>
       </widget>
      </widget>
+     <widget class="QComboBox" name="comboArcNetworks">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>40</y>
+        <width>252</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_intraface">
      <attribute name="title">
@@ -173,7 +197,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>20</y>
+        <y>100</y>
         <width>511</width>
         <height>281</height>
        </rect>
@@ -200,7 +224,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>330</y>
+        <y>410</y>
         <width>511</width>
         <height>281</height>
        </rect>
@@ -224,73 +248,14 @@
       </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_interface">
-     <attribute name="title">
-      <string>interface</string>
-     </attribute>
-     <widget class="QFrame" name="frameInterTop">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>20</y>
-        <width>511</width>
-        <height>281</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QWidget" name="verticalLayoutWidget_6">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>491</width>
-         <height>261</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayoutInterTop"/>
-      </widget>
-     </widget>
-     <widget class="QFrame" name="frameInterBottom">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>330</y>
-        <width>511</width>
-        <height>281</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QWidget" name="verticalLayoutWidget_7">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>491</width>
-         <height>261</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayoutInterBottom"/>
-      </widget>
-     </widget>
-    </widget>
    </widget>
    <widget class="QPushButton" name="pushNodeSave">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>40</y>
+      <x>460</x>
+      <y>20</y>
       <width>101</width>
-      <height>25</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">

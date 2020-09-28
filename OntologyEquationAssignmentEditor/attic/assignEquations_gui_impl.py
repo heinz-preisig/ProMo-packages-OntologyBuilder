@@ -133,15 +133,15 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
         empty_equation_assignment[object] = self.equation_assignment[object]
 
     self.equation_assignment = empty_equation_assignment
-
-    self.node_table_objects = self.__makeTable("node", self.ui.tableNodes,
-                                               self.ontology_container.object_key_list_networks)
-    self.arc_table_objects = self.__makeTable("arc", self.ui.tableArcs,
-                                              self.ontology_container.object_key_list_networks)
-    self.intra_table_objects = self.__makeTable("intra", self.ui.tableIntrafaces,
-                                                self.ontology_container.object_key_list_intra)
-    self.inter_table_objects = self.__makeTable("inter", self.ui.tableInterfaces,
-                                                self.ontology_container.object_key_list_inter)
+    #
+    # self.node_table_objects = self.__makeTable("node", self.ui.tableNodes,
+    #                                            self.ontology_container.object_key_list_networks)
+    # self.arc_table_objects = self.__makeTable("arc", self.ui.tableArcs,
+    #                                           self.ontology_container.object_key_list_networks)
+    # self.intra_table_objects = self.__makeTable("intra", self.ui.tableIntrafaces,
+    #                                             self.ontology_container.object_key_list_intra)
+    # self.inter_table_objects = self.__makeTable("inter", self.ui.tableInterfaces,
+    #                                             self.ontology_container.object_key_list_inter)
 
   def __makeTable(self, what, ui_table, object_list):
     """

@@ -13,7 +13,7 @@ This program is part of the ProcessModelling suite
 __project__ = "ProcessModeller  Suite"
 __author__ = "PREISIG, Heinz A"
 __copyright__ = "Copyright 2015, PREISIG, Heinz A"
-__since__ = "03.05.2019"
+# __since__ = "03.05.2019"
 __since__ = "24.09.2020"
 __license__ = "GPL planned -- until further notice for Bio4Fuel & MarketPlace internal use only"
 __version__ = "8.01"
@@ -29,6 +29,7 @@ from Common.qt_resources import cleanLayout
 from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
+from Common.resources_icons import roundButton
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import DotGraphVariableEquations
@@ -37,7 +38,7 @@ from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncide
 
 
 class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
-  rules = {  #RULE : what variable class in what network for nodes and arcs
+  rules = {  # RULE : what variable class in what network for nodes and arcs
           "nodes": {
                   "physical": "state",
                   "control" : "state",
@@ -51,7 +52,6 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
                   }
           }
 
-
   def __init__(self):
     QtWidgets.QMainWindow.__init__(self)
     self.ui = Ui_MainWindow()
@@ -61,6 +61,9 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.ontology_dir = DIRECTORIES["ontology_location"] % self.ontology_name
     self.ontology_file = FILES["ontology_file"] % self.ontology_name
 
+    roundButton(self.ui.pushInfo, "info", tooltip="information")
+    roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
+
     checkAndFixResources(self.ontology_name, stage="ontology_stage_2")
 
     self.ontology_container = OntologyContainer(self.ontology_name)
@@ -69,6 +72,9 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     self.equation_dictionary = {}
     self.__makeEquationDictionary()
+
+    self.__makeNodeLists()
+    self.__makeArcLists()
 
     self.radio_selectors = {}
     self.__makeCombosNetworks()
@@ -88,198 +94,179 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.__makeEquationList()
 
   def __makeCombosNetworks(self):
-    networks = self.ontology_container.list_leave_networks
+    # networks = self.ontology_container.list_leave_networks
     list_inter_branches = self.ontology_container.list_inter_branches
     self.ui.comboNodeNetworks.addItems(list_inter_branches)
     self.ui.comboArcNetworks.addItems(list_inter_branches)
     pass
 
-  def on_comboNodeNetworks_currentTextChanged(self, network):
-    print("debugging -- node network", network)
-    self.selected_node_network = network
-    self.__makeNodeSelector()
+  def __makeNodeLists(self):
+    reduced_network_node_list = {}
+    global_node_set = set()
+    for nw in self.ontology_container.list_inter_branches:
+      network_node_list = self.ontology_container.list_node_objects_on_networks_with_tokens[nw]
+      reduced_network_node_list[nw] = []
+      for i in network_node_list:
+        if "constant" not in i:  # RULE: reservoirs (time-scale constant) have no state
+          if i not in global_node_set:
+            reduced_network_node_list[nw].append(i)
+            global_node_set.add(i)
 
-  def on_comboArcNetworks_currentTextChanged(self, network):
-    print("debugging -- arc network", network)
-    self.selected_arc_network = network
-    self.__makeArcSelector()
+    # print("debugging -- network nodes", reduced_network_node_list)
+    self.reduced_network_node_list = reduced_network_node_list
+
+  def __makeArcLists(self):
+    reduced_arc_list = {}
+    global_arc_set = set()
+    for nw in self.ontology_container.list_inter_branches:
+      network_arc_list = self.ontology_container.list_arc_objects_on_networks[nw]
+      reduced_arc_list[nw] = []
+      for i in network_arc_list:
+        if i not in global_arc_set:
+          reduced_arc_list[nw].append(i)
+          global_arc_set.add(i)
+
+    # print("debugging -- arcs", reduced_arc_list)
+    self.reduced_arc_list = reduced_arc_list
 
   def __makeNodeSelector(self):
-    network_node_list = self.ontology_container.list_node_objects_on_networks_with_tokens[self.selected_node_network]
-
-    reduced_network_node_list = []
-    for i in network_node_list:
-      if "constant" not in i:   #RULE: reservoirs (time-scale constant) have no state
-        reduced_network_node_list.append(i)
-    self.radio_selectors["networks"] = self.__makeSelector(reduced_network_node_list,
+    node_list = self.reduced_network_node_list[self.selected_node_network]
+    self.radio_selectors["networks"] = self.__makeSelector(node_list,
                                                            self.radioReceiverNodes,
                                                            -1,  # RULE: none selected initially
                                                            self.ui.verticalLayoutNodeTop)
 
   def __makeArcSelector(self):
-    network_arc_list = self.ontology_container.list_arc_objects_on_networks[self.selected_arc_network]
+    arc_list = self.reduced_arc_list[self.selected_arc_network]
 
-    self.radio_selectors["arcs"] = self.__makeSelector(network_arc_list,
-                                                        self.radioReceiverArcs,
-                                                        -1,
-                                                        self.ui.verticalLayoutArcTop)
-
+    self.radio_selectors["arcs"] = self.__makeSelector(arc_list,
+                                                       self.radioReceiverArcs,
+                                                       -1,
+                                                       self.ui.verticalLayoutArcTop)
 
   def __makeEquationDictionary(self):
     for var_ID in self.ontology_container.variables:
       for eq_ID in self.ontology_container.variables[var_ID]["equations"]:
         self.equation_dictionary[eq_ID] = (var_ID, self.ontology_container.variables[var_ID]["equations"][eq_ID])
 
-  # def __makeEmptyDataStructures(self):
-  #
-  #   network_node_list = self.ontology_container.list_network_node_objects_with_token
-  #   arc_list = self.ontology_container.list_arc_objects
-  #   intra_node_list = self.ontology_container.list_intra_node_objects_with_token
-  #   inter_node_list = self.ontology_container.list_inter_node_objects
-  #
-  #   reduced_network_node_list = []
-  #   for i in network_node_list:
-  #     if "constant" not in i:
-  #       reduced_network_node_list.append(i)
-  #
-  #   self.radio_selectors["networks"] = self.__makeSelector(reduced_network_node_list,
-  #                                                          self.radioReceiverObject,
-  #                                                          -1,  # RULE: none selected initially
-  #                                                          # self.ui.frameNodeTop,
-  #                                                          self.ui.verticalLayoutNodeTop)
-  #
-  #   self.radio_selectors["arcs"] = self.__makeSelector(arc_list,
-  #                                                      self.radioReceiverObject,
-  #                                                      -1,  # RULE: none selected initially
-  #                                                      # self.ui.frameArcTop,
-  #                                                      self.ui.verticalLayoutArcTop)
-  #
-  #   self.radio_selectors["intra"] = self.__makeSelector(intra_node_list,
-  #                                                       self.radioReceiverObject,
-  #                                                       -1,  # RULE: none selected initially
-  #                                                       # self.ui.frameIntraTop,
-  #                                                       self.ui.verticalLayoutIntraTop)
-
   @staticmethod
   def __makeSelector(what, receiver, index, layout, allowed=1):
 
     height = layout.parent().size().height()
+    cleanLayout(layout)
     radio_selector = UI_RadioSelector(what, [index], allowed=allowed, maxheight=height)
     radio_selector.newSelection.connect(receiver)
-    cleanLayout(layout)
     layout.addWidget(radio_selector)
 
     return radio_selector
 
-  def on_tabWidget_currentChanged(self, index):
-    print("debugging -- new tab", index)
-    self.current_tab = index
-
-  def radioReceiverNodes(self, checked):
-    if checked:
-      print("debugging -- nodes", checked)
-      self.selected_node_network = checked
-      self.__makeNodeEquationSelector()
-      pass
-
   def __makeNodeEquationSelector(self):
-    # item_list = self.rendered_equation[self.selected_node_network][]
-    pass
+    self.selected_node_network = self.ui.comboNodeNetworks.currentText()
+    var_type = "state"
+    if self.selected_node_network == "inter":
+      var_type = self.rules["nodes"]["inter"]
+    radio_item_set = set()
 
-  def radioReceiverArcs(self, token_class, token, token_string, toggle):
+    nw = self.selected_node_network
+    if nw in self.ontology_container.networks:
+      nws = list(self.ontology_container.ontology_tree[nw]["parents"])
+      nws.append(nw)
+      for p_nw in nws:
+        if p_nw in self.rendered_equation:
+          if var_type in self.rendered_equation[p_nw]:
+            for var_ID in self.rendered_equation[p_nw][var_type]:
+              add_to = set(self.rendered_equation[p_nw][var_type][var_ID])
+              radio_item_set = radio_item_set | add_to
+    radio_item_list = sorted(radio_item_set)
 
-    if toggle:
-      print("debugging -- arcs")
-      pass
+    # print("debugging -- item list", radio_item_list)
+    self.radio_selectors["node_equations"] = self.__makeSelector(radio_item_list,
+                                                                 self.radioReceiverNodeEquations,
+                                                                 -1,  # RULE: none selected initially
+                                                                 self.ui.verticalLayoutNodeBottom,
+                                                                 )
 
-  def radioReceiverIntra(self, token_class, token, token_string, toggle):
 
-    if toggle:
-      print("debugging -- intra")
-      pass
+  def __makeArcEquationSelector(self):
+    self.selected_arc_network = self.ui.comboArcNetworks.currentText()
+    nw = self.selected_arc_network
+    var_type = self.rules["arcs"]["physical"]
+    if nw in ["control", "inter"]:
+      var_type = self.rules["arcs"][nw]
 
-  def radioReceiverInter(self, token_class, token, token_string, toggle):
+    radio_item_set = set()
 
-    if toggle:
-      print("debugging -- inter")
-      pass
+    if nw in self.ontology_container.networks:
+      nws = list(self.ontology_container.ontology_tree[nw]["parents"])
+      nws.append(nw)
+      for p_nw in nws:
+        if p_nw in self.rendered_equation:
+          if var_type in self.rendered_equation[p_nw]:
+            for var_ID in self.rendered_equation[p_nw][var_type]:
+              add_to = set(self.rendered_equation[p_nw][var_type][var_ID])
+              radio_item_set = radio_item_set | add_to
+    radio_item_list = sorted(radio_item_set)
 
-  def radioReceiverEquations(self, checked):
-    print("debugging -- node equations checked", checked)
-    pass
+    # print("debugging -- item list", radio_item_list)
+    self.radio_selectors["node_equations"] = self.__makeSelector(radio_item_list,
+                                                                 self.radioReceiverArcEquations,
+                                                                 -1,  # RULE: none selected initially
+                                                                 self.ui.verticalLayoutArcBottom,
+                                                                 )
 
   def __makeEquationList(self):
 
-    # variable_classes=set()
-    # [variable_classes.add(i) for nw in self.ontology_container.variable_types_on_networks
-    #  for i in self.ontology_container.variable_types_on_networks[nw]]
-    # [variable_classes.add(i) for nw in self.ontology_container.variable_types_on_intrafaces
-    #  for i in self.ontology_container.variable_types_on_networks[nw]]
-    # [variable_classes.add(i) for nw in self.ontology_container.variable_types_on_interfaces
-    #  for i in self.ontology_container.variable_types_on_networks[nw]]
 
-    # variable_classes = self.rules
     self.inverse_dictionary = {}  # hash: label, value: (var_ID, eq_ID)
 
     equation_list = {}
-    for component in self.rules:
-      for nw in self.rules[component]:
+    rendered_equation_list = {}
+    self.inverse_dictionary = {}
+
+    # for component in self.rules:
+      # for nw in self.ontology_container.networks: #rules[component]:
+
+    for eq_ID in self.equation_dictionary:
+      var_ID, equation = self.equation_dictionary[eq_ID]
+      var_type = self.ontology_container.variables[var_ID]["type"]
+      nw = self.ontology_container.variables[var_ID]["network"]
+
+      if nw not in equation_list:
         equation_list[nw] = {}
-        for var_class in self.rules[component][nw]:
-          equation_list[nw][var_class] = {}
-          self.inverse_dictionary[var_class] = {}
+      if nw not in rendered_equation_list:
+        rendered_equation_list[nw] = {}
 
-        for eq_ID in self.equation_dictionary:
-          var_ID, equation = self.equation_dictionary[eq_ID]
-          for var_class in self.rules[component][nw]:
-            equation_list[nw][var_class][eq_ID] = (var_ID, var_class, equation["rhs"], equation["network"])
+      if var_type not in equation_list[nw]:
+        equation_list[nw][var_type] = {}
+        rendered_equation_list[nw][var_type] = {}
+      equation_list[nw][var_type][eq_ID] = (var_ID, var_type, equation["rhs"], equation["network"])
 
-        # for eq_ID in equation_list[nw]:
-        #   print(eq_ID, " -- ", equation_list[nw][eq_ID])
+      # for var_type in equation_list[nw]:
+      #   for eq_ID in equation_list[nw][var_type]:
+      #     print(eq_ID, " -- ", equation_list[nw][var_type][eq_ID])
 
-        if len(equation_list[nw]) > 0:
-          rendered_equation = {}  # hash :: variable ID
-          rendered_expressions = {}
-          radio_item_list = []
-          for var_class in self.rules[component][nw]:
-            rendered_expressions[var_class] = {}
-            for eq_ID in equation_list[nw][var_class]:
-              rendered_expressions[var_class][eq_ID] = renderExpressionFromGlobalIDToInternal(
-                      equation_list[nw][var_class][eq_ID][2],
-                      self.ontology_container.variables,
-                      self.ontology_container.indices)
+      rendered_expressions = renderExpressionFromGlobalIDToInternal(
+              equation["rhs"],
+              self.ontology_container.variables,
+              self.ontology_container.indices)
 
-              var_ID = equation_list[nw][var_class][eq_ID][0]
-              network = equation_list[nw][var_class][eq_ID][3]
-              if network not in rendered_equation:
-                rendered_equation[network] = {}
-              if var_class not in rendered_equation[network]:
-                rendered_equation[network][var_class] = {}
-              rendered_variable = self.ontology_container.variables[equation_list[nw][var_class][eq_ID][0]]["aliases"][
-                "internal_code"]
+      rendered_variable = self.ontology_container.variables[equation_list[nw][var_type][eq_ID][0]]["aliases"][
+        "internal_code"]
 
-              # print("debugging -- rendered equation info", rendered_variable, rendered_expressions[var_class][eq_ID])
-              s = "%s := %s" % (rendered_variable, rendered_expressions[var_class][eq_ID])
-              # radio_item_list.append(s)
+      # print("debugging -- rendered equation info", rendered_variable, rendered_expressions[var_type][eq_ID])
+      s = "%s := %s" % (rendered_variable, rendered_expressions)
+      # radio_item_list.append(s)
+      # print("debugging variable class")
+      if var_ID not in rendered_equation_list[nw][var_type]:
+        rendered_equation_list[nw][var_type][var_ID] = []
+      rendered_equation_list[nw][var_type][var_ID].append(s)
 
-              if var_ID not in rendered_equation[network][var_class]:
-                rendered_equation[network][var_class][var_ID] = []
-              rendered_equation[network][var_class][var_ID].append(s)
+      self.inverse_dictionary[s] = (var_ID, eq_ID)
+      self.rendered_equation = rendered_equation_list
 
-              self.inverse_dictionary[s] = (var_ID, eq_ID)
-      self.rendered_equation = rendered_equation
-      #
-      # self.radio_selectors["nodes"] = self.__makeSelector(radio_item_list,
-      #                                                     self.radioReceiverEquations,
-      #                                                     -1,  # RULE: none selected initially
-      #                                                     self.ui.verticalLayoutNodeBottom,
-      #                                                     )
-      print("debugging -- end of make equation list")
+      # print("debugging -- end of make equation list")
 
-  def __gotState(self):
-    list = self.radio.getMarked()
-    var_ID, eq_ID = self.inverse_dictionary[list[0]]
-    print("debugging -- exited", list, var_ID, eq_ID)
+  def __gotState(self, object, equation_text, equ_ID, var_ID):
     var_equ_tree = DotGraphVariableEquations(self.ontology_container.variables, self.ontology_container.indices, var_ID,
                                              self.ontology_name)
     print("debugging -- dotgrap done")
@@ -292,9 +279,6 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
         if network in self.ontology_container.list_leave_networks:
           buddies.add((ID, network))
 
-        # print("debugging --", network)
-      # print("debugging -- buddies", self.buddies)
-
     nw, component, dynamics, nature, token = self.selected_node_key
     node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
 
@@ -306,3 +290,72 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
             }
 
     print("debugging -- end of buddies")
+
+  def on_comboNodeNetworks_currentTextChanged(self, network):
+    # print("debugging -- node network", network)
+    self.selected_node_network = network
+    self.__makeNodeSelector()
+
+  def on_comboArcNetworks_currentTextChanged(self, network):
+    # print("debugging -- arc network", network)
+    self.selected_arc_network = network
+    self.__makeArcSelector()
+
+  def on_pushSave_pressed(self):
+    print("debugging -- save file")
+
+  def on_pushInfo_pressed(selfself):
+    print("debugging -- display info file")
+
+  def on_tabWidget_currentChanged(self, index):
+    # print("debugging -- new tab", index)
+    self.current_tab = index
+
+  def radioReceiverNodes(self, checked):
+    if checked:
+      [self.selected_node_equation] = checked
+      # print("debugging -- nodes", self.selected_node_equation)
+      self.__makeNodeEquationSelector()
+      pass
+
+  def radioReceiverArcs(self, checked):
+
+    if checked:
+      [self.selected_arc_network] = checked
+      # print("debugging -- arcs", self.selected_arc_network)
+      self.__makeArcEquationSelector()
+      pass
+
+  def radioReceiverIntra(self, checked):
+
+    if checked:
+      self.selected_intra = checked
+      print("debugging -- intra")
+      pass
+
+  def radioReceiverInter(self, checked):
+
+    if checked:
+      self.selected_inter = checked
+      print("debugging -- inter")
+      pass
+
+  def radioReceiverNodeEquations(self, checked):
+
+    print("debugging -- node equations checked", checked)
+    [equ_text] = checked
+    var_ID, equ_ID = self.inverse_dictionary[equ_text]
+    print("debugging -- equation no", var_ID, equ_ID)
+    print("debugging -- network ", self.selected_node_network)
+    self.__gotState(self.selected_node, equ_text,equ_ID, var_ID)
+    pass
+
+  def radioReceiverArcEquations(self, checked):
+
+    print("debugging -- arc equations checked", checked)
+    [equ_text] = checked
+    var_ID, equ_ID = self.inverse_dictionary[equ_text]
+    print("debugging -- equation no", var_ID, equ_ID)
+    print("debugging -- network ", self.selected_arc_network)
+    self.__gotState(self.selected_arc, equ_text, equ_ID, var_ID)
+    pass

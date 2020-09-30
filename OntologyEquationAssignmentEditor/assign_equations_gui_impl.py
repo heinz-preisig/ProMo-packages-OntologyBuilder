@@ -22,13 +22,13 @@ __status__ = "beta"
 
 from PyQt5 import QtWidgets
 
+from Common.common_resources import TEMPLATE_NODE_OBJECT_WITH_TOKEN
 from Common.common_resources import getOntologyName
-from Common.common_resources import TEMPLATE_NODE_OBJECT
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
-from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
+from Common.resource_initialisation import checkAndFixResources
 from Common.resources_icons import roundButton
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
@@ -186,7 +186,6 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
                                                                  self.ui.verticalLayoutNodeBottom,
                                                                  )
 
-
   def __makeArcEquationSelector(self):
     self.selected_arc_network = self.ui.comboArcNetworks.currentText()
     nw = self.selected_arc_network
@@ -216,7 +215,6 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   def __makeEquationList(self):
 
-
     self.inverse_dictionary = {}  # hash: label, value: (var_ID, eq_ID)
 
     equation_list = {}
@@ -224,7 +222,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.inverse_dictionary = {}
 
     # for component in self.rules:
-      # for nw in self.ontology_container.networks: #rules[component]:
+    # for nw in self.ontology_container.networks: #rules[component]:
 
     for eq_ID in self.equation_dictionary:
       var_ID, equation = self.equation_dictionary[eq_ID]
@@ -266,7 +264,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
       # print("debugging -- end of make equation list")
 
-  def __gotState(self, object, equation_text, equ_ID, var_ID):
+  def __putEquations(self, object, equation_text, equ_ID, var_ID):
     var_equ_tree = DotGraphVariableEquations(self.ontology_container.variables, self.ontology_container.indices, var_ID,
                                              self.ontology_name)
     print("debugging -- dotgrap done")
@@ -280,7 +278,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
           buddies.add((ID, network))
 
     nw, component, dynamics, nature, token = self.selected_node_key
-    node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
+    node_object = TEMPLATE_NODE_OBJECT_WITH_TOKEN % (dynamics, nature, token)
 
     self.ontology_container.equation_assignment[node_object] = {
             "tree"   : var_equ_tree.tree.tree,
@@ -347,7 +345,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     var_ID, equ_ID = self.inverse_dictionary[equ_text]
     print("debugging -- equation no", var_ID, equ_ID)
     print("debugging -- network ", self.selected_node_network)
-    self.__gotState(self.selected_node, equ_text,equ_ID, var_ID)
+    self.__putEquations(self.selected_node, equ_text, equ_ID, var_ID)
     pass
 
   def radioReceiverArcEquations(self, checked):
@@ -357,5 +355,5 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     var_ID, equ_ID = self.inverse_dictionary[equ_text]
     print("debugging -- equation no", var_ID, equ_ID)
     print("debugging -- network ", self.selected_arc_network)
-    self.__gotState(self.selected_arc, equ_text, equ_ID, var_ID)
+    self.__putEquations(self.selected_arc, equ_text, equ_ID, var_ID)
     pass

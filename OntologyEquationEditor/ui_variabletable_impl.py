@@ -143,6 +143,7 @@ class UI_VariableTableDialog(VariableTable):
 
   def __showDeleteDialog(self, selected_ID):
     port_variable = self.variables[selected_ID].port_variable
+    reply1 = None
     if port_variable:
       reply1 = QtWidgets.QMessageBox.question(self, "choose", "this is a port variable -- do you want to delete it ?",
                                               YES, NO)

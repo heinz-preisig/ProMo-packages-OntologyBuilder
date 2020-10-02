@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>416</width>
-    <height>904</height>
+    <height>956</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>260</y>
+     <y>310</y>
      <width>381</width>
      <height>541</height>
     </rect>
@@ -188,7 +188,7 @@
    <property name="title">
     <string>Ontology</string>
    </property>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -306,33 +306,55 @@
      <x>20</x>
      <y>190</y>
      <width>301</width>
-     <height>61</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="title">
     <string>Files</string>
    </property>
-   <widget class="QPushButton" name="pushWrite">
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>60</x>
       <y>20</y>
-      <width>251</width>
-      <height>31</height>
+      <width>160</width>
+      <height>80</height>
      </rect>
     </property>
-    <property name="toolTip">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;- compiles into all available code languages&lt;/p&gt;&lt;p&gt;- writes equations and variables as well as index file&lt;/p&gt;&lt;p&gt;- generates latex files with dot graphs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
-    <property name="text">
-     <string>write - compile - document</string>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-    <property name="default">
-     <bool>true</bool>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pushWrite">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;- compiles into all available code languages&lt;/p&gt;&lt;p&gt;- writes equations and variables as well as index file&lt;/p&gt;&lt;p&gt;- generates latex files with dot graphs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushShowVariables">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;- compiles into all available code languages&lt;/p&gt;&lt;p&gt;- writes equations and variables as well as index file&lt;/p&gt;&lt;p&gt;- generates latex files with dot graphs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QTextBrowser" name="msgWindow">
@@ -341,9 +363,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>810</y>
-     <width>351</width>
+     <x>20</x>
+     <y>860</y>
+     <width>381</width>
      <height>81</height>
     </rect>
    </property>

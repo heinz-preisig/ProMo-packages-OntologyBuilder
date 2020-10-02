@@ -1923,7 +1923,7 @@ class Expression(VerboseParser):
   token UFuncRetain : '\b(abs|neg|diffSpace|left|right)\b';
   token UFuncNone   : '\b(exp|log|ln|sqrt|sin|cos|tan|asin|acos|atan)\b';
   token UFuncInverse: '\b(inv)\b';
-  token UFuncLoose  : '\b(sign)\b';
+  token UFuncLoose  : '\b(sign|stack)\b';
   token MaxMin      : '\b(max|min)\b';
   token IN          : '\b(in)\b';
   token Variable    : '[a-zA-Z_]\w*';

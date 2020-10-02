@@ -41,6 +41,7 @@ from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
+from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
 from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
@@ -105,6 +106,10 @@ class UiOntologyDesign(QMainWindow):
     self.setWindowTitle("OntologyFoundationEditor Design")
     roundButton(self.ui.pushInfo, "info", tooltip="information")
     roundButton(self.ui.pushCompile, "compile", tooltip="compile")
+
+    roundButton(self.ui.pushShowVariables, "variable_show", tooltip="show variables")
+    roundButton(self.ui.pushWrite, "save", tooltip="save")
+
     self.radio = [
             self.ui.radioVariables,
             self.ui.radioVariablesAliases,
@@ -256,6 +261,8 @@ class UiOntologyDesign(QMainWindow):
     self.__setupIndicesAliasTable()
     # self.ontology_container.indices = self.indices #(self.indices, ["index", "block_index"])
 
+
+
   def on_pushCompile_pressed(self):
     # self.__checkRadios("compile")
     # self.compile_only = True
@@ -269,6 +276,26 @@ class UiOntologyDesign(QMainWindow):
     self.__writeMessage("finished latex document")
 
     self.__makeRenderedOutput()
+
+  def on_pushShowVariables_pressed(self):
+    self.__makeVariableTable()
+
+  def __makeVariableTable(self):
+    print("debugging -- make variable table")
+    enabled_var_types = self.variable_types_on_networks[self.current_network]
+    variable_table = VariableTable("All defined variables",
+                                   "variable_picking",
+                                   self.variables,
+                                   self.indices,
+                                   self.current_network,
+                                   enabled_var_types,
+                                   [],
+                                   [],
+                                   None,
+                                   )
+    variable_table.show()
+    variable_table.ui.tableVariable.show()
+    # variable_table.ui.tableVariable.setSortingEnabled(True)
 
   def on_radioGraph_clicked(self):
     self.__hideTable()

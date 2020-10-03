@@ -66,6 +66,19 @@ TOOLTIPS["pick"]["variable"] = s
 TOOLTIPS["pick"]["del"] = s
 TOOLTIPS["pick"]["network"] = s
 
+
+TOOLTIPS["show"] = {}
+s = "sorting is enabled & click to see equation"
+TOOLTIPS["show"]["type"] = s
+TOOLTIPS["show"]["symbol"] = s
+TOOLTIPS["show"]["description"] = s
+TOOLTIPS["show"]["units"] = s
+TOOLTIPS["show"]["indices"] = s
+TOOLTIPS["show"]["eqs"] = s
+TOOLTIPS["show"]["variable"] = s
+TOOLTIPS["show"]["del"] = s
+TOOLTIPS["show"]["network"] = s
+
 # ------------
 TEMPLATES = {}
 

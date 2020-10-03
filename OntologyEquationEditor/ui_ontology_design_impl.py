@@ -41,7 +41,7 @@ from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
-from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
+from OntologyBuilder.OntologyEquationEditor.ui_variabletable_show_impl import UI_VariableTableShow
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
 from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
@@ -283,8 +283,7 @@ class UiOntologyDesign(QMainWindow):
   def __makeVariableTable(self):
     print("debugging -- make variable table")
     enabled_var_types = self.variable_types_on_networks[self.current_network]
-    variable_table = VariableTable("All defined variables",
-                                   "variable_picking",
+    variable_table = UI_VariableTableShow("All defined variables",
                                    self.variables,
                                    self.indices,
                                    self.current_network,
@@ -292,10 +291,12 @@ class UiOntologyDesign(QMainWindow):
                                    [],
                                    [],
                                    None,
+                                  ["info", "new", "port"]
                                    )
-    variable_table.show()
-    variable_table.ui.tableVariable.show()
-    # variable_table.ui.tableVariable.setSortingEnabled(True)
+    variable_table.exec_()
+
+  def on_pushFinished_pressed(self):
+    print("debugging -- got here")
 
   def on_radioGraph_clicked(self):
     self.__hideTable()

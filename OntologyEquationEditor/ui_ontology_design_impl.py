@@ -287,6 +287,7 @@ class UiOntologyDesign(QMainWindow):
                                    self.variables,
                                    self.indices,
                                    self.current_network,
+                                          self.ontology_name,
                                    enabled_var_types,
                                    [],
                                    [],
@@ -483,6 +484,7 @@ class UiOntologyDesign(QMainWindow):
 
     putData(self.compiled_equations[language], e_name)
 
+
     e_name = FILES["coded_equations"] % (self.ontology_location, "just_list_internal_format")
     e_name = e_name.replace(".json", ".txt")
     file = open(e_name, 'w')
@@ -628,6 +630,7 @@ class UiOntologyDesign(QMainWindow):
     print("debugging -- ",out, error)
     # make_it.wait()
 
+    # Note: make the png variable and equation files
     make_variable_equation_pngs(self.ontology_container.variables, self.ontology_name)
     self.__writeMessage("Wrote {} output".format(language), append=True)
 

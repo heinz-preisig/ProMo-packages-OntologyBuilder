@@ -15,7 +15,11 @@ __author__ = 'Preisig, Heinz A'
 
 MAX_HEIGHT = 800
 
+import os
+
 from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+from PyQt5 import QtGui
 
 from Common.resources_icons import roundButton
 from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
@@ -38,11 +42,12 @@ class UI_VariableTableShow(VariableTable):
                variables,
                indices,
                network,
+               ontology_name,
                enabled_types=['ALL'],
                hide_vars=[],
                hide_columns=[],
                info_file=None,
-               hidden=[]
+               hidden=[],
                ):
     """
     constructs a dialog window based on QDialog for picking variables
@@ -60,7 +65,7 @@ class UI_VariableTableShow(VariableTable):
     - completed : button finished has been pressed
     -
     """
-
+    self.ontology_name = ontology_name
     VariableTable.__init__(self,
                            title,
                            "variable_picking",
@@ -92,12 +97,36 @@ class UI_VariableTableShow(VariableTable):
     self.ui.tableVariable.setToolTip("click on row to copy variable to expression")
     self.ui.tableVariable.setSortingEnabled(True)
 
+    ontology_location = self.ontology_name
+    eq_ID = 83
+    eqfile = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+
+    lbl = QtWidgets.QLabel()
+    lbl.setPixmap(QtGui.QPixmap(eqfile))
+    # image = QtGui.QIcon(QtGui.QPixmap(eqfile))
+    # airline = QtWidgets.QTableWidgetItem(image)
+    item = QtWidgets.QTableWidgetItem(lbl)
+    self.ui.tableVariable.setItem(1,2, item)
+    # col_airline = QtWidgets.QTableWidgetItem(airline, 0)
+    # self.ui.PILOT_FullList.Seti(2, 1, code_airline)
+
+    # Pixmap = QtGui.QPixmap(eqfile)
+    # col_airline = QtWidgets.QLabel.setPixmap(Pixmap)
+    # self.ui.tableVariable.setItem(1, 2, col_airline)
+
   def on_tableVariable_itemClicked(self, item):
     r = int(item.row())
     item = self.ui.tableVariable.item
     self.selected_variable_symbol = str(item(r, 1).text())
     print("debugging -- show equations ")
     return
+
+
+  @staticmethod
+  def __addQtTableItem(tab, s, row, col):
+    item = QtWidgets.QTableWidgetItem(s)
+    tab.setRowCount(row + 1)
+    tab.setItem(row, col, item)
 
   def on_tableVariable_itemDoubleClicked(self, item):
     print("debugging -- double click on item", item.row(), item.column())

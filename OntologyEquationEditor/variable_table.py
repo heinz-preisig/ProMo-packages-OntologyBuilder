@@ -186,6 +186,7 @@ class VariableTable(QtWidgets.QDialog):
     tab.setRowCount(row + 1)
     tab.setItem(row, col, item)
 
+
   def on_pushInfo_pressed(self):
     msg_popup = UI_FileDisplayWindow(self.info_file)
     msg_popup.exec_()

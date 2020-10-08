@@ -97,22 +97,15 @@ class UI_VariableTableShow(VariableTable):
     self.ui.tableVariable.setToolTip("click on row to copy variable to expression")
     self.ui.tableVariable.setSortingEnabled(True)
 
-    ontology_location = self.ontology_name
-    eq_ID = 83
-    eqfile = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+    # ontology_location = self.ontology_name  #NOTE: did ot work 
+    # eq_ID = 83
+    # eqfile = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+    #
+    # lbl = QtGui.QIcon(QtGui.QPixmap(eqfile))
+    # item = QtWidgets.QTableWidgetItem()
+    # item.setIcon(lbl)
+    # self.ui.tableVariable.setItem(1,2, item)
 
-    lbl = QtWidgets.QLabel()
-    lbl.setPixmap(QtGui.QPixmap(eqfile))
-    # image = QtGui.QIcon(QtGui.QPixmap(eqfile))
-    # airline = QtWidgets.QTableWidgetItem(image)
-    item = QtWidgets.QTableWidgetItem(lbl)
-    self.ui.tableVariable.setItem(1,2, item)
-    # col_airline = QtWidgets.QTableWidgetItem(airline, 0)
-    # self.ui.PILOT_FullList.Seti(2, 1, code_airline)
-
-    # Pixmap = QtGui.QPixmap(eqfile)
-    # col_airline = QtWidgets.QLabel.setPixmap(Pixmap)
-    # self.ui.tableVariable.setItem(1, 2, col_airline)
 
   def on_tableVariable_itemClicked(self, item):
     r = int(item.row())

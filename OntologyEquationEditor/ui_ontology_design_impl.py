@@ -159,41 +159,9 @@ class UiOntologyDesign(QMainWindow):
 
     self.indices = self.ontology_container.indices  # readIndices()  # indices
     self.variables = Variables(self.ontology_container)
-    self.variables.importVariables(self.ontology_container.variables, self.indices)  # also link the indices for compilation
+    self.variables.importVariables(self.ontology_container.variables,
+                                   self.indices)  # also link the indices for compilation
 
-    # ### converting version 6 --> 7:
-    # if self.ontology_container.version_variable_equation == "6":
-    #   for var_ID in self.variables:
-    #     equations = self.variables[var_ID].equations
-    #     for equ_ID in equations:
-    #       compiler = makeCompiler(self.variables, self.indices, var_ID, equ_ID, language="global_ID")
-    #       try:
-    #         expression = equations[equ_ID]["rhs"]
-    #         res = compiler(expression)
-    #       except (SemanticError,
-    #               SyntacticError,
-    #               LexicalError,
-    #               WrongToken,
-    #               UnitError,
-    #               IndexStructureError,
-    #               VarError,
-    #               ) as _m:
-    #         print('checked expression failed %s -- %s' % (self.variables[var_ID].label, _m))
-    #         res = compiler(expression)  # NOTE: for debugging
-    #         os._exit(-1)
-    #         res = None
-    #
-    #       # the following is all a little tricky. Direct assignment fails...
-    #       ID_string = deepcopy(str(res))
-    #       # print(ID_string)
-    #       self.variables[var_ID].equations[equ_ID]["rhs"] = ID_string
-    #   self.ontology_container.writeVariables(self.variables)
-    #
-    #   _answ = makeMessageBox("variable file was converted from version 6 to 7 \n restart", buttons=["OK"])
-    #
-    #   os._exit(-1)
-
-    # ============================================  continue for version 7 code =======================================
     self.state = "edit"
 
     # setup for next GUI-phase
@@ -234,8 +202,6 @@ class UiOntologyDesign(QMainWindow):
     if self.current_network:
       self.ui.groupEdit.show()
       self.ui.combo_EditVariableTypes.show()
-      # self.table_aliases_v.hide()
-      # self.table_aliases_i.hide()
       self.__writeMessage("edit variables/equations")
     else:
       self.__writeMessage("select variable type first")
@@ -261,8 +227,6 @@ class UiOntologyDesign(QMainWindow):
     self.__setupIndicesAliasTable()
     # self.ontology_container.indices = self.indices #(self.indices, ["index", "block_index"])
 
-
-
   def on_pushCompile_pressed(self):
     # self.__checkRadios("compile")
     # self.compile_only = True
@@ -278,22 +242,19 @@ class UiOntologyDesign(QMainWindow):
     self.__makeRenderedOutput()
 
   def on_pushShowVariables_pressed(self):
-    self.__makeVariableTable()
-
-  def __makeVariableTable(self):
     print("debugging -- make variable table")
     enabled_var_types = self.variable_types_on_networks[self.current_network]
     variable_table = UI_VariableTableShow("All defined variables",
-                                   self.variables,
-                                   self.indices,
-                                   self.current_network,
+                                          self.variables,
+                                          self.indices,
+                                          self.current_network,
                                           self.ontology_name,
-                                   enabled_var_types,
-                                   [],
-                                   [],
-                                   None,
-                                  ["info", "new", "port"]
-                                   )
+                                          enabled_var_types,
+                                          [],
+                                          [],
+                                          None,
+                                          ["info", "new", "port"]
+                                          )
     variable_table.exec_()
 
   def on_pushFinished_pressed(self):
@@ -375,15 +336,18 @@ class UiOntologyDesign(QMainWindow):
       _right = self.intraconnection_nws[nw]["right"]
       _set = set(_types[_left]) | set(_types[_right])
       network_for_expression = nw
-      # network_for_expression = list(_set) #self.intraconnection_nws[nw]["left"]  # NOTE: this should be all from both sides
+      # network_for_expression = list(_set) #self.intraconnection_nws[nw]["left"]  # NOTE: this should be all from
+      #  both sides
       # network_variable_source = network_for_expression
       # vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_variable]
       # RULE: NOTE: the variable types are the same on the left, the right and the boudnary -- at least for the time
       # being
-      vars_types_on_network_variable = sorted(_set) #self.ontology_container.variable_types_on_networks[network_for_expression]
+      vars_types_on_network_variable = sorted(_set)  # self.ontology_container.variable_types_on_networks[
+      # network_for_expression]
       self.ui.combo_EditVariableTypes.clear()
       self.ui.combo_EditVariableTypes.addItems(vars_types_on_network_variable)
-      vars_types_on_network_expression = list(_set) #self.ontology_container.variable_types_on_networks[network_for_expression]
+      vars_types_on_network_expression = list(
+        _set)  # self.ontology_container.variable_types_on_networks[network_for_expression]
     else:
       self.ui.radioNode.toggle()
       self.on_radioNode_clicked()
@@ -401,12 +365,12 @@ class UiOntologyDesign(QMainWindow):
           # print("debugging -- inter_nw", inter_nw)
 
       network_variable_source = network_for_expression
-      vars_types_on_network_expression = sorted(self.ontology_container.variable_types_on_networks[network_variable_source])
+      vars_types_on_network_expression = sorted(
+              self.ontology_container.variable_types_on_networks[network_variable_source])
       for nw in interface_variable_list:
         for var_type in self.ontology_container.variable_types_on_interfaces[nw]:
           vars_types_on_network_expression.append(var_type)
       vars_types_on_network_expression = list(set(vars_types_on_network_expression))
-
 
     self.ui_eq = UI_Equations(what,  # what: string "network" | "interface" | "intraface"
                               self.variables,
@@ -461,7 +425,6 @@ class UiOntologyDesign(QMainWindow):
       except (EditorError) as error:
         self.__writeMessage(error.msg)
 
-
     self.__makeRenderedOutput()
 
   def __makeRenderedOutput(self):
@@ -483,7 +446,6 @@ class UiOntologyDesign(QMainWindow):
               }
 
     putData(self.compiled_equations[language], e_name)
-
 
     e_name = FILES["coded_equations"] % (self.ontology_location, "just_list_internal_format")
     e_name = e_name.replace(".json", ".txt")
@@ -627,11 +589,11 @@ class UiOntologyDesign(QMainWindow):
             # stderr=subprocess.PIPE
             )
     out, error = make_it.communicate()
-    print("debugging -- ",out, error)
+    print("debugging -- ", out, error)
     # make_it.wait()
 
     # Note: make the png variable and equation files
-    make_variable_equation_pngs(self.ontology_container.variables, self.ontology_name)
+    make_variable_equation_pngs(self.ontology_container.variables, self.variables.changes, self.ontology_name)
     self.__writeMessage("Wrote {} output".format(language), append=True)
 
   def __getAllEquationsPerType(self, language):
@@ -780,13 +742,13 @@ class UiOntologyDesign(QMainWindow):
       pass
 
   def __setupVariableTable(self):
-    choice=self.current_variable_type
+    choice = self.current_variable_type
     if self.current_network in self.interconnection_nws:
       network_variable = self.current_network  # self.interconnection_nws[self.current_network]["right"]
       network_expression = network_variable  # self.interconnection_nws[self.current_network]["left"]
     elif self.current_network in self.intraconnection_nws:
-      network_variable = self.current_network #self.intraconnection_nws[self.current_network]["right"]
-      network_expression = self.current_network #self.intraconnection_nws[self.current_network]["left"]
+      network_variable = self.current_network  # self.intraconnection_nws[self.current_network]["right"]
+      network_expression = self.current_network  # self.intraconnection_nws[self.current_network]["left"]
     else:
       network_variable = self.current_network
       network_expression = self.current_network

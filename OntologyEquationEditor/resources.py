@@ -659,7 +659,7 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
   return s
 
 
-def make_variable_equation_pngs(variables, ontology_name):
+def make_variable_equation_pngs(variables, changes, ontology_name):
   global lhs, rhs, reader, line, number, network, error
 
   rhs = {}
@@ -695,41 +695,43 @@ def make_variable_equation_pngs(variables, ontology_name):
   header_file.close()
 
   for eq_ID in rhs:
-    out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+    if eq_ID in changes["equations"]["changed"]:
+      out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
 
-    args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", rhs[eq_ID],
-            ontology_location]
+      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", rhs[eq_ID],
+              ontology_location]
 
-    try:  # reports an error after completing the last one -- no idea
-      make_it = subprocess.Popen(
-              args,
-              start_new_session=True,
-              # restore_signals=False,
-              # stdout=subprocess.PIPE,
-              # stderr=subprocess.PIPE
-              )
-      out, error = make_it.communicate()
-    except:
-      pass
+      try:  # reports an error after completing the last one -- no idea
+        make_it = subprocess.Popen(
+                args,
+                start_new_session=True,
+                # restore_signals=False,
+                # stdout=subprocess.PIPE,
+                # stderr=subprocess.PIPE
+                )
+        out, error = make_it.communicate()
+      except:
+        pass
 
   for var_ID in lhs:
+    if var_ID in changes["variables"]["changed"]:
 
-    out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
+      out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
 
-    args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", lhs[var_ID],
-            ontology_location]
+      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", lhs[var_ID],
+              ontology_location]
 
-    try:  # reports an error after completing the last one -- no idea
-      make_it = subprocess.Popen(
-              args,
-              start_new_session=True,
-              restore_signals=False,
-              # stdout=subprocess.PIPE,
-              # stderr=subprocess.PIPE
-              )
-      out, error = make_it.communicate()
-    except:
-      pass
+      try:  # reports an error after completing the last one -- no idea
+        make_it = subprocess.Popen(
+                args,
+                start_new_session=True,
+                restore_signals=False,
+                # stdout=subprocess.PIPE,
+                # stderr=subprocess.PIPE
+                )
+        out, error = make_it.communicate()
+      except:
+        pass
 
 
 def makeVariables(variables):

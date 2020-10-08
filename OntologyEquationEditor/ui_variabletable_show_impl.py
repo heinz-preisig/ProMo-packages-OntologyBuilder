@@ -97,7 +97,7 @@ class UI_VariableTableShow(VariableTable):
     self.ui.tableVariable.setToolTip("click on row to copy variable to expression")
     self.ui.tableVariable.setSortingEnabled(True)
 
-    # ontology_location = self.ontology_name  #NOTE: did ot work 
+    # ontology_location = self.ontology_name  #NOTE: did ot work
     # eq_ID = 83
     # eqfile = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
     #

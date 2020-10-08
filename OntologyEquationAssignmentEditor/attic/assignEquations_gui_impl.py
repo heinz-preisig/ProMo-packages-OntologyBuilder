@@ -62,8 +62,8 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.variables = self.ontology_container.variables  # readVariables()
     self.incidence_dictionary, self.inv_incidence_dictionary = makeIncidenceDictionaries(self.variables)
 
-    self.equation_dictionary = {}
-    self.__makeEquationDictionary()
+    self.equation_dictionary = self.ontology_container.equation_dictionary
+    # self.__makeEquationDictionary()
     self.equation_assignment = self.ontology_container.equation_assignment
 
     self.radio_selectors = {}
@@ -113,10 +113,10 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.ui.groupBoxEquations.hide()
     self.__makeEmptyDataStructures()
 
-  def __makeEquationDictionary(self):
-    for var_ID in self.variables:
-      for eq_ID in self.variables[var_ID]["equations"]:
-        self.equation_dictionary[eq_ID] = self.variables[var_ID]["equations"][eq_ID]
+  # def __makeEquationDictionary(self):
+  #   for var_ID in self.variables:
+  #     for eq_ID in self.variables[var_ID]["equations"]:
+  #       self.equation_dictionary[eq_ID] = self.variables[var_ID]["equations"][eq_ID]
 
   def __makeEmptyDataStructures(self):
 

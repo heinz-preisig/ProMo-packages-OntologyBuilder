@@ -302,6 +302,9 @@ class VarError(Exception):
   def __str__(self):
     return ">>> %s" % self.msg
 
+class TrackingError(VarError):
+  def __init__(self, msg):
+    self.msg = msg
 
 class UnitError(VarError):
   """
@@ -474,6 +477,41 @@ class Units():
   def __str__(self):
     return str(self.asList())
 
+class Tracking(dict):
+  def __init__(self):
+    super().__init__(self)
+    for item in ["unchanged", "changed", "deleted"]:
+      self[item] = []
+
+  def importIDList(self, ID_list):
+    self["unchanged"].extend(ID_list)
+
+  def importID(self, ID):
+    self["unchanged"].append(ID)
+
+  def add(self, ID):
+    self["changed"].append(ID)
+
+  def remove(self, ID):
+    for item in ["unchanged", "changed"]:
+      if ID in self[item]:
+        self[item].remove(ID)
+        self[item]["deleted"].append(ID)
+        return
+    raise TrackingError("no such ID %s recorded"%ID)
+
+
+class TrackChanges(dict):
+  def __init__(self):
+    super().__init__(self)
+    for target in ["variables", "equations"]:
+      self[target] = Tracking()
+
+  def replaceEquation(self, old_ID, new_ID):
+    self["equations"].remove(old_ID)
+    self["equations"].add(new_ID)
+
+
 
 class Variables(OrderedDict):
   """
@@ -495,6 +533,10 @@ class Variables(OrderedDict):
     self.interconnection_networks = list(ontology_container.interconnection_network_dictionary.keys())
     self.heirs_network_dictionary = ontology_container.heirs_network_dictionary
     self.ProMoIRI = self.ontology_container.ProMoIRI
+
+    # keep track of changes and additions
+    self.changes = TrackChanges()
+
 
   def resetProMoIRI(self):
     """
@@ -527,6 +569,7 @@ class Variables(OrderedDict):
       self[ID] = PhysicalVariable(**kwargs)  # NOTE: no check on existence done -- must happen on defining
       self[ID].indices = self.ontology_container.indices  # variable does not know the indices dictionary on definition.
       self.indexVariables()
+      self.changes["variables"].add(ID)
     else:
       raise VarError("no variable ID defined")
     return ID
@@ -542,6 +585,7 @@ class Variables(OrderedDict):
     for ID in variables:
       variables[ID]["indices"] = indices
       self[ID] = PhysicalVariable(**variables[ID])
+      self.changes["variables"].importID(ID)
     self.indexVariables()
 
   def indexVariables(self):
@@ -619,7 +663,6 @@ class Variables(OrderedDict):
         for ID in self:
           if (self[ID].type == variable_class) and (self[ID].network == nw):
             self.index_networks_for_variable[nw][variable_class].append(ID)
-
 
     # make index for variables
     for nw in self.networks:
@@ -710,23 +753,23 @@ class Variables(OrderedDict):
       for variable_class in acc[sink]:
         if variable_class in acc[nw]:
           _set_source = set(acc[source][variable_class])
-          _set_sink  = set(acc[sink][variable_class])
+          _set_sink = set(acc[sink][variable_class])
           acc[nw][variable_class] = sorted(_set_source | _set_sink)
         else:
           acc[nw][variable_class] = acc[sink]
 
-    print("debugging ")
-      # for nw_l_r in [source, sink]:
+    # print("debugging ")
+    # for nw_l_r in [source, sink]:
 
-        # for variable_class in self.ontology_container.variable_types_on_networks[nw_l_r]:
-        #   # print("debugging --")
-        #   for ID in self:
-        #     if self[ID].network == nw_l_r:
-        #       for variable_class in self.ontology_container.variable_types_on_intrafaces[nw]:
-        #         if self[ID].type == variable_class:
-        #           if variable_class not in acc[nw]:
-        #             acc[nw][variable_class] = []
-        #           acc[nw][variable_class].append(ID)
+    # for variable_class in self.ontology_container.variable_types_on_networks[nw_l_r]:
+    #   # print("debugging --")
+    #   for ID in self:
+    #     if self[ID].network == nw_l_r:
+    #       for variable_class in self.ontology_container.variable_types_on_intrafaces[nw]:
+    #         if self[ID].type == variable_class:
+    #           if variable_class not in acc[nw]:
+    #             acc[nw][variable_class] = []
+    #           acc[nw][variable_class].append(ID)
 
     for nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary:
       for i_nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary[nw]:
@@ -757,6 +800,7 @@ class Variables(OrderedDict):
     """
     # print("debugging -- remove variable ", variable_ID, self[variable_ID].label)
     del self[variable_ID]
+    self.changes["variables"].remove(variable_ID)
     self.indexVariables()
 
   def removeEquation(self, equation_ID):
@@ -771,7 +815,26 @@ class Variables(OrderedDict):
       if equation_ID in equations:
         del equations[equation_ID]
         print("debugging -- remove equation ", equation_ID, "  in variable ", v, self[v].label)
+        # record changes
+        self.changes["equations"].remove(equation_ID)
+
     self.indexVariables()  # indexEquationsInNetworks()
+
+  def replaceEquation(self, var_ID, old_equ_ID, new_equ_ID, documentation, equation_record ):
+    variable_record = self.variables[var_ID]
+    variable_record.doc = documentation
+    # variable_record.index_structures = self.checked_var.index_structures
+    # variable_record.units = self.checked_var.units
+    # delete old equation first
+    if old_equ_ID:
+      del variable_record.equations[old_equ_ID]
+    variable_record.equations.update({
+            new_equ_ID: equation_record
+            })
+
+    # record changes
+    self.changes.replaceEquation(old_equ_ID, new_equ_ID)
+
 
   def existSymbol(self, network, label):
     """
@@ -988,7 +1051,6 @@ class PhysicalVariable():
   def shiftType(self, type):
     self.type = type
     # print("debugging -- shifting type")
-
 
   def setLanguage(self, language):
     self.language = language
@@ -1302,7 +1364,7 @@ class ReduceProduct(BinaryOperator):
     try:
       self.index = self.space.inverse_indices[index]
     except:
-      raise IndexStructureError(" no such index ", index)
+      raise IndexStructureError(" no such index %s" % index)
     self.units = a.units * b.units
     s_index_a = set(a.index_structures)
     s_index_b = set(b.index_structures)

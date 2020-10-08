@@ -414,16 +414,18 @@ class UI_Equations(QtWidgets.QWidget):
 
       self.variables.addNewVariable(ID=var_ID, **variable_record)
     else:
-      variable_record = self.variables[self.selected_variable_ID]
-      variable_record.doc = documentation
-      variable_record.index_structures = self.checked_var.index_structures
-      variable_record.units = self.checked_var.units
-      # delete old equation first
-      if old_equ_ID:
-        del variable_record.equations[old_equ_ID]
-      variable_record.equations.update({
-              equ_ID: equation_record
-              })
+      self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, equ_ID, documentation, equation_record)
+
+      # variable_record = self.variables[self.selected_variable_ID]
+      # variable_record.doc = documentation
+      # variable_record.index_structures = self.checked_var.index_structures
+      # variable_record.units = self.checked_var.units
+      # # delete old equation first
+      # if old_equ_ID:
+      #   del variable_record.equations[old_equ_ID]
+      # variable_record.equations.update({
+      #         equ_ID: equation_record
+      #         })
 
     self.variables.indexVariables()
     self.update_space_information.emit()

@@ -74,6 +74,7 @@ class VariableTable(QtWidgets.QDialog):
   #
 
   def reset_table(self):
+    self.variables.indexVariables()                 # this was a hard one
     self.ui.tableVariable.clearContents()
     self.ui.tableVariable.setRowCount(0)
     self.makeTable()

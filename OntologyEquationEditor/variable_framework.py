@@ -492,13 +492,30 @@ class Tracking(dict):
   def add(self, ID):
     self["changed"].append(ID)
 
+  def changed(self, ID):
+    if ID in self["unchanged"]:
+      self["unchanged"].remove(ID)
+      self["changed"].add(ID)
+      return
+    elif ID in self["changed"]:
+      return
+    else:
+      raise TrackingError("mp sicj OD %s "%ID)
+
+  def changedAll(self):
+    self["changed"].extend(self["unchanged"])
+    self["unchanged"] = []
+
+
+
   def remove(self, ID):
     for item in ["unchanged", "changed"]:
       if ID in self[item]:
         self[item].remove(ID)
         self[item]["deleted"].append(ID)
         return
-    raise TrackingError("no such ID %s recorded"%ID)
+    # raise TrackingError("no such ID %s recorded"%ID)
+    print("Tracking Error -- no such ID %s recorded" % ID)
 
 
 class TrackChanges(dict):
@@ -510,6 +527,7 @@ class TrackChanges(dict):
   def replaceEquation(self, old_ID, new_ID):
     self["equations"].remove(old_ID)
     self["equations"].add(new_ID)
+
 
 
 
@@ -792,6 +810,13 @@ class Variables(OrderedDict):
   #   for nw in self.networks + self.interconnection_networks:
   #     self.index_equation_in_definition_network[nw] = []
 
+  def changeVariableAlias(self, variable_ID, language, new_alias):
+    self[variable_ID].aliases[language] = new_alias
+    affected_equations = self.inv_incidence_dictionary[variable_ID]
+    self.changes["variables"].changed(variable_ID)
+    for eq_ID in affected_equations:
+      self.changed["equations"].changed(eq_ID)
+
   def removeVariable(self, variable_ID):
     """
     removes the variable with variable_ID
@@ -821,7 +846,7 @@ class Variables(OrderedDict):
     self.indexVariables()  # indexEquationsInNetworks()
 
   def replaceEquation(self, var_ID, old_equ_ID, new_equ_ID, documentation, equation_record ):
-    variable_record = self.variables[var_ID]
+    variable_record = self[var_ID]
     variable_record.doc = documentation
     # variable_record.index_structures = self.checked_var.index_structures
     # variable_record.units = self.checked_var.units

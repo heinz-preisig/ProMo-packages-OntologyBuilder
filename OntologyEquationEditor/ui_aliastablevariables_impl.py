@@ -131,8 +131,8 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
     language = self.languages[int(item.column())]
     row = int(item.row())
     ID = self.keep_IDs[row]
-    # token = self.variables[ID]
-    self.variables[ID].aliases[language] = str(item.text())
+    # self.variables[ID].aliases[language] = str(item.text())
+    self.variables.changeVariableAlias(ID, language, str(item.text()))
     self.__resize()
 
   def on_pushInfo_pressed(self):

@@ -512,7 +512,7 @@ class Tracking(dict):
     for item in ["unchanged", "changed"]:
       if ID in self[item]:
         self[item].remove(ID)
-        self[item]["deleted"].append(ID)
+        self["deleted"].append(ID)
         return
     # raise TrackingError("no such ID %s recorded"%ID)
     print("Tracking Error -- no such ID %s recorded" % ID)
@@ -604,6 +604,10 @@ class Variables(OrderedDict):
       variables[ID]["indices"] = indices
       self[ID] = PhysicalVariable(**variables[ID])
       self.changes["variables"].importID(ID)
+    for ID in variables:
+      for eq_ID in variables[ID]["equations"]:
+        self.changes["equations"].importID(eq_ID)
+
     self.indexVariables()
 
   def indexVariables(self):

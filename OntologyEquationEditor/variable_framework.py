@@ -2003,13 +2003,16 @@ class Stack(Operator):
   def __str__(self):
 
     language = self.space.language
+
     s = CODE[language]["delimiter"]["("]
     s += str(self.variable_list[0])
     for i in range(1, len(self.variable_list)):
       s += CODE[language]["delimiter"][","]
       s += str(self.variable_list[i])
     s += CODE[language]["delimiter"][")"]
+
     return s
+
 
 class MixedStack(Operator):
 
@@ -2023,18 +2026,14 @@ class MixedStack(Operator):
 
 
   def __str__(self):
-
     language = self.space.language
-
-    s = CODE[language]["delimiter"]["("]
-    s += str(self.variable_list[0])
+    s_list = str(self.variable_list[0])
     for i in range(1, len(self.variable_list)):
-      s += CODE[language]["delimiter"][","]
-      s += str(self.variable_list[i])
-    s += CODE[language]["delimiter"][")"]
+      s_list += CODE[language][","]
+      s_list += str(self.variable_list[i])
 
+    s = CODE[language]["MixedStack"]%s_list
     return s
-
 
 # Note: that functions are defined in different places for the time being including resource
 #        one could consider writing the documentation/definition part of the parser using a template.

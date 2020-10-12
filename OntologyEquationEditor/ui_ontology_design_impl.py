@@ -109,7 +109,7 @@ class UiOntologyDesign(QMainWindow):
 
     roundButton(self.ui.pushShowVariables, "variable_show", tooltip="show variables")
     roundButton(self.ui.pushWrite, "save", tooltip="save")
-    roundButton(self.ui.pushMakeAllVarEqPictures, "reset" , tooltip="prepare all variables & equations for generating pictures")
+    roundButton(self.ui.pushMakeAllVarEqPictures, "equation" , tooltip="prepare all variables & equations for generating pictures")
     roundButton(self.ui.pushExit, "exit", tooltip="exit")
 
     self.radio = [
@@ -262,6 +262,8 @@ class UiOntologyDesign(QMainWindow):
   def on_pushMakeAllVarEqPictures_pressed(self):
     self.variables.changes["equations"].changedAll()
     self.variables.changes["variables"].changedAll()
+
+    self.__makeVariableEquationPictures("latex")
 
   def on_pushExit_pressed(self):
     self.close()
@@ -581,15 +583,15 @@ class UiOntologyDesign(QMainWindow):
 
     # self.__makeDotGraphs()
 
+    self.__makeVariableEquationPictures(language)
+
+  def __makeVariableEquationPictures(self, language):
     location = DIRECTORIES["latex_main_location"] % self.ontology_location
     f_name = FILES["latex_shell_var_equ_doc_command_exec"] % self.ontology_location
     documentation_file = FILES["latex_documentation"] % self.ontology_name
-
     if not self.compile_only:
       saveBackupFile(documentation_file)
-
     self.__writeMessage("busy making var/eq images")
-
     args = ['sh', f_name, location]
     print('ARGS: ', args)
     make_it = subprocess.Popen(
@@ -601,7 +603,6 @@ class UiOntologyDesign(QMainWindow):
     out, error = make_it.communicate()
     print("debugging -- ", out, error)
     # make_it.wait()
-
     # Note: make the png variable and equation files
     make_variable_equation_pngs(self.ontology_container.variables, self.variables.changes, self.ontology_name)
     self.__writeMessage("Wrote {} output".format(language), append=True)

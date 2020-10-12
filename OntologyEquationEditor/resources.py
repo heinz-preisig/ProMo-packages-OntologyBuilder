@@ -66,7 +66,6 @@ TOOLTIPS["pick"]["variable"] = s
 TOOLTIPS["pick"]["del"] = s
 TOOLTIPS["pick"]["network"] = s
 
-
 TOOLTIPS["show"] = {}
 s = "sorting is enabled & click to see equation"
 TOOLTIPS["show"]["type"] = s
@@ -160,7 +159,7 @@ UNITARY_NO_UNITS = ["exp", "log", "ln", "sqrt", "sin", "cos", "tan", "asin", "ac
 UNITARY_RETAIN_UNITS = ["abs", "neg", "diffSpace", "left", "right"]
 UNITARY_INVERSE_UNITS = ["inv"]
 UNITARY_LOOSE_UNITS = ["sign"]
-NAMED_FUNCTIONS = ["blockProd", "Root"]
+NAMED_FUNCTIONS = ["blockProd", "Root", "MixedStack"]
 
 LIST_FUNCTIONS_SINGLE_ARGUMENT = UNITARY_NO_UNITS + UNITARY_RETAIN_UNITS + UNITARY_INVERSE_UNITS + UNITARY_LOOSE_UNITS
 
@@ -220,6 +219,7 @@ CODE[language]["combi"] = {
 
 # ------------------------------------------------------------------------------------
 CODE[language]["bracket"] = delimiters["("] + "%s" + delimiters[")"]
+CODE[language][","] = CODE[language]["delimiter"][","]
 
 ### operators ------------------------------------------------------------------------
 CODE[language]["+"] = "%s" + CODE[language]["operator"]["+"] + "%s"
@@ -276,6 +276,10 @@ CODE[language]["blockProd"] = CODE[language]["function"]["blockProd"] + \
                               CODE[language]["delimiter"][")"]
 
 CODE[language]["Root"] = CODE[language]["function"]["Root"] + CODE[language]["combi"]["tuple"]
+CODE[language]["MixedStack"] = CODE[language]["function"]["MixedStack"] + \
+                               CODE[language]["delimiter"]["("] + \
+                               "%s" + \
+                               CODE[language]["delimiter"][")"]
 
 CODE[language]["()"] = "%s"  # used by temporary variables
 
@@ -298,6 +302,7 @@ CODE[language].update(invertDict(CODE[source]["function"]))
 language = LANGUAGES["internal_code"]
 CODE[language] = {}
 CODE[language]["bracket"] = "(" + "%s" + ")"
+CODE[language][","] = ","
 
 CODE[language]["+"] = "%s + %s"
 CODE[language]["-"] = "%s - %s"
@@ -319,6 +324,7 @@ for f in LIST_FUNCTIONS_SINGLE_ARGUMENT:  # UNITARY_NO_UNITS + UNITARY_RETAIN_UN
   CODE[language][f] = f + "(%s)"  # identical syntax
 
 CODE[language]["Root"] = "Root(%s,%s)"
+CODE[language]["MixedStack"] = "MixedStack(%s)"
 
 CODE[language]["blockProd"] = "blockProd({}, {}, {})"  # exception from the above
 
@@ -337,6 +343,7 @@ CODE[language]["variable"] = "%s"  # label of the variable
 language = "matlab"
 CODE[language] = {}
 CODE[language]["bracket"] = "(" + "%s" + ")"
+CODE[language][","] = ","
 
 CODE[language]["+"] = "%s + %s"
 CODE[language]["-"] = "%s - %s"
@@ -368,6 +375,7 @@ CODE[language]["right"] = "right(%s)"
 
 CODE[language]["blockProd"] = "blockProd({}, {}, {})"
 CODE[language]["Root"] = "Root(%s,%s)"
+CODE[language]["MixedStack"] = "MixedStack(%s)"
 
 CODE[language]["variable"] = "%s"  # label of the variable
 
@@ -387,6 +395,7 @@ CODE[language]["variable"] = "%s"  # label of the variable
 language = "python"
 CODE[language] = {}
 CODE[language]["bracket"] = "(" + "%s" + ")"
+CODE[language][","] = ","
 
 CODE[language]["array"] = "np.array(%s)"
 CODE[language]["list"] = "np.array"
@@ -409,6 +418,8 @@ CODE[language]["max"] = "np.fmax(%s, %s)"
 CODE[language]["min"] = "np.fmin(%s, %s)"
 
 CODE[language]["()"] = "%s"  # "(%s)"    # TODO: remove bracketing of temporary variable in code (L)
+CODE[language][","] = ","
+
 CODE[language]["index"] = "%s"
 CODE[language]["index_diff_state"] = "d%s"
 CODE[language]["block_index.delimiter"] = "_x_"
@@ -436,6 +447,7 @@ CODE[language]["inv"] = "np.reciprocal(%s)"
 CODE[language]["sign"] = "np.sign(%s)"
 CODE[language]["blockProd"] = "blockProduct({}, {}, {})"
 CODE[language]["Root"] = "Root(%s, %s)"
+CODE[language]["MixedStack"] = "MixedStack(%s)"
 CODE[language]["obj"] = "self.{}"
 
 CODE[language]["variable"] = "%s"  # label of the variable
@@ -444,6 +456,7 @@ CODE[language]["variable"] = "%s"  # label of the variable
 language = "cpp"
 CODE[language] = {}
 CODE[language]["bracket"] = "(" + "%s" + ")"
+CODE[language][","] = ","
 CODE[language]["array"] = "np.array(%s)"
 CODE[language]["list"] = "liste(%s)"
 
@@ -484,6 +497,7 @@ CODE[language]["sign"] = "np.sign(%s)"
 
 CODE[language]["blockProd"] = "blockProduct(%s, %s, %s)"
 CODE[language]["Root"] = "Root(%s, %s)"
+CODE[language]["MixedStack"] = "MixedStack(%s)"
 
 CODE[language]["()"] = "%s"  # "(%s)"   # TODO: remove corresponding bracketing in temp variables
 
@@ -502,6 +516,7 @@ CODE[language]["variable"] = "%s"  # label of the variable
 language = "latex"
 CODE[language] = {}
 CODE[language]["bracket"] = r"\left(" + r"%s" + r"\right)"
+CODE[language][","] = ","
 
 CODE[language]["+"] = "%s  + %s"
 CODE[language]["-"] = "%s  - %s"
@@ -531,6 +546,7 @@ CODE[language]["sign"] = r"\text{sign} \left( %s \right)"
 
 CODE[language]["blockProd"] = r"\displaystyle \prod_{{ {1} \in {2} }} {0}"
 CODE[language]["Root"] = r"Root\left( %s, %s \right)"
+CODE[language]["MixedStack"] = r"MixedStack\left( %s \right)"
 
 CODE[language]["diffSpace"] = "diffSpace(%s)"
 CODE[language]["left"] = "%s^{-\epsilon}"
@@ -782,6 +798,7 @@ class VarEqTree():
                   hash :: variable_<variable ID> | equation_<equation_ID>
                   value :: IDs identifiers of type enumberation (integers)
   """
+
   def __init__(self, variables, var_ID):
     self.TEMPLATE_VARIABLE = "variable_%s"
     self.TEMPLATE_EQUATION = "equation_%s"

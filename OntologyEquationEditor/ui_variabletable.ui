@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1143</width>
-    <height>285</height>
+    <width>849</width>
+    <height>378</height>
    </rect>
   </property>
   <property name="contextMenuPolicy">
    <enum>Qt::PreventContextMenu</enum>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>variable table</string>
   </property>
   <property name="toolTip">
    <string>see info button</string>
@@ -22,8 +22,8 @@
   <widget class="QTableWidget" name="tableVariable">
    <property name="geometry">
     <rect>
-     <x>330</x>
-     <y>10</y>
+     <x>20</x>
+     <y>90</y>
      <width>801</width>
      <height>261</height>
     </rect>
@@ -113,8 +113,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>11</x>
-     <y>11</y>
+     <x>20</x>
+     <y>0</y>
      <width>291</width>
      <height>91</height>
     </rect>

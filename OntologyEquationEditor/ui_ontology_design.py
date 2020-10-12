@@ -126,6 +126,12 @@ class Ui_OntologyDesigner(object):
         self.pushShowVariables.setDefault(True)
         self.pushShowVariables.setObjectName("pushShowVariables")
         self.horizontalLayout_2.addWidget(self.pushShowVariables)
+        self.pushMakeAllVarEqPictures = QtWidgets.QPushButton(self.horizontalLayoutWidget)
+        self.pushMakeAllVarEqPictures.setText("")
+        self.pushMakeAllVarEqPictures.setAutoDefault(False)
+        self.pushMakeAllVarEqPictures.setDefault(True)
+        self.pushMakeAllVarEqPictures.setObjectName("pushMakeAllVarEqPictures")
+        self.horizontalLayout_2.addWidget(self.pushMakeAllVarEqPictures)
         self.msgWindow = QtWidgets.QTextBrowser(OntologyDesigner)
         self.msgWindow.setEnabled(False)
         self.msgWindow.setGeometry(QtCore.QRect(20, 860, 381, 81))
@@ -164,6 +170,12 @@ class Ui_OntologyDesigner(object):
         self.msgWindow.setFont(font)
         self.msgWindow.setAcceptDrops(False)
         self.msgWindow.setObjectName("msgWindow")
+        self.pushExit = QtWidgets.QPushButton(OntologyDesigner)
+        self.pushExit.setGeometry(QtCore.QRect(330, 230, 76, 25))
+        self.pushExit.setText("")
+        self.pushExit.setAutoDefault(False)
+        self.pushExit.setDefault(True)
+        self.pushExit.setObjectName("pushExit")
 
         self.retranslateUi(OntologyDesigner)
         self.tabWidget.setCurrentIndex(0)
@@ -171,7 +183,7 @@ class Ui_OntologyDesigner(object):
 
     def retranslateUi(self, OntologyDesigner):
         _translate = QtCore.QCoreApplication.translate
-        OntologyDesigner.setWindowTitle(_translate("OntologyDesigner", "Dialog"))
+        OntologyDesigner.setWindowTitle(_translate("OntologyDesigner", "ProMo Equation Editor"))
         self.groupVariables.setTitle(_translate("OntologyDesigner", "variables & equations"))
         self.groupEdit.setTitle(_translate("OntologyDesigner", "Edit"))
         self.groupBoxComponents.setTitle(_translate("OntologyDesigner", "components"))
@@ -196,3 +208,5 @@ class Ui_OntologyDesigner(object):
         self.groupFiles.setTitle(_translate("OntologyDesigner", "Files"))
         self.pushWrite.setToolTip(_translate("OntologyDesigner", "<html><head/><body><p>- compiles into all available code languages</p><p>- writes equations and variables as well as index file</p><p>- generates latex files with dot graphs</p></body></html>"))
         self.pushShowVariables.setToolTip(_translate("OntologyDesigner", "<html><head/><body><p>- compiles into all available code languages</p><p>- writes equations and variables as well as index file</p><p>- generates latex files with dot graphs</p></body></html>"))
+        self.pushMakeAllVarEqPictures.setToolTip(_translate("OntologyDesigner", "<html><head/><body><p>- compiles into all available code languages</p><p>- writes equations and variables as well as index file</p><p>- generates latex files with dot graphs</p></body></html>"))
+        self.pushExit.setToolTip(_translate("OntologyDesigner", "<html><head/><body><p>- compiles into all available code languages</p><p>- writes equations and variables as well as index file</p><p>- generates latex files with dot graphs</p></body></html>"))

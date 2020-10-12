@@ -23,6 +23,7 @@ from PyQt5 import QtWidgets
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.record_definitions import makeCompletEquationRecord
 from Common.record_definitions import makeCompleteVariableRecord
+from Common.resources_icons import roundButton
 # from Common.common_resources import globalEquationID
 # from Common.common_resources import globalVariableID
 from Common.record_definitions import RecordEquation
@@ -75,6 +76,12 @@ class UI_Equations(QtWidgets.QWidget):
     QtWidgets.QWidget.__init__(self)
     self.ui = Ui_Form()
     self.ui.setupUi(self)
+
+    roundButton(self.ui.pushAccept, "accept") #, tooltip="accept")
+    roundButton(self.ui.pushDeleteEquation, "delete", tooltip="delete")
+    roundButton(self.ui.pushCancel, "reject", tooltip="cancel")
+    # roundButton(self.ui.pushResetInterface, "reset", tooltip="reset")
+
     self.hide()
     self.what = what
     self.variables = variables
@@ -197,7 +204,7 @@ class UI_Equations(QtWidgets.QWidget):
     self.ui_indices = SingleListSelector(self.index_list)
     self.ui_indices.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
     self.ui_indices.newSelection.connect(self.__insertSnipp)
-    self.hide()
+    # self.hide()
     self.ui.lineExpression.clear()
     self.ui.lineNewVariable.clear()
     self.ui.lineDocumentation.clear()
@@ -207,7 +214,7 @@ class UI_Equations(QtWidgets.QWidget):
     # self.ui.lineNewVariable.setValidator(validator)
     setValidator(self.ui.lineNewVariable)
     self.ui.pushAccept.hide()
-    self.ui.groupEquationEditor.hide()
+    # self.ui.groupEquationEditor.hide()
     self.ui_indices.hide()
     self.selected_variable_type = None
     self.selected_variable_ID = ''
@@ -529,9 +536,9 @@ class UI_Equations(QtWidgets.QWidget):
 
   def on_pushPickIndices_pressed(self):
     self.ui_indices.show()
-
-  def on_pushResetInterface_pressed(self):
-    self.resetEquationInterface()
+  #
+  # def on_pushResetInterface_pressed(self):
+  #   self.resetEquationInterface()
 
   def on_pushCancel_pressed(self):
     self.resetEquationInterface()

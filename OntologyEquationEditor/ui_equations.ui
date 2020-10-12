@@ -56,9 +56,9 @@
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>10</y>
+      <y>0</y>
       <width>178</width>
-      <height>30</height>
+      <height>61</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -84,7 +84,7 @@
 color :rgb(255, 255, 255)</string>
        </property>
        <property name="text">
-        <string>accept</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -107,7 +107,7 @@ color :rgb(255, 255, 255)</string>
 color:rgb(255, 255, 255)</string>
        </property>
        <property name="text">
-        <string>delete</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -127,6 +127,7 @@ color:rgb(255, 255, 255)</string>
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
+         <family>Consolas</family>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -162,6 +163,7 @@ color:rgb(255, 255, 255)</string>
    </property>
    <property name="font">
     <font>
+     <family>Consolas</family>
      <pointsize>20</pointsize>
     </font>
    </property>
@@ -195,6 +197,7 @@ predefined variables: t, dt, t0</string>
    </property>
    <property name="font">
     <font>
+     <family>Consolas</family>
      <pointsize>12</pointsize>
      <weight>75</weight>
      <bold>true</bold>
@@ -210,7 +213,7 @@ predefined variables: t, dt, t0</string>
      <x>20</x>
      <y>450</y>
      <width>941</width>
-     <height>42</height>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -289,17 +292,7 @@ color :rgb(255, 255, 255)</string>
          <string>reset closes equation editor clears alias table</string>
         </property>
         <property name="text">
-         <string>cancel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushResetInterface">
-        <property name="toolTip">
-         <string>reset closes equation editor clears alias table</string>
-        </property>
-        <property name="text">
-         <string>reset</string>
+         <string/>
         </property>
        </widget>
       </item>

@@ -106,9 +106,9 @@
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>10</y>
+      <y>0</y>
       <width>178</width>
-      <height>30</height>
+      <height>51</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -134,7 +134,7 @@
 color :rgb(255, 255, 255)</string>
        </property>
        <property name="text">
-        <string>accept</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -157,7 +157,7 @@ color :rgb(255, 255, 255)</string>
 color:rgb(255, 255, 255)</string>
        </property>
        <property name="text">
-        <string>delete</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -186,7 +186,7 @@ color:rgb(255, 255, 255)</string>
      <x>20</x>
      <y>370</y>
      <width>711</width>
-     <height>42</height>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_14">
@@ -265,7 +265,7 @@ color :rgb(255, 255, 255)</string>
          <string>reset closes equation editor clears alias table</string>
         </property>
         <property name="text">
-         <string>cancel</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -275,13 +275,26 @@ color :rgb(255, 255, 255)</string>
          <string>reset closes equation editor clears alias table</string>
         </property>
         <property name="text">
-         <string>reset</string>
+         <string/>
         </property>
        </widget>
       </item>
      </layout>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>380</x>
+     <y>30</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>PushButton</string>
+   </property>
   </widget>
  </widget>
  <resources/>

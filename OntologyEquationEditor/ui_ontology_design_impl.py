@@ -109,6 +109,8 @@ class UiOntologyDesign(QMainWindow):
 
     roundButton(self.ui.pushShowVariables, "variable_show", tooltip="show variables")
     roundButton(self.ui.pushWrite, "save", tooltip="save")
+    roundButton(self.ui.pushMakeAllVarEqPictures, "reset" , tooltip="prepare all variables & equations for generating pictures")
+    roundButton(self.ui.pushExit, "exit", tooltip="exit")
 
     self.radio = [
             self.ui.radioVariables,
@@ -256,6 +258,14 @@ class UiOntologyDesign(QMainWindow):
                                           ["info", "new", "port"]
                                           )
     variable_table.exec_()
+
+  def on_pushMakeAllVarEqPictures_pressed(self):
+    self.variables.changes["equations"].changedAll()
+    self.variables.changes["variables"].changedAll()
+
+  def on_pushExit_pressed(self):
+    self.close()
+
 
   def on_pushFinished_pressed(self):
     print("debugging -- got here")

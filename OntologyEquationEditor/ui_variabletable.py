@@ -13,10 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1143, 285)
+        Dialog.resize(849, 378)
         Dialog.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.tableVariable = QtWidgets.QTableWidget(Dialog)
-        self.tableVariable.setGeometry(QtCore.QRect(330, 10, 801, 261))
+        self.tableVariable.setGeometry(QtCore.QRect(20, 90, 801, 261))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(100)
         sizePolicy.setVerticalStretch(100)
@@ -50,7 +50,7 @@ class Ui_Dialog(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableVariable.setHorizontalHeaderItem(7, item)
         self.layoutWidget = QtWidgets.QWidget(Dialog)
-        self.layoutWidget.setGeometry(QtCore.QRect(11, 11, 291, 91))
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 0, 291, 91))
         self.layoutWidget.setObjectName("layoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -105,7 +105,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "variable table"))
         Dialog.setToolTip(_translate("Dialog", "see info button"))
         self.tableVariable.setToolTip(_translate("Dialog", "variable list"))
         self.tableVariable.setSortingEnabled(False)

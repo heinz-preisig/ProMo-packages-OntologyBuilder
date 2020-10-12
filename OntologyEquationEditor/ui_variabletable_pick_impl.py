@@ -79,10 +79,13 @@ class UI_VariableTablePick(VariableTable):
     buttons["new"] = self.ui.pushNew
     buttons["port"] = self.ui.pushPort
 
+    hidden = ["new", "port", "info"]
+
     roundButton(buttons["back"], "back", tooltip="go back")
-    roundButton(buttons["info"], "info", tooltip="information")
-    roundButton(buttons["new"], "new", tooltip="new variable")
-    roundButton(buttons["port"], "port", tooltip="new port variable")
+    # roundButton(buttons["info"], "info", tooltip="information")
+
+    # roundButton(buttons["new"], "new", tooltip="new variable")
+    # roundButton(buttons["port"], "port", tooltip="new port variable")
     for b in hidden:
       buttons[b].hide()
     self.variable_list = []

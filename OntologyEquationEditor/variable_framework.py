@@ -1435,12 +1435,19 @@ class ReduceBlockProduct(BinaryOperator):
     self.reducing_index_ID = self.space.inverse_indices[index]
     self.product_index_ID = self.space.inverse_indices[productindex]
 
+    s_index_a = set(a.index_structures)
+    s_index_b = set(b.index_structures)
+    index_structures = sorted(s_index_a.symmetric_difference(s_index_b))
+
     to_reduce_index_list = self.space.indices[self.product_index_ID]["indices"]
+
     if to_reduce_index_list.count(self.reducing_index_ID) > 0:
-      self.index_structures = []
+      self.index_structures = list(index_structures)
       for i in to_reduce_index_list:
         if i != self.reducing_index_ID:
           self.index_structures.append(i)
+
+      self.index_structures = sorted(self.index_structures)
       # self.index_structures = to_reduce_index_list.remove(self.reducing_index_ID) # NOTE: this failed -- python
       # error ???
     else:
@@ -1996,11 +2003,34 @@ class Stack(Operator):
   def __str__(self):
 
     language = self.space.language
-    first = True
     s = CODE[language]["delimiter"]["("]
-    for i in range(1, len(self.the_list) - 1):
+    s += str(self.variable_list[0])
+    for i in range(1, len(self.variable_list)):
       s += CODE[language]["delimiter"][","]
-      s += str(self.the_list[i])
+      s += str(self.variable_list[i])
+    s += CODE[language]["delimiter"][")"]
+    return s
+
+class MixedStack(Operator):
+
+  def __init__(self, variable_list, space):
+
+    Operator.__init__(self, space)
+
+    self.variable_list = variable_list
+    self.units = Units()                         # RULE: MixedStacks have no units
+    self.index_structures = []                   # RULE: MixedStacks have no index structures
+
+
+  def __str__(self):
+
+    language = self.space.language
+
+    s = CODE[language]["delimiter"]["("]
+    s += str(self.variable_list[0])
+    for i in range(1, len(self.variable_list)):
+      s += CODE[language]["delimiter"][","]
+      s += str(self.variable_list[i])
     s += CODE[language]["delimiter"][")"]
 
     return s
@@ -2014,7 +2044,7 @@ class Expression(VerboseParser):
   token UFuncRetain : '\b(abs|neg|diffSpace|left|right)\b';
   token UFuncNone   : '\b(exp|log|ln|sqrt|sin|cos|tan|asin|acos|atan)\b';
   token UFuncInverse: '\b(inv)\b';
-  token UFuncLoose  : '\b(sign|stack)\b';
+  token UFuncLoose  : '\b(sign)\b';
   token MaxMin      : '\b(max|min)\b';
   token IN          : '\b(in)\b';
   token Variable    : '[a-zA-Z_]\w*';
@@ -2058,6 +2088,10 @@ class Expression(VerboseParser):
             ( ',' Identifier/j                                             $fu.addItem(j)
             )*
           '\)'
+      | 'MixedStack' '\(' Identifier/i                                     $l=[i]
+            ( ',' Identifier/j                                             $l.append(j)
+            )*
+          '\)'                                                             $fu=MixedStack(l,self.space)
       | Identifier/a                                                       $fu=a
   ;
   UnitaryFunction/fu ->

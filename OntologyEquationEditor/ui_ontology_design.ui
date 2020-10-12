@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>ProMo Equation Editor</string>
   </property>
   <widget class="QGroupBox" name="groupVariables">
    <property name="geometry">
@@ -354,6 +354,22 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="pushMakeAllVarEqPictures">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;- compiles into all available code languages&lt;/p&gt;&lt;p&gt;- writes equations and variables as well as index file&lt;/p&gt;&lt;p&gt;- generates latex files with dot graphs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -468,6 +484,28 @@
    </property>
    <property name="acceptDrops">
     <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushExit">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>230</y>
+     <width>76</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;- compiles into all available code languages&lt;/p&gt;&lt;p&gt;- writes equations and variables as well as index file&lt;/p&gt;&lt;p&gt;- generates latex files with dot graphs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+   <property name="default">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>

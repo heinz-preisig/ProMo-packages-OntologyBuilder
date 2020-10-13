@@ -22,7 +22,7 @@ __status__ = "beta"
 
 from PyQt5 import QtWidgets
 
-from Common.common_resources import TEMPLATE_NODE_OBJECT_WITH_TOKEN
+from Common.common_resources import TEMPLATE_NODE_OBJECT
 from Common.common_resources import getOntologyName
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
@@ -104,12 +104,12 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     reduced_network_node_list = {}
     global_node_set = set()
     for nw in self.ontology_container.list_inter_branches:
-      network_node_list = self.ontology_container.list_node_objects_on_networks_with_tokens[nw]
+      network_node_list = self.ontology_container.list_node_objects_on_networks[nw] #list_node_objects_on_networks_with_tokens[nw]
       reduced_network_node_list[nw] = []
       for i in network_node_list:
         if "constant" not in i:  # RULE: reservoirs (time-scale constant) have no state
+          reduced_network_node_list[nw].append(i)
           if i not in global_node_set:
-            reduced_network_node_list[nw].append(i)
             global_node_set.add(i)
 
     # print("debugging -- network nodes", reduced_network_node_list)
@@ -122,8 +122,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
       network_arc_list = self.ontology_container.list_arc_objects_on_networks[nw]
       reduced_arc_list[nw] = []
       for i in network_arc_list:
+        reduced_arc_list[nw].append(i)
         if i not in global_arc_set:
-          reduced_arc_list[nw].append(i)
           global_arc_set.add(i)
 
     # print("debugging -- arcs", reduced_arc_list)
@@ -277,8 +277,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
         if network in self.ontology_container.list_leave_networks:
           buddies.add((ID, network))
 
-    nw, component, dynamics, nature, token = self.selected_node_key
-    node_object = TEMPLATE_NODE_OBJECT_WITH_TOKEN % (dynamics, nature, token)
+    dynamics, nature = self.selected_node.split("|")
+    node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
 
     self.ontology_container.equation_assignment[node_object] = {
             "tree"   : var_equ_tree.tree.tree,
@@ -311,8 +311,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   def radioReceiverNodes(self, checked):
     if checked:
-      [self.selected_node_equation] = checked
-      # print("debugging -- nodes", self.selected_node_equation)
+      [self.selected_node] = checked
+      print("debugging -- nodes", self.selected_node)
       self.__makeNodeEquationSelector()
       pass
 
@@ -320,7 +320,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     if checked:
       [self.selected_arc_network] = checked
-      # print("debugging -- arcs", self.selected_arc_network)
+      print("debugging -- arcs", self.selected_arc_network)
       self.__makeArcEquationSelector()
       pass
 

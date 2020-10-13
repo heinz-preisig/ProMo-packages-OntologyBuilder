@@ -675,7 +675,7 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
   return s
 
 
-def make_variable_equation_pngs(variables, changes, ontology_name):
+def make_variable_equation_pngs(variables, compiled_variables, changes, ontology_name):
   global lhs, rhs, reader, line, number, network, error
 
   rhs = {}
@@ -729,12 +729,17 @@ def make_variable_equation_pngs(variables, changes, ontology_name):
       except:
         pass
 
-  for var_ID in lhs:
+  print("debugging")
+  for var_ID in compiled_variables: #variables: #lhs:
     if var_ID in changes["variables"]["changed"]:
+
 
       out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
 
-      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", lhs[var_ID],
+      var_latex = compiled_variables[var_ID]["latex"]
+      if var_ID == 92:
+        print("debugging variable 92: ", var_latex)
+      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex, #lhs[var_ID],
               ontology_location]
 
       try:  # reports an error after completing the last one -- no idea

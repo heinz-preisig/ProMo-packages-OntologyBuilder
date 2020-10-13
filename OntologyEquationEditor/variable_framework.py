@@ -819,7 +819,7 @@ class Variables(OrderedDict):
     affected_equations = self.inv_incidence_dictionary[variable_ID]
     self.changes["variables"].changed(variable_ID)
     for eq_ID in affected_equations:
-      self.changed["equations"].changed(eq_ID)
+      self.changes["equations"].changed(eq_ID)
 
   def removeVariable(self, variable_ID):
     """

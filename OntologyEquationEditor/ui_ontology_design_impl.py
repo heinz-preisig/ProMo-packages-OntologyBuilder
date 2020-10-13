@@ -262,6 +262,9 @@ class UiOntologyDesign(QMainWindow):
   def on_pushMakeAllVarEqPictures_pressed(self):
     self.variables.changes["equations"].changedAll()
     self.variables.changes["variables"].changedAll()
+    if not self.compiled_variable_labels:
+      self.__writeMessage("compile first")
+      self.on_pushCompile_pressed()
 
     self.__makeVariableEquationPictures("latex")
 
@@ -518,6 +521,7 @@ class UiOntologyDesign(QMainWindow):
         self.compiled_variable_labels[var_ID] = {}
       self.compiled_variable_labels[var_ID][language] = compiled_label
 
+
     if language == "latex":
       self.__makeLatexDocument()
 
@@ -571,6 +575,7 @@ class UiOntologyDesign(QMainWindow):
       f.close()
 
     eqs = self.__getAllEquationsPerType("latex")
+
     # print("debugging tex rep")
     for e_type in self.variables.equation_type_list:
       j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
@@ -581,11 +586,7 @@ class UiOntologyDesign(QMainWindow):
       f.write(ID)
       f.close()
 
-    # self.__makeDotGraphs()
 
-    self.__makeVariableEquationPictures(language)
-
-  def __makeVariableEquationPictures(self, language):
     location = DIRECTORIES["latex_main_location"] % self.ontology_location
     f_name = FILES["latex_shell_var_equ_doc_command_exec"] % self.ontology_location
     documentation_file = FILES["latex_documentation"] % self.ontology_name
@@ -601,10 +602,16 @@ class UiOntologyDesign(QMainWindow):
             # stderr=subprocess.PIPE
             )
     out, error = make_it.communicate()
-    print("debugging -- ", out, error)
+    # print("debugging -- ", out, error)
+
+    # self.__makeDotGraphs()
+    # self.__makeVariableEquationPictures(language)
+
+  def __makeVariableEquationPictures(self, language):
+
     # make_it.wait()
     # Note: make the png variable and equation files
-    make_variable_equation_pngs(self.ontology_container.variables, self.variables.changes, self.ontology_name)
+    make_variable_equation_pngs(self.ontology_container.variables, self.compiled_variable_labels, self.variables.changes, self.ontology_name)
     self.__writeMessage("Wrote {} output".format(language), append=True)
 
   def __getAllEquationsPerType(self, language):

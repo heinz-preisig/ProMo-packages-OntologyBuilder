@@ -647,7 +647,8 @@ class Variables(OrderedDict):
     self.index_networks_for_variable = {}
     self.index_accessible_variables_on_networks = {}  # defines accessible name space
 
-    for nw in self.networks + self.interconnection_networks + self.intraconnection_networks:
+    # for nw in self.networks + self.interconnection_networks + self.intraconnection_networks:
+    for nw in self.networks + self.ontology_container.list_inter_branches_pairs + self.intraconnection_networks:
       self.index_definition_networks_for_variable[nw] = []
 
     for ID in self:

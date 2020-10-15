@@ -837,7 +837,7 @@ class VarEqTree():
       self.addEquation(equ_label)
       self.addLink(equ_label, var_label)
 
-      vars = self.get_vars(var_ID, eq_ID)
+      vars = self.get_equation_incidence_list(var_ID, eq_ID)
       for next_var_ID in vars:
         next_var_label = self.TEMPLATE_VARIABLE % next_var_ID
         if next_var_label not in Tree.IDs:
@@ -864,7 +864,7 @@ class VarEqTree():
   def get_equs(self, var_ID):
     return self.variables[int(var_ID)]["equations"]
 
-  def get_vars(self, var_ID, eq_ID):
+  def get_equation_incidence_list(self, var_ID, eq_ID):
     return self.variables[int(var_ID)]["equations"][eq_ID]["incidence_list"]
 
 
@@ -875,6 +875,7 @@ class DotGraphVariableEquations(VarEqTree):
   def __init__(self, variables, indices, var_ID, ontology_name):
     self.ontology_name = ontology_name
     self.indices = indices
+    self.variables= variables
     self.latex_directory = os.path.join(DIRECTORIES["ontology_repository"], "%s",
                                         DIRECTORIES["latex"]) % ontology_name
 
@@ -918,9 +919,11 @@ class DotGraphVariableEquations(VarEqTree):
   def get_var_labels(self):
     var_labels = {}
     self.equ_labels = {}
+    self.port_variable = {}
     for var_id in self.variables:
       ID = self.TEMPLATE_VARIABLE % var_id
       var_labels[ID] = self.variables[var_id]["aliases"]["internal_code"]
+      self.port_variable[var_id] = self.variables[var_id]["port_variable"]
       for equ_ID in self.variables[var_id]["equations"]:
         ID = self.TEMPLATE_EQUATION % equ_ID
         equation = self.variables[var_id]["equations"][equ_ID]["rhs"]
@@ -934,12 +937,17 @@ class DotGraphVariableEquations(VarEqTree):
     return self.equ_labels
 
   def addVariable(self, var_ID_label, first=False):
+
     node_ID_label = str(var_ID_label)
-    node_label = self.var_labels[var_ID_label]
+    _dummy, ID_str = node_ID_label.split("_")
+    var_ID = int(ID_str)
+    # node_label = self.var_labels[var_ID_label]
     if first:
       colour = "red"
     else:
       colour = "cornsilk"
+      if self.variables[var_ID]["port_variable"] and (self.variables[var_ID]["type"] == "state"):
+        colour = "blue"
     image = os.path.join(self.latex_directory, "%s.png" % var_ID_label)
     self.simple_graph.node(node_ID_label, "", image=image, style="filled", color=colour)
 

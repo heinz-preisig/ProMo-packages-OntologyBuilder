@@ -548,7 +548,7 @@ class Variables(OrderedDict):
     self.networks = ontology_container.networks
     self.ontology_hierarchy = ontology_container.ontology_hiearchy
     self.intraconnection_networks = list(ontology_container.intraconnection_network_dictionary.keys())
-    self.interconnection_networks = list(ontology_container.interconnection_network_dictionary.keys())
+    self.interconnection_networks = ontology_container.list_inter_branches_pairs #list(ontology_container.interconnection_network_dictionary.keys())
     self.heirs_network_dictionary = ontology_container.heirs_network_dictionary
     self.ProMoIRI = self.ontology_container.ProMoIRI
 

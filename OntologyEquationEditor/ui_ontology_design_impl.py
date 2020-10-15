@@ -157,7 +157,7 @@ class UiOntologyDesign(QMainWindow):
     self.interconnection_nws = self.ontology_container.interconnection_network_dictionary
     self.intraconnection_nws = self.ontology_container.intraconnection_network_dictionary
     self.intraconnection_nws_list = list(self.intraconnection_nws.keys())
-    self.interconnection_nws_list = list(self.interconnection_nws.keys())
+    self.interconnection_nws_list = self.ontology_container.list_inter_branches_pairs #list(self.interconnection_nws.keys())
 
     self.indices = self.ontology_container.indices  # readIndices()  # indices
     self.variables = Variables(self.ontology_container)

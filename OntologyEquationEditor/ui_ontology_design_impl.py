@@ -374,8 +374,9 @@ class UiOntologyDesign(QMainWindow):
       interface_variable_list = []
       oc = self.variables.ontology_container
       for nw in oc.heirs_network_dictionary[network_for_expression]:
-        for inter_nw in oc.interconnection_network_dictionary:
-          if oc.interconnection_network_dictionary[inter_nw]["right"] == nw:
+        for inter_nw in oc.interfaces: #oc.interconnection_network_dictionary:
+          # if oc.interconnection_network_dictionary[inter_nw]["right"] == nw:
+          if oc.interfaces[inter_nw]["right_network"] == nw:
             interface_variable_list.append(inter_nw)
           # print("debugging -- inter_nw", inter_nw)
 

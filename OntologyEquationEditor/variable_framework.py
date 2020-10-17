@@ -280,7 +280,7 @@ def makeCompiler(variables, indices, var_ID, equ_ID, language, verbose=0):
   :return: expression -- compiler
   """
   variable_definition_network = variables[var_ID].network
-  expression_definition_network = variables[var_ID].equations[equ_ID]["network"]
+  expression_definition_network = [variables[var_ID].equations[equ_ID]["network"]]
   compile_space = CompileSpace(variables, indices, variable_definition_network, expression_definition_network,
                                language=language)
   return Expression(compile_space, verbose=verbose)
@@ -797,6 +797,8 @@ class Variables(OrderedDict):
     for nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary:
       for i_nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary[nw]:
         for ID in self:
+          if ID == 107:
+            print("debugg")
           if self[ID].network == i_nw:
             for variable_class in self.ontology_container.variable_types_on_interfaces[i_nw]:
               if variable_class not in acc[nw]:
@@ -976,6 +978,9 @@ class CompileSpace:
       else:
         raise VarError("fatal error -- not a propert index type %s" % ind_ID)
 
+
+    # RULE: networks have access to the interfaces
+
     self.variable_definition_network = variable_definition_network
     self.expression_definition_network = expression_definition_network
 
@@ -987,12 +992,19 @@ class CompileSpace:
     @return: v : the variable object
     '''
     # print("get variable", symbol)
+
+
     v = None
+    networks=set()
     if CONNECTION_NETWORK_SEPARATOR in self.variable_definition_network:
       [source, sink] = self.variable_definition_network.split(CONNECTION_NETWORK_SEPARATOR)
-      networks = [source, self.variable_definition_network, self.expression_definition_network]
-    else:
-      networks = [self.variable_definition_network, self.expression_definition_network]
+              # [source, self.variable_definition_network, self.expression_definition_network]
+      networks.add(source)
+
+    networks.add(self.variable_definition_network)
+    [networks.add(i) for i in self.expression_definition_network]
+    networks = list(networks)
+
     for nw in networks:
       for variable_class in self.variables.index_accessible_variables_on_networks[nw]:
         for var_ID in self.variables.index_accessible_variables_on_networks[nw][variable_class]:

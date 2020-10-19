@@ -280,7 +280,7 @@ def makeCompiler(variables, indices, var_ID, equ_ID, language, verbose=0):
   :return: expression -- compiler
   """
   variable_definition_network = variables[var_ID].network
-  expression_definition_network = [variables[var_ID].equations[equ_ID]["network"]]
+  expression_definition_network = variables[var_ID].equations[equ_ID]["network"]
   compile_space = CompileSpace(variables, indices, variable_definition_network, expression_definition_network,
                                language=language)
   return Expression(compile_space, verbose=verbose)
@@ -797,8 +797,8 @@ class Variables(OrderedDict):
     for nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary:
       for i_nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary[nw]:
         for ID in self:
-          if ID == 107:
-            print("debugg")
+          # if ID == 107:
+          #   print("debugg")
           if self[ID].network == i_nw:
             for variable_class in self.ontology_container.variable_types_on_interfaces[i_nw]:
               if variable_class not in acc[nw]:
@@ -999,10 +999,10 @@ class CompileSpace:
     if CONNECTION_NETWORK_SEPARATOR in self.variable_definition_network:
       [source, sink] = self.variable_definition_network.split(CONNECTION_NETWORK_SEPARATOR)
               # [source, self.variable_definition_network, self.expression_definition_network]
-      networks.add(source)
+      networks.add(str(source))
 
     networks.add(self.variable_definition_network)
-    [networks.add(i) for i in self.expression_definition_network]
+    networks.add(str(self.expression_definition_network))
     networks = list(networks)
 
     for nw in networks:
@@ -1450,22 +1450,29 @@ class ReduceBlockProduct(BinaryOperator):
 
     s_index_a = set(a.index_structures)
     s_index_b = set(b.index_structures)
-    index_structures = sorted(s_index_a.symmetric_difference(s_index_b))
 
     to_reduce_index_list = self.space.indices[self.product_index_ID]["indices"]
 
     if to_reduce_index_list.count(self.reducing_index_ID) > 0:
-      self.index_structures = list(index_structures)
+      index_structures = [] #list(index_structures)
       for i in to_reduce_index_list:
         if i != self.reducing_index_ID:
-          self.index_structures.append(i)
+          index_structures.append(i)
 
-      self.index_structures = sorted(self.index_structures)
       # self.index_structures = to_reduce_index_list.remove(self.reducing_index_ID) # NOTE: this failed -- python
       # error ???
     else:
       raise IndexStructureError("Index error a.index: %s, b.index: %s"
                                 % (a.index_structures, b.index_structures))
+
+
+    for i in s_index_a | s_index_b:
+      if i not in to_reduce_index_list:
+        if i != self.product_index_ID:
+          index_structures.append(i)
+
+
+      self.index_structures = sorted(index_structures)
 
     # print(">>>>>>>>>>>>>>>>>>>>>  debugging -- indices :", self.index_structures)
 

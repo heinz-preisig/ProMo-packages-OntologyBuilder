@@ -22,7 +22,7 @@ __status__ = "beta"
 
 from PyQt5 import QtWidgets
 
-from Common.common_resources import TEMPLATE_NODE_OBJECT
+from Common.common_resources import TEMPLATE_NODE_OBJECT, putDataOrdered
 from Common.common_resources import getOntologyName
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
@@ -90,6 +90,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.selected_inter = None
     self.selected_arc_network = None
     self.selected_node_network = None
+
+    self.assignments={}
 
     self.__makeEquationList()
 
@@ -265,12 +267,14 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
       # print("debugging -- end of make equation list")
 
   def __putEquations(self, object, equation_text, equ_ID, var_ID):
+    obj = object.replace("|","_")
+    print("debugging --- variable ", var_ID)
     var_equ_tree = DotGraphVariableEquations(self.ontology_container.variables, self.ontology_container.indices, var_ID,
-                                             self.ontology_name)
+                                             self.ontology_name, file_name=obj)
     print("debugging -- dotgrap done")
     buddies = set()
-    for var_ID in var_equ_tree.tree.IDs:
-      o, str_ID = var_ID.split("_")
+    for id in var_equ_tree.tree.IDs:
+      o, str_ID = id.split("_")
       ID = int(str_ID)
       if o == "variable":
         network = self.ontology_container.variables[ID]['network']
@@ -279,6 +283,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     dynamics, nature = self.selected_node.split("|")
     node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
+
+    self.assignments[object] = var_ID, sorted(buddies)
 
     self.ontology_container.equation_assignment[node_object] = {
             "tree"   : var_equ_tree.tree.tree,
@@ -301,6 +307,10 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   def on_pushSave_pressed(self):
     print("debugging -- save file")
+
+
+    f = FILES["variable_assignment_to_entity_object"]%self.ontology_name
+    putDataOrdered(self.assignments, f)
 
   def on_pushInfo_pressed(selfself):
     print("debugging -- display info file")

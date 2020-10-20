@@ -872,10 +872,11 @@ class DotGraphVariableEquations(VarEqTree):
 
   # pdfposter -p999x4A3 vars_equs.pdf try2.pdf
 
-  def __init__(self, variables, indices, var_ID, ontology_name):
+  def __init__(self, variables, indices, var_ID, ontology_name, file_name="vars_equs"):
     self.ontology_name = ontology_name
     self.indices = indices
     self.variables= variables
+    self.file_name=file_name
     self.latex_directory = os.path.join(DIRECTORIES["ontology_repository"], "%s",
                                         DIRECTORIES["latex"]) % ontology_name
 
@@ -892,7 +893,7 @@ class DotGraphVariableEquations(VarEqTree):
                               DIRECTORIES["ontology_graphs_location"],
                               "%s")
     # the tree of networks
-    f = o_template % "vars_equs"
+    f = o_template % self.file_name #"vars_equs"
     print(f)
     graph_attr = {}
     graph_attr["nodesep"] = "1"

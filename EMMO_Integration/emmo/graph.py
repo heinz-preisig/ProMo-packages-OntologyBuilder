@@ -426,7 +426,7 @@ class OntoGraph:
 
     def view(self):
         """Shows the graph in a viewer."""
-        self.dot.view(cleanup=True)
+        self.dot.ui(cleanup=True)
 
 
 def get_figsize(graph):

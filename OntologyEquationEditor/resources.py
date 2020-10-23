@@ -23,6 +23,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from Common.common_resources import invertDict
+from Common.common_resources import getData
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.treeid import ObjectTree
@@ -677,15 +678,79 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
 
 def make_variable_equation_pngs(variables, compiled_variables, changes, ontology_name):
   global lhs, rhs, reader, line, number, network, error
+  #
+  # rhs = {}
+  # eqs = {}
+  # latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
+  # with open(latex_file, 'r') as reader:
+  #   # Read and print the entire file line by line
+  #   line = reader.readline()
+  #   number, lhs_, rhs[number], network = parseLine(reader)
+  #   eqs[number] = "%s = %s"%(lhs_, rhs[number])
+  #   while number:  # The EOF char is an empty string
+  #     number, lhs_, rhs[number], network = parseLine(reader)
+  #     eqs[number] = "%s = %s"%(lhs_, rhs[number])
+  #
+  # lhs = makeVariables(variables)
+  #
+  # f_name = FILES["pnglatex"]
+  # ontology_location = DIRECTORIES["ontology_location"] % ontology_name
+  #
+  # header = os.path.join(ontology_location, "LaTeX", "resources", "header.tex")
+  #
+  # header_file = open(header, 'w')
+  #
+  # # RULE: make header for equation and variable latex compilations.
+  # # math packages
+  # # \usepackage{amsmath}
+  # # \usepackage{amssymb}
+  # # \usepackage{calligra}
+  # # \usepackage{array}
+  # # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
+  # header_file.write(r"\usepackage{amsmath}")
+  # header_file.write(r"\usepackage{amssymb}")
+  # header_file.write(r"\usepackage{calligra}")
+  # header_file.write(r"\usepackage{array}")
+  # header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
+  # header_file.close()
+  #
+  # for eq_ID in rhs:
+  #   if eq_ID in changes["equations"]["changed"]:
+  #     out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+  #     args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
+  #             ontology_location]
+  #
+  #     try:  # reports an error after completing the last one -- no idea
+  #       make_it = subprocess.Popen(
+  #               args,
+  #               start_new_session=True,
+  #               # restore_signals=False,
+  #               # stdout=subprocess.PIPE,
+  #               # stderr=subprocess.PIPE
+  #               )
+  #       out, error = make_it.communicate()
+  #     except:
+  #       pass
 
   rhs = {}
+  eqs = {}
   latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
-  with open(latex_file, 'r') as reader:
-    # Read and print the entire file line by line
-    line = reader.readline()
-    number, lhs_, rhs[number], network = parseLine(reader)
-    while number:  # The EOF char is an empty string
-      number, lhs_, rhs[number], network = parseLine(reader)
+  latex_translations = getData(latex_file)
+  for eq_ID in latex_translations:
+    e = latex_translations[eq_ID]
+    var_ID = e["variable_ID"]
+    lhs = e["lhs"]
+    rhs = e["rhs"]
+    eqs[eq_ID] = r"%s = %s"%(lhs,rhs)
+
+  # with open(latex_file, 'r') as reader:
+  #   # Read and print the entire file line by line
+  #   line = reader.readline()
+  #   number, lhs_, rhs[number], network = parseLine(reader)
+  #   eqs[number] = "%s = %s"%(lhs_, rhs[number])
+  #   while number:  # The EOF char is an empty string
+  #     number, lhs_, rhs[number], network = parseLine(reader)
+  #     eqs[number] = "%s = %s"%(lhs_, rhs[number])
 
   lhs = makeVariables(variables)
 
@@ -713,8 +778,7 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
   for eq_ID in rhs:
     if eq_ID in changes["equations"]["changed"]:
       out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
-
-      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", rhs[eq_ID],
+      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
               ontology_location]
 
       try:  # reports an error after completing the last one -- no idea
@@ -728,6 +792,8 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
         out, error = make_it.communicate()
       except:
         pass
+
+
 
   print("debugging")
   for var_ID in compiled_variables: #variables: #lhs:

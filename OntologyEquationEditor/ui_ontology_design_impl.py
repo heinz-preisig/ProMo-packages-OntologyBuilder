@@ -485,14 +485,26 @@ class UiOntologyDesign(QMainWindow):
       expression_ID = self.variables[lhs_var_ID].equations[equ_ID]["rhs"]
       network = self.variables[lhs_var_ID].equations[equ_ID]["network"]
       var_label = self.variables[lhs_var_ID].label
+      self.variables[lhs_var_ID].setLanguage(language)
+      compiled_label = str(self.variables[lhs_var_ID])
       expression = renderExpressionFromGlobalIDToInternal(expression_ID, self.variables, self.indices)
       compiler = makeCompiler(self.variables, self.indices, lhs_var_ID, equ_ID, language=language)
+
+      # if language == "latex":
+      #   print("debugging -- processing latex")
+      # for var_ID in self.variables:  # used in internally
+      #   self.variables[var_ID].setLanguage(language)
+      #   compiled_label = str(self.variables[var_ID])
+      #   if var_ID not in self.compiled_variable_labels:
+      #     self.compiled_variable_labels[var_ID] = {}
+      #   self.compiled_variable_labels[var_ID][language] = compiled_label
 
       try:
         # print("debugging --  expression being translated into language %s:"%language, expression)
         res = str(compiler(expression))
         self.compiled_equations[language][equ_ID] = {
-                "lhs"    : var_label,
+                "variable_ID" : lhs_var_ID,
+                "lhs"    : compiled_label, #var_label,
                 "network": network,
                 "rhs"    : res
                 }
@@ -518,6 +530,8 @@ class UiOntologyDesign(QMainWindow):
 
     putData(self.compiled_equations[language], e_name)
 
+    if language == "latex":
+      print("debugging -- processing latex")
     for var_ID in self.variables:  # used in internally
       self.variables[var_ID].setLanguage(language)
       compiled_label = str(self.variables[var_ID])

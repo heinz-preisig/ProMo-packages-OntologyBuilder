@@ -36,10 +36,11 @@ class MainWindowImpl(QtWidgets.QWidget):
 
   def __makeAndAddSelector(self, title, variable_paths_list,equation_paths_list, receiver, index, layout, autoexclusive=True):
 
-    template = "/Common/equation_%s.png"
+    location = "/home/heinz/1_Gits/CAM-projects_v8/Ontology_Repository/HAP_Ontology_Repository-playground_v8/LaTeX/"
+    template = "%sequation_%s.png"
     f = {}
-    f[1] = "/home/heinz/1_Gits/CAM-projects_v8/ProMo/packages/Common/equation_1.png"
-    f[2] = "/home/heinz/1_Gits/CAM-projects_v8/ProMo/packages/Common/equation_10.png"
+    f[1] = template%(location,1)
+    f[2] = template%(location, 10) #"/home/heinz/1_Gits/CAM-projects_v8/ProMo/packages/Common/equation_10.png"
     # print("current dir", f)
 
     pm1 = QtGui.QPixmap(f[1])

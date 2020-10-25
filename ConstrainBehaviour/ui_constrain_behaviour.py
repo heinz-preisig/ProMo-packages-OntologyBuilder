@@ -43,39 +43,39 @@ class MainWindowImpl(QtWidgets.QWidget):
     f[2] = template%(location, 10) #"/home/heinz/1_Gits/CAM-projects_v8/ProMo/packages/Common/equation_10.png"
     # print("current dir", f)
 
-    pm1 = QtGui.QPixmap(f[1])
-    pm2 = QtGui.QPixmap(f[2])
-    w1 = pm1.size().width()
-    w2 = pm2.size().width()
-    h = pm1.size().height()
-    pm = QtGui.QPixmap(w1+w2, h)
-    label = QtWidgets.QLabel()
-    left_rectF = QtCore.QRectF(0, 0, w1, h)  # the left half
-    right_rectF = QtCore.QRectF(w1, 0, w1, h)  # the right half
-    painter = QtGui.QPainter(pm)
-    painter.drawPixmap(left_rectF, pm1, QtCore.QRectF(pm1.rect()))
-    painter.drawPixmap(right_rectF, pm2, QtCore.QRectF(pm2.rect()))
-    del painter
-    # label.setPixmap(pm)
-
-    icon = QtGui.QIcon(pm)
-    s = pm.size()
-    radio_selector = QtWidgets.QRadioButton(label)
-    radio_selector.setIcon(icon)
-    radio_selector.setIconSize(s)
-    layout.addWidget(radio_selector)
-
-    radio_selector.toggled.connect(receiver)
-
-    # for i in f:
-    #   label = QtWidgets.QLabel()
-    #   pix = QtGui.QPixmap(f[i])
-    #   icon = QtGui.QIcon(pix)
-    #   s = pix.size()
-    #   radio_selector = QtWidgets.QRadioButton(label)
-    #   radio_selector.setIcon(icon)
-    #   radio_selector.setIconSize(s)
-    #   layout.addWidget(radio_selector)
+    # pm1 = QtGui.QPixmap(f[1])
+    # pm2 = QtGui.QPixmap(f[2])
+    # w1 = pm1.size().width()
+    # w2 = pm2.size().width()
+    # h = pm1.size().height()
+    # pm = QtGui.QPixmap(w1+w2, h)
+    # label = QtWidgets.QLabel()
+    # left_rectF = QtCore.QRectF(0, 0, w1, h)  # the left half
+    # right_rectF = QtCore.QRectF(w1, 0, w1, h)  # the right half
+    # painter = QtGui.QPainter(pm)
+    # painter.drawPixmap(left_rectF, pm1, QtCore.QRectF(pm1.rect()))
+    # painter.drawPixmap(right_rectF, pm2, QtCore.QRectF(pm2.rect()))
+    # del painter
+    # # label.setPixmap(pm)
     #
-    #   radio_selector.toggled.connect(receiver)
+    # icon = QtGui.QIcon(pm)
+    # s = pm.size()
+    # radio_selector = QtWidgets.QRadioButton(label)
+    # radio_selector.setIcon(icon)
+    # radio_selector.setIconSize(s)
+    # layout.addWidget(radio_selector)
+    #
+    # radio_selector.toggled.connect(receiver)
+
+    for i in f:
+      label = QtWidgets.QLabel()
+      pix = QtGui.QPixmap(f[i])
+      icon = QtGui.QIcon(pix)
+      s = pix.size()
+      radio_selector = QtWidgets.QRadioButton(label)
+      radio_selector.setIcon(icon)
+      radio_selector.setIconSize(s)
+      layout.addWidget(radio_selector)
+
+      radio_selector.toggled.connect(receiver)
 

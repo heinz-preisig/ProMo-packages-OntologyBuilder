@@ -736,8 +736,9 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
   eqs = {}
   latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
   latex_translations = getData(latex_file)
-  for eq_ID in latex_translations:
-    e = latex_translations[eq_ID]
+  for eq_ID_str in latex_translations:
+    eq_ID = int(eq_ID_str)
+    e = latex_translations[eq_ID_str]
     var_ID = e["variable_ID"]
     lhs = e["lhs"]
     rhs = e["rhs"]
@@ -752,7 +753,7 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
   #     number, lhs_, rhs[number], network = parseLine(reader)
   #     eqs[number] = "%s = %s"%(lhs_, rhs[number])
 
-  lhs = makeVariables(variables)
+  # lhs = makeVariables(variables)
 
   f_name = FILES["pnglatex"]
   ontology_location = DIRECTORIES["ontology_location"] % ontology_name
@@ -775,7 +776,7 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
   header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
   header_file.close()
 
-  for eq_ID in rhs:
+  for eq_ID in eqs:
     if eq_ID in changes["equations"]["changed"]:
       out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
       args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
@@ -791,6 +792,7 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
                 )
         out, error = make_it.communicate()
       except:
+        print("equation generation failed")
         pass
 
 

@@ -479,8 +479,8 @@ class UiOntologyDesign(QMainWindow):
     e_name = FILES["coded_equations"] % (self.ontology_location, language)
 
     for equ_ID in sorted(incidence_dictionary):
-      if equ_ID == 87:
-        print("debugging -- eq 87")
+      # if equ_ID == 87:
+      #   print("debugging -- eq 87")
       lhs_var_ID, incidence_list = incidence_dictionary[equ_ID]
       expression_ID = self.variables[lhs_var_ID].equations[equ_ID]["rhs"]
       network = self.variables[lhs_var_ID].equations[equ_ID]["network"]

@@ -39,15 +39,18 @@ class MainWindowImpl(QtWidgets.QWidget):
   def __makeAndAddSelector(self, latex_file_paths, receiver, index, layout, autoexclusive=True):
 
 
-
     template = join(latex_file_paths, "equation_%s.png")
-    f = {}
-    f[1] = template%(1)
-    f[2] = template%(10)
+    # f = {}
+    # f[1] = template%(1)
+    # f[2] = template%(10)
 
-    for i in f:
+
+    equation_IDs = sorted(self.ontology.equation_variable_dictionary.keys())
+
+    for eq_ID in equation_IDs:
+      f = template%eq_ID
       label = QtWidgets.QLabel()
-      pix = QtGui.QPixmap(f[i])
+      pix = QtGui.QPixmap(f)
       icon = QtGui.QIcon(pix)
       s = pix.size()
       radio_selector = QtWidgets.QRadioButton(label)

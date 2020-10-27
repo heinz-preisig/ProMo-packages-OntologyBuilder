@@ -70,9 +70,6 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.incidence_dictionary, self.inv_incidence_dictionary = makeIncidenceDictionaries(
             self.ontology_container.variables)
 
-    self.equation_dictionary = {}
-    self.__makeEquationDictionary()
-
     self.__makeNodeLists()
     self.__makeArcLists()
 
@@ -146,10 +143,10 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
                                                        -1,
                                                        self.ui.verticalLayoutArcTop)
 
-  def __makeEquationDictionary(self):
-    for var_ID in self.ontology_container.variables:
-      for eq_ID in self.ontology_container.variables[var_ID]["equations"]:
-        self.equation_dictionary[eq_ID] = (var_ID, self.ontology_container.variables[var_ID]["equations"][eq_ID])
+  # def __makeEquationDictionary(self):
+  #   for var_ID in self.ontology_container.variables:
+  #     for eq_ID in self.ontology_container.variables[var_ID]["equations"]:
+  #       self.equation_variable_dictionary[eq_ID] = (var_ID, self.ontology_container.variables[var_ID]["equations"][eq_ID])
 
   @staticmethod
   def __makeSelector(what, receiver, index, layout, allowed=1):
@@ -225,9 +222,9 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     # for component in self.rules:
     # for nw in self.ontology_container.networks: #rules[component]:
-
-    for eq_ID in self.equation_dictionary:
-      var_ID, equation = self.equation_dictionary[eq_ID]
+    equation_variable_dictionary = self.ontology_container.equation_variable_dictionary
+    for eq_ID in equation_variable_dictionary:
+      var_ID, equation = equation_variable_dictionary[eq_ID]
       var_type = self.ontology_container.variables[var_ID]["type"]
       nw = self.ontology_container.variables[var_ID]["network"]
 

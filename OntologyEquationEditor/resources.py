@@ -883,8 +883,9 @@ class VarEqTree():
     self.makeObjecTree(var_ID)
 
   def makeObjecTree(self, var_ID):
-    Tree = self.tree
     self.starting_node_ID_label = self.TEMPLATE_VARIABLE % var_ID
+
+    Tree = self.tree
     stack = []
     eq_IDs = self.get_equs(var_ID)
     for eq_ID in eq_IDs:

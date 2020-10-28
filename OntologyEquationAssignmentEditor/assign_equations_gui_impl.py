@@ -22,7 +22,7 @@ __status__ = "beta"
 
 from PyQt5 import QtWidgets
 
-from Common.common_resources import TEMPLATE_NODE_OBJECT, putDataOrdered
+from Common.common_resources import TEMPLATE_NODE_OBJECT, putData
 from Common.common_resources import getOntologyName
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
@@ -30,6 +30,7 @@ from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resource_initialisation import checkAndFixResources
 from Common.resources_icons import roundButton
+from Common.record_definitions import EquationAssignment
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import DotGraphVariableEquations
@@ -281,16 +282,15 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     dynamics, nature = self.selected_node.split("|")
     node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
 
-    self.assignments[object] = var_ID, sorted(buddies)
+    self.assignments[object] = {}
+    # self.assignments[object]["base"] = EquationAssignment(tree=var_equ_tree.tree, buddies=buddies)
+    self.assignments[object]["base"] = {"tree":var_equ_tree.tree,
+                                        "buddies": buddies
+    }
 
-    self.ontology_container.equation_assignment[node_object] = {
-            "tree"   : var_equ_tree.tree.tree,
-            "IDs"    : var_equ_tree.tree.IDs,
-            "nodes"  : var_equ_tree.tree.nodes,
-            "buddies": buddies
-            }
-
-    print("debugging -- end of buddies")
+    # self.ontology_container.equation_assignment[node_object] = {}
+    # self.ontology_container.equation_variable_dictionary["base"] = EquationAssignment(var_equ_tree.tree.tree, buddies)
+    print("debugging -- end of buddies", self.assignments[object]["base"])
 
   def on_comboNodeNetworks_currentTextChanged(self, network):
     # print("debugging -- node network", network)
@@ -304,10 +304,11 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   def on_pushSave_pressed(self):
     print("debugging -- save file")
+    # self.ontology_container.writeVariables()
 
 
     f = FILES["variable_assignment_to_entity_object"]%self.ontology_name
-    putDataOrdered(self.assignments, f)
+    putData(self.assignments, f)
 
   def on_pushInfo_pressed(selfself):
     print("debugging -- display info file")

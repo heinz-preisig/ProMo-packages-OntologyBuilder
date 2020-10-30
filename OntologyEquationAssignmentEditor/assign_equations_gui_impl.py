@@ -282,9 +282,9 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     dynamics, nature = self.selected_node.split("|")
     node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
 
-    self.assignments[object] = {}
+    self.assignments[node_object] = {}
     # self.assignments[object]["base"] = EquationAssignment(tree=var_equ_tree.tree, buddies=buddies)
-    self.assignments[object]["base"] = {"tree":var_equ_tree.tree,
+    self.assignments[node_object]["base"] = {"tree":var_equ_tree.tree,
                                         "buddies": buddies
     }
 

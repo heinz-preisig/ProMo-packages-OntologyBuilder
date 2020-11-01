@@ -45,7 +45,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_node">
      <attribute name="title">
@@ -113,6 +113,19 @@
         <width>251</width>
         <height>25</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushGraphNode">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>24</y>
+        <width>76</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </widget>

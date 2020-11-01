@@ -64,6 +64,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     roundButton(self.ui.pushInfo, "info", tooltip="information")
     roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
+    roundButton(self.ui.pushGraphNode, "dot_graph", tooltip="show graph")
 
     checkAndFixResources(self.ontology_name, stage="ontology_stage_2")
 
@@ -268,10 +269,12 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     obj = object.replace("|","_")
     print("debugging --- variable ", var_ID)
     var_equ_tree = DotGraphVariableEquations(self.ontology_container.variables, self.ontology_container.indices, var_ID,
-                                             self.ontology_name, file_name=obj)
+                                             self.ontology_name, blocked=[4], file_name=obj)
+    self.var_equ_tree = var_equ_tree
+
     print("debugging -- dotgrap done")
     buddies = set()
-    for id in var_equ_tree.tree.IDs:
+    for id in var_equ_tree.tree["IDs"]:
       o, str_ID = id.split("_")
       ID = int(str_ID)
       if o == "variable":
@@ -309,6 +312,10 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
     f = FILES["variable_assignment_to_entity_object"]%self.ontology_name
     putData(self.assignments, f)
+
+  def on_pushGraphNode_pressed(self):
+    if self.var_equ_tree:
+      self.var_equ_tree.view()
 
   def on_pushInfo_pressed(selfself):
     print("debugging -- display info file")

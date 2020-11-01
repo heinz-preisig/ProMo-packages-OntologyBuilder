@@ -55,6 +55,10 @@ class Ui_MainWindow(object):
         self.comboNodeNetworks = QtWidgets.QComboBox(self.tab_node)
         self.comboNodeNetworks.setGeometry(QtCore.QRect(20, 40, 251, 25))
         self.comboNodeNetworks.setObjectName("comboNodeNetworks")
+        self.pushGraphNode = QtWidgets.QPushButton(self.tab_node)
+        self.pushGraphNode.setGeometry(QtCore.QRect(340, 24, 76, 51))
+        self.pushGraphNode.setText("")
+        self.pushGraphNode.setObjectName("pushGraphNode")
         self.tabWidget.addTab(self.tab_node, "")
         self.tab_arc = QtWidgets.QWidget()
         self.tab_arc.setObjectName("tab_arc")
@@ -133,7 +137,7 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

@@ -872,7 +872,7 @@ class VarEqTree():
                   value :: IDs identifiers of type enumberation (integers)
   """
 
-  def __init__(self, variables, var_ID):
+  def __init__(self, variables, var_ID, blocked=[]):
     self.TEMPLATE_VARIABLE = "variable_%s"
     self.TEMPLATE_EQUATION = "equation_%s"
     self.variables = variables
@@ -880,15 +880,18 @@ class VarEqTree():
 
     self.initObjects()
 
-    self.makeObjecTree(var_ID)
+    self.makeObjecTree(var_ID, blocked=blocked)
 
-  def makeObjecTree(self, var_ID):
+  def makeObjecTree(self, var_ID, blocked=[]):
+    blocked_set = set(blocked)
     self.starting_node_ID_label = self.TEMPLATE_VARIABLE % var_ID
 
     Tree = self.tree
     stack = []
-    eq_IDs = self.get_equs(var_ID)
+    eq_IDs = set(self.get_equs(var_ID)) - blocked_set
     for eq_ID in eq_IDs:
+      if eq_ID == 4:
+        print("debugging -- found 4")
       stack.append((var_ID, eq_ID))
     first = True
 
@@ -909,10 +912,10 @@ class VarEqTree():
       vars = self.get_equation_incidence_list(var_ID, eq_ID)
       for next_var_ID in vars:
         next_var_label = self.TEMPLATE_VARIABLE % next_var_ID
-        if next_var_label not in Tree.IDs:
+        if next_var_label not in Tree["IDs"]:
           Tree.addChildtoNode(next_var_label, equ_label)
           self.addVariable(next_var_label)
-          next_eq_IDs = self.get_equs(next_var_ID)
+          next_eq_IDs = set(self.get_equs(next_var_ID)) - blocked_set
           for next_eq_ID in next_eq_IDs:
             if next_eq_ID:
               stack.append((next_var_ID, next_eq_ID))
@@ -941,7 +944,7 @@ class DotGraphVariableEquations(VarEqTree):
 
   # pdfposter -p999x4A3 vars_equs.pdf try2.pdf
 
-  def __init__(self, variables, indices, var_ID, ontology_name, file_name="vars_equs"):
+  def __init__(self, variables, indices, var_ID, ontology_name, blocked=[], file_name="vars_equs"):
     self.ontology_name = ontology_name
     self.indices = indices
     self.variables= variables
@@ -949,7 +952,9 @@ class DotGraphVariableEquations(VarEqTree):
     self.latex_directory = os.path.join(DIRECTORIES["ontology_repository"], "%s",
                                         DIRECTORIES["latex"]) % ontology_name
 
-    super().__init__(variables, var_ID)
+    super().__init__(variables, var_ID, blocked=blocked)
+
+  def view(self):
     self.simple_graph.view()  # generates pdf
     os.remove(self.file)
 

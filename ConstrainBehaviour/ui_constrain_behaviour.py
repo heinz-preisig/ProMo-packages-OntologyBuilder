@@ -1,62 +1,43 @@
-from os.path import join
+# -*- coding: utf-8 -*-
 
-from PyQt5 import QtGui, QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
-
-from Common.common_resources import getOntologyName
-from Common.resource_initialisation import DIRECTORIES
-from Common.ontology_container import OntologyContainer
-from Common.ui_radio_selector_w_scroll import Ui_Form
+# Form implementation generated from reading ui file 'ui_constrain_behaviour.ui'
+#
+# Created by: PyQt5 UI code generator 5.14.1
+#
+# WARNING! All changes made in this file will be lost!
 
 
-class MainWindowImpl(QtWidgets.QWidget):
-  def __init__(self, icon_f):
-
-    super().__init__()
-    self.ui = Ui_Form()
-    self.ui.setupUi(self)
-    self.move(QtCore.QPoint(0, 0))
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-    # first get ontology
-    self.ontology_name = getOntologyName(task=icon_f, left_icon=None)
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(340, 385)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.labelSource = QtWidgets.QLabel(self.centralwidget)
+        self.labelSource.setObjectName("labelSource")
+        self.verticalLayout.addWidget(self.labelSource)
+        self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 320, 320))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.verticalLayout.addWidget(self.scrollArea)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
 
-    # attach ontology
-    self.ontology = OntologyContainer(self.ontology_name)
-    location = DIRECTORIES["latex_doc_location"] % self.ontology_name
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    RadioSelector = self.__makeAndAddSelector(location,
-                                              self.radioReceiver,
-                                              -1,
-                                              self.ui.verticalLayout,
-                                              autoexclusive=False)
-
-  def radioReceiver(self, toggle):
-    if toggle:
-      print("debugging radio receiver")
-
-  def __makeAndAddSelector(self, latex_file_paths, receiver, index, layout, autoexclusive=True):
-
-
-    template = join(latex_file_paths, "equation_%s.png")
-    # f = {}
-    # f[1] = template%(1)
-    # f[2] = template%(10)
-
-
-    equation_IDs = sorted(self.ontology.equation_variable_dictionary.keys())
-
-    for eq_ID in equation_IDs:
-      f = template%eq_ID
-      label = QtWidgets.QLabel()
-      pix = QtGui.QPixmap(f)
-      icon = QtGui.QIcon(pix)
-      s = pix.size()
-      radio_selector = QtWidgets.QRadioButton(label)
-      radio_selector.setIcon(icon)
-      radio_selector.setIconSize(s)
-      layout.addWidget(radio_selector)
-
-      radio_selector.toggled.connect(receiver)
-
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.labelSource.setText(_translate("MainWindow", "TextLabel"))

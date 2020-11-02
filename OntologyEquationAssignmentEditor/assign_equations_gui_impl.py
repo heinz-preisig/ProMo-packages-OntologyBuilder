@@ -22,15 +22,15 @@ __status__ = "beta"
 
 from PyQt5 import QtWidgets
 
-from Common.common_resources import TEMPLATE_NODE_OBJECT, putData
 from Common.common_resources import getOntologyName
+from Common.common_resources import putData
+from Common.common_resources import TEMPLATE_NODE_OBJECT
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
+from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
-from Common.resource_initialisation import checkAndFixResources
 from Common.resources_icons import roundButton
-from Common.record_definitions import EquationAssignment
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import DotGraphVariableEquations
@@ -90,7 +90,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.selected_arc_network = None
     self.selected_node_network = None
 
-    self.assignments={}
+    self.assignments = {}
 
     self.__makeEquationList()
 
@@ -105,7 +105,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     reduced_network_node_list = {}
     global_node_set = set()
     for nw in self.ontology_container.list_inter_branches:
-      network_node_list = self.ontology_container.list_node_objects_on_networks[nw] #list_node_objects_on_networks_with_tokens[nw]
+      network_node_list = self.ontology_container.list_node_objects_on_networks[nw]  #
+      # list_node_objects_on_networks_with_tokens[nw]
       reduced_network_node_list[nw] = []
       for i in network_node_list:
         if "constant" not in i:  # RULE: reservoirs (time-scale constant) have no state
@@ -148,7 +149,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
   # def __makeEquationDictionary(self):
   #   for var_ID in self.ontology_container.variables:
   #     for eq_ID in self.ontology_container.variables[var_ID]["equations"]:
-  #       self.equation_variable_dictionary[eq_ID] = (var_ID, self.ontology_container.variables[var_ID]["equations"][eq_ID])
+  #       self.equation_variable_dictionary[eq_ID] = (var_ID, self.ontology_container.variables[var_ID]["equations"][
+  #       eq_ID])
 
   @staticmethod
   def __makeSelector(what, receiver, index, layout, allowed=1):
@@ -266,7 +268,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
       # print("debugging -- end of make equation list")
 
   def __putEquations(self, object, equation_text, equ_ID, var_ID):
-    obj = object.replace("|","_")
+    obj = object.replace("|", "_")
     print("debugging --- variable ", var_ID)
     var_equ_tree = DotGraphVariableEquations(self.ontology_container.variables, self.ontology_container.indices, var_ID,
                                              self.ontology_name, blocked=[4], file_name=obj)
@@ -286,14 +288,10 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
 
     self.assignments[node_object] = {}
-    # self.assignments[object]["base"] = EquationAssignment(tree=var_equ_tree.tree, buddies=buddies)
-    self.assignments[node_object]["base"] = {"tree":var_equ_tree.tree,
-                                        "buddies": buddies
-    }
-
-    # self.ontology_container.equation_assignment[node_object] = {}
-    # self.ontology_container.equation_variable_dictionary["base"] = EquationAssignment(var_equ_tree.tree.tree, buddies)
-    print("debugging -- end of buddies", self.assignments[object]["base"])
+    self.assignments[node_object]["base"] = {
+            "tree"   : var_equ_tree.tree,
+            "buddies": list(buddies)
+            }
 
   def on_comboNodeNetworks_currentTextChanged(self, network):
     # print("debugging -- node network", network)
@@ -309,8 +307,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     print("debugging -- save file")
     # self.ontology_container.writeVariables()
 
-
-    f = FILES["variable_assignment_to_entity_object"]%self.ontology_name
+    f = FILES["variable_assignment_to_entity_object"] % self.ontology_name
     putData(self.assignments, f)
 
   def on_pushGraphNode_pressed(self):

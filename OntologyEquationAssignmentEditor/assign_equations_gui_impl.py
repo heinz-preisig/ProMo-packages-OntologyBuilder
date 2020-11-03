@@ -24,7 +24,6 @@ from PyQt5 import QtWidgets
 
 from Common.common_resources import getOntologyName
 from Common.common_resources import putData
-from Common.common_resources import TEMPLATE_NODE_OBJECT
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import cleanLayout
 from Common.resource_initialisation import checkAndFixResources
@@ -33,7 +32,7 @@ from Common.resource_initialisation import FILES
 from Common.resources_icons import roundButton
 from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
-from OntologyBuilder.OntologyEquationEditor.resources import DotGraphVariableEquations
+from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
 
@@ -72,8 +71,8 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.incidence_dictionary, self.inv_incidence_dictionary = makeIncidenceDictionaries(
             self.ontology_container.variables)
 
-    self.__makeNodeLists()
-    self.__makeArcLists()
+    self.reduced_network_node_list = self.ontology_container.list_reduced_network_node_objects #__makeNodeLists()
+    self.reduced_arc_list = self.ontology_container.list_reduced_network_arc_objects # self.__makeArcLists()
 
     self.radio_selectors = {}
     self.__makeCombosNetworks()
@@ -101,35 +100,35 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     self.ui.comboArcNetworks.addItems(list_inter_branches)
     pass
 
-  def __makeNodeLists(self):
-    reduced_network_node_list = {}
-    global_node_set = set()
-    for nw in self.ontology_container.list_inter_branches:
-      network_node_list = self.ontology_container.list_node_objects_on_networks[nw]  #
-      # list_node_objects_on_networks_with_tokens[nw]
-      reduced_network_node_list[nw] = []
-      for i in network_node_list:
-        if "constant" not in i:  # RULE: reservoirs (time-scale constant) have no state
-          reduced_network_node_list[nw].append(i)
-          if i not in global_node_set:
-            global_node_set.add(i)
-
-    # print("debugging -- network nodes", reduced_network_node_list)
-    self.reduced_network_node_list = reduced_network_node_list
-
-  def __makeArcLists(self):
-    reduced_arc_list = {}
-    global_arc_set = set()
-    for nw in self.ontology_container.list_inter_branches:
-      network_arc_list = self.ontology_container.list_arc_objects_on_networks[nw]
-      reduced_arc_list[nw] = []
-      for i in network_arc_list:
-        reduced_arc_list[nw].append(i)
-        if i not in global_arc_set:
-          global_arc_set.add(i)
-
-    # print("debugging -- arcs", reduced_arc_list)
-    self.reduced_arc_list = reduced_arc_list
+  # def __makeNodeLists(self):
+  #   reduced_network_node_list = {}
+  #   # global_node_set = set()
+  #   for nw in self.ontology_container.list_inter_branches:
+  #     network_node_list = self.ontology_container.list_node_objects_on_networks[nw]  #
+  #     # list_node_objects_on_networks_with_tokens[nw]
+  #     reduced_network_node_list[nw] = []
+  #     for i in network_node_list:
+  #       if "constant" not in i:  # RULE: reservoirs (time-scale constant) have no state
+  #         reduced_network_node_list[nw].append(i)
+  #         # if i not in global_node_set:
+  #         #   global_node_set.add(i)
+  #
+  #   # print("debugging -- network nodes", reduced_network_node_list)
+  #   self.reduced_network_node_list = reduced_network_node_list
+  #
+  # def __makeArcLists(self):
+  #   reduced_arc_list = {}
+  #   global_arc_set = set()
+  #   for nw in self.ontology_container.list_inter_branches:
+  #     network_arc_list = self.ontology_container.list_arc_objects_on_networks[nw]
+  #     reduced_arc_list[nw] = []
+  #     for i in network_arc_list:
+  #       reduced_arc_list[nw].append(i)
+  #       if i not in global_arc_set:
+  #         global_arc_set.add(i)
+  #
+  #   # print("debugging -- arcs", reduced_arc_list)
+  #   self.reduced_arc_list = reduced_arc_list
 
   def __makeNodeSelector(self):
     node_list = self.reduced_network_node_list[self.selected_node_network]
@@ -267,31 +266,15 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
       # print("debugging -- end of make equation list")
 
-  def __putEquations(self, object, equation_text, equ_ID, var_ID):
+  def analyseBiPartiteGraph(self, object, var_ID):
     obj = object.replace("|", "_")
-    print("debugging --- variable ", var_ID)
-    var_equ_tree = DotGraphVariableEquations(self.ontology_container.variables, self.ontology_container.indices, var_ID,
-                                             self.ontology_name, blocked=[4], file_name=obj)
-    self.var_equ_tree = var_equ_tree
-
-    print("debugging -- dotgrap done")
-    buddies = set()
-    for id in var_equ_tree.tree["IDs"]:
-      o, str_ID = id.split("_")
-      ID = int(str_ID)
-      if o == "variable":
-        network = self.ontology_container.variables[ID]['network']
-        if network in self.ontology_container.list_leave_networks:
-          buddies.add((ID, network))
-
-    dynamics, nature = self.selected_node.split("|")
-    node_object = TEMPLATE_NODE_OBJECT % (dynamics, nature)
-
-    self.assignments[node_object] = {}
-    self.assignments[node_object]["base"] = {
-            "tree"   : var_equ_tree.tree,
-            "buddies": list(buddies)
-            }
+    blocked = []
+    self.assignments[object] = {}
+    self.var_equ_tree, self.assignments[object]["base"] = AnalyseBiPartiteGraph(var_ID,
+                                                                                self.ontology_container,
+                                                                                self.ontology_name,
+                                                                                blocked,
+                                                                                obj)
 
   def on_comboNodeNetworks_currentTextChanged(self, network):
     # print("debugging -- node network", network)
@@ -357,7 +340,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     var_ID, equ_ID = self.inverse_dictionary[equ_text]
     print("debugging -- equation no", var_ID, equ_ID)
     print("debugging -- network ", self.selected_node_network)
-    self.__putEquations(self.selected_node, equ_text, equ_ID, var_ID)
+    self.analyseBiPartiteGraph(self.selected_node, var_ID)
     pass
 
   def radioReceiverArcEquations(self, checked):
@@ -367,5 +350,5 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     var_ID, equ_ID = self.inverse_dictionary[equ_text]
     print("debugging -- equation no", var_ID, equ_ID)
     print("debugging -- network ", self.selected_arc_network)
-    self.__putEquations(self.selected_arc, equ_text, equ_ID, var_ID)
+    self.analyseBiPartiteGraph(self.selected_arc, var_ID)
     pass

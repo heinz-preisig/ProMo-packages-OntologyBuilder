@@ -22,8 +22,8 @@ from graphviz import Digraph
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
-from Common.common_resources import invertDict
 from Common.common_resources import getData
+from Common.common_resources import invertDict
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.treeid import ObjectTree
@@ -48,7 +48,7 @@ TOOLTIPS["edit"] = {}
 TOOLTIPS["edit"]["type"] = "click to shift variable type"
 TOOLTIPS["edit"]["symbol"] = "click to modify symbol"
 TOOLTIPS["edit"]["description"] = "modify description"
-TOOLTIPS["edit"]["units"] = "time, lenth, amount, mass, temp, current, light\nmay only be modified for _new_ variable"
+TOOLTIPS["edit"]["units"] = "time, length, amount, mass, temp, current, light\nmay only be modified for _new_ variable"
 TOOLTIPS["edit"]["indices"] = "may only be modified for _new_ variable"
 TOOLTIPS["edit"]["eqs"] = "add equation"
 TOOLTIPS["edit"]["variable"] = "no action"
@@ -141,7 +141,7 @@ ENABLED_COLUMNS["intra_connections"]["state"] = [0, 1, 2, 3, 4, 5]
 LIST_DELIMITERS = ["(", ")", "[", "]", "{", "}", "|", ",", "::", "&", "_"]
 LIST_OPERATORS = ["+",  # ................ ordinary plus
                   "-",  # ................ ordinary minus
-                  "^",  # ................ oridnary power
+                  "^",  # ................ ordinary power
                   ":",  # ................ Khatri-Rao product
                   ".",  # ................ expand product
                   "|",  # ................ reduce product
@@ -677,83 +677,19 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
 
 
 def make_variable_equation_pngs(variables, compiled_variables, changes, ontology_name):
-  global lhs, rhs, reader, line, number, network, error
-  #
-  # rhs = {}
-  # eqs = {}
-  # latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
-  # with open(latex_file, 'r') as reader:
-  #   # Read and print the entire file line by line
-  #   line = reader.readline()
-  #   number, lhs_, rhs[number], network = parseLine(reader)
-  #   eqs[number] = "%s = %s"%(lhs_, rhs[number])
-  #   while number:  # The EOF char is an empty string
-  #     number, lhs_, rhs[number], network = parseLine(reader)
-  #     eqs[number] = "%s = %s"%(lhs_, rhs[number])
-  #
-  # lhs = makeVariables(variables)
-  #
-  # f_name = FILES["pnglatex"]
-  # ontology_location = DIRECTORIES["ontology_location"] % ontology_name
-  #
-  # header = os.path.join(ontology_location, "LaTeX", "resources", "header.tex")
-  #
-  # header_file = open(header, 'w')
-  #
-  # # RULE: make header for equation and variable latex compilations.
-  # # math packages
-  # # \usepackage{amsmath}
-  # # \usepackage{amssymb}
-  # # \usepackage{calligra}
-  # # \usepackage{array}
-  # # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
-  # header_file.write(r"\usepackage{amsmath}")
-  # header_file.write(r"\usepackage{amssymb}")
-  # header_file.write(r"\usepackage{calligra}")
-  # header_file.write(r"\usepackage{array}")
-  # header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
-  # header_file.close()
-  #
-  # for eq_ID in rhs:
-  #   if eq_ID in changes["equations"]["changed"]:
-  #     out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
-  #     args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
-  #             ontology_location]
-  #
-  #     try:  # reports an error after completing the last one -- no idea
-  #       make_it = subprocess.Popen(
-  #               args,
-  #               start_new_session=True,
-  #               # restore_signals=False,
-  #               # stdout=subprocess.PIPE,
-  #               # stderr=subprocess.PIPE
-  #               )
-  #       out, error = make_it.communicate()
-  #     except:
-  #       pass
+  # global lhs, rhs, reader, line, number, network, error
 
-  rhs = {}
+  # rhs = {}
   eqs = {}
   latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
   latex_translations = getData(latex_file)
   for eq_ID_str in latex_translations:
     eq_ID = int(eq_ID_str)
     e = latex_translations[eq_ID_str]
-    var_ID = e["variable_ID"]
+    # var_ID = e["variable_ID"]
     lhs = e["lhs"]
     rhs = e["rhs"]
-    eqs[eq_ID] = r"%s = %s"%(lhs,rhs)
-
-  # with open(latex_file, 'r') as reader:
-  #   # Read and print the entire file line by line
-  #   line = reader.readline()
-  #   number, lhs_, rhs[number], network = parseLine(reader)
-  #   eqs[number] = "%s = %s"%(lhs_, rhs[number])
-  #   while number:  # The EOF char is an empty string
-  #     number, lhs_, rhs[number], network = parseLine(reader)
-  #     eqs[number] = "%s = %s"%(lhs_, rhs[number])
-
-  # lhs = makeVariables(variables)
+    eqs[eq_ID] = r"%s = %s" % (lhs, rhs)
 
   f_name = FILES["pnglatex"]
   ontology_location = DIRECTORIES["ontology_location"] % ontology_name
@@ -795,19 +731,16 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
         print("equation generation failed")
         pass
 
-
-
-  print("debugging")
-  for var_ID in compiled_variables: #variables: #lhs:
+  # print("debugging")
+  for var_ID in compiled_variables:  # variables: #lhs:
     if var_ID in changes["variables"]["changed"]:
-
 
       out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
 
       var_latex = compiled_variables[var_ID]["latex"]
-      if var_ID == 92:
-        print("debugging variable 92: ", var_latex)
-      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex, #lhs[var_ID],
+      # if var_ID == 92:
+      #   print("debugging variable 92: ", var_latex)
+      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
               ontology_location]
 
       try:  # reports an error after completing the last one -- no idea
@@ -830,28 +763,28 @@ def makeVariables(variables):
   return lhs
 
 
-def parseLine(line):
-  line1 = reader.readline()
-  arr1 = line1.split('"')
-  if len(arr1) != 1:
-    number = int(arr1[1])
-    line2 = reader.readline()
-    arr2 = line2.split('"')
-    lhs = arr2[3]
-    line3 = reader.readline()
-    arr3 = line3.split('"')
-    network = arr3[3]
-    line4 = reader.readline()
-    arr4 = line4.split('"')
-    rhs = arr4[3].replace('\\\\', '\\')
-    line5 = reader.readline()
-  else:
-    number = None
-    lhs = None
-    rhs = None
-    network = None
-
-  return number, lhs, rhs, network
+# def parseLine(line):
+#   line1 = reader.readline()
+#   arr1 = line1.split('"')
+#   if len(arr1) != 1:
+#     number = int(arr1[1])
+#     line2 = reader.readline()
+#     arr2 = line2.split('"')
+#     lhs = arr2[3]
+#     line3 = reader.readline()
+#     arr3 = line3.split('"')
+#     network = arr3[3]
+#     line4 = reader.readline()
+#     arr4 = line4.split('"')
+#     rhs = arr4[3].replace('\\\\', '\\')
+#     line5 = reader.readline()
+#   else:
+#     number = None
+#     lhs = None
+#     rhs = None
+#     network = None
+#
+#   return number, lhs, rhs, network
 
 
 class VarEqTree():
@@ -872,18 +805,21 @@ class VarEqTree():
                   value :: IDs identifiers of type enumberation (integers)
   """
 
-  def __init__(self, variables, var_ID, blocked=[]):
+  def __init__(self, variables, var_ID, blocked):
     self.TEMPLATE_VARIABLE = "variable_%s"
     self.TEMPLATE_EQUATION = "equation_%s"
     self.variables = variables
+    self.var_ID = var_ID
+    self.blocked = blocked
     self.tree = ObjectTree(self.TEMPLATE_VARIABLE % var_ID)
 
     self.initObjects()
 
-    self.makeObjecTree(var_ID, blocked=blocked)
+    self.makeObjecTree()
 
-  def makeObjecTree(self, var_ID, blocked=[]):
-    blocked_set = set(blocked)
+  def makeObjecTree(self):
+    blocked_set = set(self.blocked)
+    var_ID = self.var_ID
     self.starting_node_ID_label = self.TEMPLATE_VARIABLE % var_ID
 
     Tree = self.tree
@@ -942,13 +878,15 @@ class VarEqTree():
 
 class DotGraphVariableEquations(VarEqTree):
 
-  # pdfposter -p999x4A3 vars_equs.pdf try2.pdf
+  # pdfposter -p2x4A3 vars_equs.pdf try2.pdf
 
-  def __init__(self, variables, indices, var_ID, ontology_name, blocked=[], file_name="vars_equs"):
+  def __init__(self, variables, indices, var_ID, ontology_name, blocked, file_name="vars_equs"):
     self.ontology_name = ontology_name
     self.indices = indices
-    self.variables= variables
-    self.file_name=file_name
+    self.variables = variables
+    self.file_name = file_name
+    self.file = None
+
     self.latex_directory = os.path.join(DIRECTORIES["ontology_repository"], "%s",
                                         DIRECTORIES["latex"]) % ontology_name
 
@@ -960,14 +898,13 @@ class DotGraphVariableEquations(VarEqTree):
 
   def initObjects(self):
 
-    self.var_labels = self.get_var_labels()
-    self.equ_labels = self.get_equ_labels()
+    self.var_labels, self.equ_labels = self.__make_var_and_equ_labels()
 
     o_template = os.path.join(DIRECTORIES["ontology_repository"], self.ontology_name,
                               DIRECTORIES["ontology_graphs_location"],
                               "%s")
     # the tree of networks
-    f = o_template % self.file_name #"vars_equs"
+    f = o_template % self.file_name  # "vars_equs"
     print(f)
     graph_attr = {}
     graph_attr["nodesep"] = "1"
@@ -991,25 +928,21 @@ class DotGraphVariableEquations(VarEqTree):
     self.simple_graph.edge(source_label, sink_label, color=colour)
     return None
 
-  def get_var_labels(self):
+  def __make_var_and_equ_labels(self):
     var_labels = {}
-    self.equ_labels = {}
-    self.port_variable = {}
+    equ_labels = {}
+    port_variable = {}
     for var_id in self.variables:
       ID = self.TEMPLATE_VARIABLE % var_id
       var_labels[ID] = self.variables[var_id]["aliases"]["internal_code"]
-      self.port_variable[var_id] = self.variables[var_id]["port_variable"]
       for equ_ID in self.variables[var_id]["equations"]:
         ID = self.TEMPLATE_EQUATION % equ_ID
         equation = self.variables[var_id]["equations"][equ_ID]["rhs"]
         rendered_expressions = renderExpressionFromGlobalIDToInternal(equation, self.variables,
                                                                       self.indices)
-        self.equ_labels[ID] = rendered_expressions
+        equ_labels[ID] = rendered_expressions
 
-    return var_labels
-
-  def get_equ_labels(self):
-    return self.equ_labels
+    return var_labels, equ_labels
 
   def addVariable(self, var_ID_label, first=False):
 
@@ -1028,7 +961,30 @@ class DotGraphVariableEquations(VarEqTree):
 
   def addEquation(self, eq_ID_label, first=False):
     node_ID_label = str(eq_ID_label)
-    node_label = self.equ_labels[eq_ID_label]
+    node_label = self.equ_labels[eq_ID_label]  # Note: can be used instead of picture
     colour = "cyan"
     image = os.path.join(self.latex_directory, "%s.png" % eq_ID_label)
     self.simple_graph.node(node_ID_label, '', image=image, shape="box", height="0.8cm", style="filled", color=colour)
+
+
+def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocked, file_name):
+  print("debugging --- variable ", variable_ID)
+  var_equ_tree = DotGraphVariableEquations(ontology_container.variables, ontology_container.indices, variable_ID,
+                                           ontology_name, blocked=blocked, file_name=file_name)
+
+  print("debugging -- dotgrap done")
+  buddies = set()
+  for id in var_equ_tree.tree["IDs"]:
+    o, str_ID = id.split("_")
+    ID = int(str_ID)
+    if o == "variable":
+      network = ontology_container.variables[ID]['network']
+      if network in ontology_container.list_leave_networks:
+        buddies.add((ID, network))
+
+  assignments = {
+          "tree"   : var_equ_tree.tree,
+          "buddies": list(buddies),
+          }
+
+  return var_equ_tree, assignments

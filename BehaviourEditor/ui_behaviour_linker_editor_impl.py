@@ -34,9 +34,9 @@ rules = {
                 }
         }
 
-class Selector(QtCore.QObject):
 
-  radio_signal = QtCore.pyqtSignal(str)
+class Selector(QtCore.QObject):
+  radio_signal = QtCore.pyqtSignal(str, int)
 
   def __init__(self, receiver):
     super().__init__()
@@ -51,36 +51,33 @@ class Selector(QtCore.QObject):
 
       self.radios[label].toggled.connect(self.selector_toggled)
 
-
   def makePixelSelector(self, pixel_dictionary, layout):
 
     cleanLayout(layout)
 
     ID = 0
     for (icon, label, size) in pixel_dictionary:
-
+      label = QtWidgets.QLabel()
       self.radios[ID] = QtWidgets.QRadioButton(label)
       self.radios[ID].setIcon(icon)
       self.radios[ID].setIconSize(size)
+      self.radios[ID].resize(0,0)    # Note: not sure what I am doing here -- reduces gaps between
       layout.addWidget(self.radios[ID])
 
       self.radios[ID].toggled.connect(self.selector_toggled)
 
-      s_h = self.radios[ID].size()
-      size += s_h
-
       ID += 1
     return self.radios
-
 
   def selector_toggled(self, toggled):
     print("debugging -- toggled", toggled)
     if toggled:
+      count = -1
       for label in self.radios:
+        count += 1
         if self.radios[label].isChecked():
           print("goit it :", label)
-          self.radio_signal.emit(str(label))
-
+          self.radio_signal.emit(str(label), count)
 
 
 class MainWindowImpl(QtWidgets.QMainWindow):
@@ -91,12 +88,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.ui.setupUi(self)
     self.move(QtCore.QPoint(0, 0))
 
-
     roundButton(self.ui.pushButtonInformation, "info", tooltip="information")
     roundButton(self.ui.pushButtonSave, "save", tooltip="save entity behaviour")
     roundButton(self.ui.pushButtonCancle, "exit", tooltip="cancel and exit")
-
-
 
     # first get ontology
     self.ontology_name = getOntologyName(task=icon_f, left_icon=None)
@@ -108,10 +102,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.ontology_container = OntologyContainer(self.ontology_name)
     self.location = DIRECTORIES["latex_doc_location"] % self.ontology_name
 
-
     self.reduced_network_node_list = self.ontology_container.list_reduced_network_node_objects
     self.reduced_arc_list = self.ontology_container.list_reduced_network_arc_objects
-
 
     # interface components
     self.vbox_InterNetworks = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
@@ -136,13 +128,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.radio_Left = {}
     self.radio_Right = {}
 
-
     self.selected_InterNetwork = None
     self.selected_Entity = None
     self.sected_variant = "base"
+    self.radio_index = None
 
     # controls
-    self.actions = ["duplicates", "new_variant", "edit_variant","instantiate_variant"]
+    self.actions = ["duplicates", "new_variant", "edit_variant", "instantiate_variant"]
 
     # get existing data
     f = FILES["variable_assignment_to_entity_object"] % self.ontology_name
@@ -158,15 +150,15 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.radio_InterNetworks = Selector(self.radioReceiverInterNetworks)
     self.radio_InterNetworks.makeTextSelector(inter_networks, self.vbox_InterNetworks)
 
-  def radioReceiverInterNetworks(self, ID):
+  def radioReceiverInterNetworks(self, ID, index):
     print("debugging -- receiver InterNetworks", ID)
     self.selected_InterNetwork = ID
 
     entities_list = self.reduced_network_node_list[self.selected_InterNetwork]
-    self.radio_Entities= Selector(self.radioReceiverEntities)
+    self.radio_Entities = Selector(self.radioReceiverEntities)
     self.radio_Entities.makeTextSelector(entities_list, self.vbox_Entities)
 
-  def radioReceiverEntities(self, ID):
+  def radioReceiverEntities(self, ID, index):
     print("debugging -- receiver Entities", ID)
     self.selected_Entity = ID
     define_base = True
@@ -178,45 +170,40 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         else:
           self.equation_assignment[self.selected_InterNetwork][self.selected_Entity]["base"] = {}
       else:
-        self.equation_assignment[self.selected_Entity] = {}
+        self.equation_assignment[self.selected_InterNetwork][self.selected_Entity] = {}
         self.equation_assignment[self.selected_InterNetwork][self.selected_Entity]["base"] = {}
     else:
       self.equation_assignment[self.selected_InterNetwork] = {}
       self.equation_assignment[self.selected_InterNetwork][self.selected_Entity] = {}
       self.equation_assignment[self.selected_InterNetwork][self.selected_Entity]["base"] = {}
 
-
     if define_base:
       self.equation_assignment[self.selected_InterNetwork][self.selected_Entity]["base"] = self.__makeBase()
       print("debugging -- prepared a new base")
       self.__makeBase()
 
-  def radioReceiverEquations(self, equ_text):
+  def radioReceiverEquations(self, equ_text, index):
 
-    print("debugging -- node equations checked", equ_text)
-    var_ID, equ_ID = self.inverse_dictionary[equ_text]
-    print("debugging -- equation no", var_ID, equ_ID)
-    print("debugging -- network ", self.selected_node_network)
+    print("debugging -- node equations checked", equ_text, index)
     # self.analyseBiPartiteGraph(self.selected_node, var_ID)
     pass
-
 
   def __makeBase(self):
     print("debugging -- define base")
     self.radio_Left = Selector(self.radioReceiverEquations)
-    rendered_items, pixelled_items = self.__makeStateEquationSelector()
-    self.radio_Left.makeTextSelector(rendered_items, self.vbox_Left)
-    self.radio_Left.makePixelSelector(pixelled_items, self.vbox_Right)
-    # pixel_dictionary = self.pixeled_equations_dictionary[]
-    # self.radio_Left.makePixelSelector()
+    selected_state_equation_list = self.__makeStateEquationSelector()
+    radio_selected_state_equation_list, self.radio_index = self.__makeRadioSelectorLists(selected_state_equation_list)
 
+    self.radio_Left.makeTextSelector(radio_selected_state_equation_list["rendered"], self.vbox_Left)
+    self.radio_Left.makePixelSelector(radio_selected_state_equation_list["pixelled"], self.vbox_Right)
 
 
   def __makeStateEquationSelector(self):
 
     nw = self.selected_InterNetwork
 
-    selected_equation_list = []
+    selected_state_equation_list = []
+    selected_var_type = None
 
     for eq_ID in self.equations:
       (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
@@ -228,16 +215,28 @@ class MainWindowImpl(QtWidgets.QMainWindow):
           if p_nw in rules["nodes"]:
             selected_var_type = rules["nodes"][p_nw]
         for p_nw in nws:
-          if p_nw == nw_eq: #in self.rendered_equation_dictionary:
-            if var_type == selected_var_type: #in self.rendered_equation_dictionary[p_nw]:
-              # for var_ID in self.rendered_equation_dictionary[p_nw][var_type]:
-              #   add_rendered_to = set(self.rendered_equation_dictionary[p_nw][var_type][var_ID])
-              #   radio_rendered_equation_set = radio_rendered_equation_set | add_rendered_to
-              #   radio_pixelled_equation_list.append(self.pixeled_equations_dictionary[p_nw][var_type][var_ID])
-              selected_equation_list.append(eq_ID)
-    # radio_item_list = sorted(radio_rendered_equation_set)
-    # return radio_item_list, radio_pixelled_equation_list
-    return selected_equation_list
+          if p_nw == nw_eq:  # in self.rendered_equation_dictionary:
+            if var_type == selected_var_type:
+              selected_state_equation_list.append(eq_ID)
+
+    return selected_state_equation_list
+
+  def __makeRadioSelectorLists(self, selector_list):
+
+    radio_selectors = {"rendered": [],
+                       "pixelled": []}
+
+    index = {"variable": [], "equation" : []}
+    indices = []
+
+    for equ_ID in selector_list:
+      var_ID, var_type, nw_eq, rendered_equation, pixelled_equation = self.equations[equ_ID]
+      radio_selectors["rendered"].append(rendered_equation)
+      radio_selectors["pixelled"].append(pixelled_equation)
+      indices.append(equ_ID)
+
+    return radio_selectors, indices
+
 
 
 
@@ -262,9 +261,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       equations[eq_ID] = (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation)
 
     return equations
-
-
-
 
   def __make_icon(self, eq_ID):
 

@@ -124,6 +124,7 @@ class Ui_MainWindow(object):
         self.labelRight.setObjectName("labelRight")
         self.verticalLayoutThirdColumn.addWidget(self.labelRight)
         self.scrollAreaRight = QtWidgets.QScrollArea(self.centralwidget)
+        self.scrollAreaRight.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.scrollAreaRight.setWidgetResizable(True)
         self.scrollAreaRight.setObjectName("scrollAreaRight")
         self.scrollAreaWidgetContentsRight = QtWidgets.QWidget()

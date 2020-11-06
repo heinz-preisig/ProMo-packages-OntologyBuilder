@@ -151,9 +151,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       print("debugging -- no data")
 
     # prepare lists
-    self.inverse_dictionary, \
-    self.rendered_equation_dictionary, \
-    self.pixeled_equations_dictionary = self.__makeEquationList()
+    self.equations = self.__makeEquationList()
 
     # start process
     inter_networks = self.ontology_container.list_inter_branches
@@ -215,87 +213,56 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
 
   def __makeStateEquationSelector(self):
-    # self.selected_node_network = self.ui.comboNodeNetworks.currentText()
-    self.selected_node_network = self.selected_InterNetwork
-    var_type = "state"
-    if self.selected_node_network == "inter":
-      var_type = self.rules["nodes"]["inter"]
-    radio_rendered_equation_set = set()
-    radio_pixelled_equation_list = []
 
-    nw = self.selected_node_network
-    if nw in self.ontology_container.networks:
-      nws = list(self.ontology_container.ontology_tree[nw]["parents"])
-      nws.append(nw)
-      for p_nw in nws:
-        if p_nw in self.rendered_equation_dictionary:
-          if var_type in self.rendered_equation_dictionary[p_nw]:
-            for var_ID in self.rendered_equation_dictionary[p_nw][var_type]:
-              add_rendered_to = set(self.rendered_equation_dictionary[p_nw][var_type][var_ID])
-              radio_rendered_equation_set = radio_rendered_equation_set | add_rendered_to
-              radio_pixelled_equation_list.append(self.pixeled_equations_dictionary[p_nw][var_type][var_ID])
-    radio_item_list = sorted(radio_rendered_equation_set)
-    return radio_item_list, radio_pixelled_equation_list
+    nw = self.selected_InterNetwork
+
+    selected_equation_list = []
+
+    for eq_ID in self.equations:
+      (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
+
+      if nw in self.ontology_container.networks:
+        nws = list(self.ontology_container.ontology_tree[nw]["parents"])
+        nws.append(nw)
+        for p_nw in nws:
+          if p_nw in rules["nodes"]:
+            selected_var_type = rules["nodes"][p_nw]
+        for p_nw in nws:
+          if p_nw == nw_eq: #in self.rendered_equation_dictionary:
+            if var_type == selected_var_type: #in self.rendered_equation_dictionary[p_nw]:
+              # for var_ID in self.rendered_equation_dictionary[p_nw][var_type]:
+              #   add_rendered_to = set(self.rendered_equation_dictionary[p_nw][var_type][var_ID])
+              #   radio_rendered_equation_set = radio_rendered_equation_set | add_rendered_to
+              #   radio_pixelled_equation_list.append(self.pixeled_equations_dictionary[p_nw][var_type][var_ID])
+              selected_equation_list.append(eq_ID)
+    # radio_item_list = sorted(radio_rendered_equation_set)
+    # return radio_item_list, radio_pixelled_equation_list
+    return selected_equation_list
 
 
 
   def __makeEquationList(self):
 
-    equation_list = {}
-    rendered_equation_dictionary = {}
-    inverse_dictionary = {}  # hash: label, value: (var_ID, eq_ID)
-    pixeled_equations_dictionary = {}
-
-    # for component in self.rules:
-    # for nw in self.ontology_container.networks: #rules[component]:
+    equations = {}  # tuple
     equation_variable_dictionary = self.ontology_container.equation_variable_dictionary
     for eq_ID in equation_variable_dictionary:
       var_ID, equation = equation_variable_dictionary[eq_ID]
       var_type = self.ontology_container.variables[var_ID]["type"]
-      nw = self.ontology_container.variables[var_ID]["network"]
-
-      if nw not in equation_list:
-        equation_list[nw] = {}
-        rendered_equation_dictionary[nw] = {}
-        pixeled_equations_dictionary[nw] = {}
-
-      if var_type not in equation_list[nw]:
-        equation_list[nw][var_type] = {}
-        rendered_equation_dictionary[nw][var_type] = {}
-        pixeled_equations_dictionary[nw][var_type] = {}
-
-
-
-      equation_list[nw][var_type][eq_ID] = (var_ID, var_type, equation["rhs"], equation["network"])
+      nw_eq = self.ontology_container.variables[var_ID]["network"]
 
       rendered_expressions = renderExpressionFromGlobalIDToInternal(
               equation["rhs"],
               self.ontology_container.variables,
               self.ontology_container.indices)
 
-      rendered_variable = self.ontology_container.variables[equation_list[nw][var_type][eq_ID][0]]["aliases"][
-        "internal_code"]
+      rendered_variable = self.ontology_container.variables[var_ID]["aliases"]["internal_code"]
+      rendered_equation = "%s := %s" % (rendered_variable, rendered_expressions)
+      pixelled_equation = self.__make_icon(eq_ID)
 
-      # print("debugging -- rendered equation info", rendered_variable, rendered_expressions[var_type][eq_ID])
-      s = "%s := %s" % (rendered_variable, rendered_expressions)
-      if var_ID not in rendered_equation_dictionary[nw][var_type]:
-        rendered_equation_dictionary[nw][var_type][var_ID] = []
-      rendered_equation_dictionary[nw][var_type][var_ID].append(s)
+      equations[eq_ID] = (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation)
 
-      inverse_dictionary[s] = (var_ID, eq_ID)
+    return equations
 
-
-      pixeled_equations_dictionary[nw][var_type][var_ID] = self.__make_icon(eq_ID)
-
-
-
-    # inverse_dictionary, \  # hash = rendered equation, value= e(var_ID, equ_ID)
-    # rendered_equation_dictionary, \ # hash: network, hash: var_type, hash: eq_ID: value list(rendered equations)
-    # pixeled_equations_dictionary # # hash: network, hash: var_type, hash: eq_ID: value: (icon, label, size)
-
-    return inverse_dictionary, \
-           rendered_equation_dictionary, \
-           pixeled_equations_dictionary
 
 
 

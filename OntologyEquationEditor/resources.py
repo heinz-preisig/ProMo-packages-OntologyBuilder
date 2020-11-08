@@ -969,8 +969,12 @@ class DotGraphVariableEquations(VarEqTree):
 
 def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocked, file_name):
   print("debugging --- variable ", variable_ID)
-  var_equ_tree = DotGraphVariableEquations(ontology_container.variables, ontology_container.indices, variable_ID,
-                                           ontology_name, blocked=blocked, file_name=file_name)
+  var_equ_tree = DotGraphVariableEquations(ontology_container.variables,
+                                           ontology_container.indices,
+                                           variable_ID,
+                                           ontology_name,
+                                           blocked=blocked,
+                                           file_name=file_name)
 
   print("debugging -- dotgrap done")
   buddies = set()
@@ -983,7 +987,11 @@ def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocke
         buddies.add((ID, network))
 
   assignments = {
-          "tree"   : var_equ_tree.tree,
+          "tree"   : var_equ_tree.tree["tree"],
+          "nodes"  : var_equ_tree.tree["nodes"],
+          "IDs"    : var_equ_tree.tree["IDs"],
+          "root_variable" : var_equ_tree.var_ID,
+          "blocked" : blocked,
           "buddies": list(buddies),
           }
 

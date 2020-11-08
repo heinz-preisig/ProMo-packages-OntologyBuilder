@@ -62,14 +62,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioButton">
+           <widget class="QRadioButton" name="radioButtonEditVariant">
             <property name="text">
              <string>edit variant</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioButtonConstrain">
+           <widget class="QRadioButton" name="radioButtonInstantiateVariant">
             <property name="text">
              <string>instantiate variant</string>
             </property>

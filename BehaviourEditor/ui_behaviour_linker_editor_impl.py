@@ -60,9 +60,7 @@ class Selector(QtCore.QObject):
       self.radios[label].toggled.connect(self.selector_toggled)
 
   def makePixelSelector(self, pixel_dictionary, layout):
-
     cleanLayout(layout)
-
     ID = 0
     for (icon, label, size) in pixel_dictionary:
       label = QtWidgets.QLabel()
@@ -171,8 +169,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.radio_InterNetworks =  Selector(self.radioReceiverInterNetworks)
     self.radio_Entities = Selector(self.radioReceiverEntities)
     self.radio_Variants = Selector(self.radioReceiverVariants)
-    self.radio_Left = Selector(self.radioReceiverEquations)
-    self.radio_Right = Selector(self.radioReceiverEquations)
+    self.radio_Left = Selector(self.radioReceiverLeftEquations)
+    self.radio_Right = Selector(self.radioReceiverRightEquations)
 
     self.selected_InterNetwork = None
     self.selected_Entity = None
@@ -259,7 +257,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                        %(self.selected_Entity,self.selected_variant))
     pass
 
-  def radioReceiverEquations(self, text, ID):
+  def radioReceiverLeftEquations(self, text, ID):
 
     nw = self.selected_InterNetwork
     entity = self.selected_Entity
@@ -274,19 +272,35 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
       eq_ID = self.current_left_index[ID]
       self.blocked.append(eq_ID)
-      var_ID = self.entity_behaviours[nw][entity][variant]["root_variable"] #self.current_base_var_ID
+      self.__makeAfterChangedBlockedList()
 
-      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(self.selected_Entity, var_ID)
+  def __makeAfterChangedBlockedList(self):
 
-      var_equ_tree_graph.view()
-      self.entity_behaviours.addVariant(nw, entity, variant, entity_assignments)
-      self.entity_behaviour_graphs.addVariant(nw, entity, variant, var_equ_tree_graph)
+    nw = self.selected_InterNetwork
+    entity = self.selected_Entity
+    variant = self.selected_variant
 
-      self.__makeLeftSelector()
-      self.__makeRightSelector()
+    var_ID = self.entity_behaviours[nw][entity][variant]["root_variable"]  # self.current_base_var_ID
+    var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(self.selected_Entity, var_ID)
+    # var_equ_tree_graph.view()
+    self.entity_behaviours.addVariant(nw, entity, variant, entity_assignments)
+    self.entity_behaviour_graphs.addVariant(nw, entity, variant, var_equ_tree_graph)
+    self.__makeLeftSelector()
+    self.__makeRightSelector()
 
+  def radioReceiverRightEquations(self, text, ID):
 
+    nw = self.selected_InterNetwork
+    entity = self.selected_Entity
+    variant = self.selected_variant
 
+    if self.state == "make_base":
+      return
+
+    elif self.state == "duplicates":
+      eq_ID = self.current_right_index[ID]
+      self.blocked.remove(eq_ID)
+      self.__makeAfterChangedBlockedList()
 
 
 
@@ -301,7 +315,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       var_ID = self.current_base_var_ID
       var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(self.selected_Entity, var_ID)
 
-      var_equ_tree_graph.view()
+      # var_equ_tree_graph.view()
       self.entity_behaviours.addVariant(nw, entity, variant, entity_assignments)
       self.entity_behaviour_graphs.addVariant(nw, entity, variant, var_equ_tree_graph)
 
@@ -345,14 +359,14 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     show = self.__makeShows()
     print("debugging -- halting point")
     equation_list, index = self.__makeRadioSelectorLists(show)
-    self.radio_Left.makeSelector("pixelled", equation_list, self.layout_Left)
+    self.radio_Left.makeSelector("text", equation_list, self.layout_Left)
     self.equation_left_clean = False
     self.current_left_index = index
 
   def __makeRightSelector(self):
     show = self.blocked
     equation_list, index = self.__makeRadioSelectorLists(show)
-    self.radio_Right.makeSelector("pixelled", equation_list, self.layout_Right)
+    self.radio_Right.makeSelector("text", equation_list, self.layout_Right)
     self.equation_right_clean = False
     self.current_right_index = index
 
@@ -452,8 +466,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.ui.groupBoxControls.hide()
     # print("debugging -- define base")
     self.state = "make_base"
-    del self.radio_Left
-    self.radio_Left = Selector(self.radioReceiverEquations)
     selected_state_equation_list = self.__makeStateEquationSelector()
     self.equation_left_clean = False
     radio_selected_state_equation_list, self.radio_index = self.__makeRadioSelectorLists(selected_state_equation_list)

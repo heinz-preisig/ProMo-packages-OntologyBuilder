@@ -896,6 +896,10 @@ class DotGraphVariableEquations(VarEqTree):
     self.simple_graph.view()  # generates pdf
     os.remove(self.file)
 
+  def render(self):
+    self.simple_graph.render(self.outputFile,cleanup=True)
+    return self.outputFile
+
   def initObjects(self):
 
     self.var_labels, self.equ_labels = self.__make_var_and_equ_labels()
@@ -905,6 +909,7 @@ class DotGraphVariableEquations(VarEqTree):
                               "%s")
     # the tree of networks
     f = o_template % self.file_name  # "vars_equs"
+    self.outputFile = f
     print(f)
     graph_attr = {}
     graph_attr["nodesep"] = "1"

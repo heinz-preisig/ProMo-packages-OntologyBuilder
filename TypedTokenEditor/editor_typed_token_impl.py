@@ -168,7 +168,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
       self.ui.spinConverstion.show()
       self.ui.comboConversion.show()
 
-  def __cleanLayout(self, layout):
+  def __clearLayout(self, layout):
     """ removes the widgets from the layout """
     for i in reversed(range(layout.count())):
       widgetToRemove = layout.itemAt(i).widget()
@@ -232,8 +232,8 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
   def redraw_conversion_radios(self, no_of_typed_tokens):
     self.__interfaceLogics("modified")
     token = self.token
-    self.__cleanLayout(self.ui.formReactants)
-    self.__cleanLayout(self.ui.formProducts)
+    self.__clearLayout(self.ui.formReactants)
+    self.__clearLayout(self.ui.formProducts)
     self.radioButtonsTokens = {
             "reactants": {},
             "products" : {}

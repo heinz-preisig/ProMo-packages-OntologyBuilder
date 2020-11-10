@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets
 from Common.common_resources import getOntologyName
 from Common.common_resources import M_None, TEMPLATE_NODE_OBJECT
 from Common.ontology_container import OntologyContainer
-from Common.qt_resources import cleanLayout
+from Common.qt_resources import clearLayout
 from Common.radio_selector_impl import RadioSelector
 from Common.record_definitions import EquationAssignment
 from Common.record_definitions import Interface
@@ -222,7 +222,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     radio_selector = RadioSelector()
     list_of_choices = []
     counter = 0
-    cleanLayout(layout)
+    clearLayout(layout)
     layout.addWidget(radio_selector)
     for item in what:
       list_of_choices.append((str(counter), item, receiver))  # token is the string of the counter

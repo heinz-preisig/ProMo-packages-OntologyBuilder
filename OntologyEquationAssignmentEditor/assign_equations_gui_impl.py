@@ -25,7 +25,7 @@ from PyQt5 import QtWidgets
 from Common.common_resources import getOntologyName
 from Common.common_resources import putData
 from Common.ontology_container import OntologyContainer
-from Common.qt_resources import cleanLayout
+from Common.qt_resources import clearLayout
 from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
@@ -155,7 +155,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
   def __makeSelector(what, receiver, index, layout, allowed=1):
 
     height = layout.parent().size().height()
-    cleanLayout(layout)
+    clearLayout(layout)
     radio_selector = UI_RadioSelector(what, [index], allowed=allowed, maxheight=height)
     radio_selector.newSelection.connect(receiver)
     layout.addWidget(radio_selector)

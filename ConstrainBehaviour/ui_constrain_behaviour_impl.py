@@ -9,7 +9,7 @@ from Common.common_resources import getOntologyName
 from Common.ontology_container import OntologyContainer
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
-from Common.qt_resources import cleanLayout
+from Common.qt_resources import clearLayout
 from Common.resources_icons import roundButton
 from OntologyBuilder.ConstrainBehaviour.ui_constrain_behaviour import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
@@ -149,7 +149,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                             self.current_entity_object)
 
     # clearLayout(self.vbox_equations, self.radio_selector)
-    cleanLayout(self.vbox_equations)
+    clearLayout(self.vbox_equations)
     self.__makeEquationSelector(self.radioReceiverEquations)
 
 

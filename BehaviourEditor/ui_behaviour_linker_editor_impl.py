@@ -345,6 +345,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.ui.groupBoxControls.show()
     self.selected_variant_ID = ID
 
+
+
     self.status_report("editing entity-behaviour for entity  > %s <  variant  > %s < "
                        % (self.selected_Entity_ID, self.selected_variant_ID))
     pass

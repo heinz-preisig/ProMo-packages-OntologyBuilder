@@ -24,6 +24,7 @@ from PyQt5 import QtGui
 
 from Common.common_resources import getData
 from Common.common_resources import invertDict
+from Common.record_definitions_extension import VariantRecord
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.treeid import ObjectTree
@@ -797,7 +798,7 @@ class VarEqTree():
                   primary hash :: enumerated object (variable | equation)
                   secondary hash :: ancestor & children
       tree.nodes :: a dictionary with
-                  hash :: IDs identifiers of type enumberation (integers)
+                  hash :: IDs identifiers of type enummeration (integers)
                   value :: variable_<variable ID> | equation_<equation_ID>
                   a recursive dictionary
       tree.IDs :: inverse of tree.nodes
@@ -991,13 +992,12 @@ def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocke
       if network in ontology_container.list_leave_networks:
         buddies.add((ID, network))
 
-  assignments = {
-          "tree"   : var_equ_tree.tree["tree"],
-          "nodes"  : var_equ_tree.tree["nodes"],
-          "IDs"    : var_equ_tree.tree["IDs"],
-          "root_variable" : var_equ_tree.var_ID,
-          "blocked" : blocked,
-          "buddies": list(buddies),
-          }
+  assignments = VariantRecord(tree=var_equ_tree.tree["tree"],
+                              nodes=var_equ_tree.tree["nodes"],
+                              IDs=var_equ_tree.tree["IDs"],
+                              root_variable=var_equ_tree.var_ID,
+                              blocked_list=blocked,
+                              buddies_list=list(buddies)
+                              )
 
   return var_equ_tree, assignments

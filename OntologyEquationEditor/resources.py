@@ -24,7 +24,7 @@ from PyQt5 import QtGui
 
 from Common.common_resources import getData
 from Common.common_resources import invertDict
-from Common.record_definitions_extension import VariantRecord
+from Common.record_definitions_equation_linking import VariantRecord
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.treeid import ObjectTree

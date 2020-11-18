@@ -4,16 +4,18 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
+from copy import deepcopy
+
 from Common.common_resources import getData
 from Common.common_resources import getOntologyName
 from Common.common_resources import indexList
 from Common.common_resources import invertDict
-from Common.common_resources import putData
+from Common.common_resources import putData, TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import clearLayout
-from Common.record_definitions_extension import EntityBehaviour
-from Common.record_definitions_extension import functionGetObjectsFromObjectStringID
-from Common.record_definitions_extension import functionMakeObjectStringID
+from Common.record_definitions_equation_linking import EntityBehaviour, VariantRecord
+from Common.record_definitions_equation_linking import functionGetObjectsFromObjectStringID
+from Common.record_definitions_equation_linking import functionMakeObjectStringID
 from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
@@ -62,8 +64,6 @@ class Selector(QtCore.QObject):
     self.show_list = []
 
     self.radios = {}
-    # label_indices -- hash:enumeration:int - value:label:string
-    # label_indices_inverse -- hash:label:string - value:enumeration:int
     self.label_indices, \
     self.label_indices_inverse = indexList(self.labels)
 
@@ -95,7 +95,7 @@ class Selector(QtCore.QObject):
         self.radios[ID].setAutoExclusive(True)
       self.layout.addWidget(self.radios[ID])
       self.radios[ID].toggled.connect(self.selector_toggled)
-      self.radios[ID].pressed.connect(self.selector_pressed)
+      # self.radios[ID].pressed.connect(self.selector_pressed)
       # self.radios[label_ID].released.connect(self.selector_released)
 
   def makePixelSelector(self):
@@ -135,7 +135,7 @@ class Selector(QtCore.QObject):
     print("debugging -- pressed")
 
   def selector_toggled(self, toggled):
-    print("debugging -- toggled", toggled)
+    # print("debugging -- toggled", toggled)
 
     if toggled:
       ID = self.getToggled()
@@ -164,54 +164,47 @@ class Selector(QtCore.QObject):
   # def selector_released(self):
   #   print("debugging -- released radio button")
 
+class VariantSelector(Selector):
+  def __init__(self, radio_class, receiver, label_list_initial, layout, mode="text", autoexclusive=False):
+    label_list, self.variant_map, self.variant_indices_map = self.variantMapping(label_list_initial)
 
-# class EntityBehaviour(dict):
-#   def __init__(self, networks, entities):
-#     for nw in networks:
-#       self[nw] = {}
-#       for entity in entities[nw]:
-#         self[nw][entity] = {}
-#         self[nw][entity]["base"] = None
-#
-#   def addVariant(self, network, entity, variant, data):
-#     self[network][entity][variant] = data
-#
-#   def removeEntity(self, network, entity):
-#     del self[network][entity]
-#
-#   def removeVariant(self, network, entity, variant):
-#     del self[network][entity][variant]
-#
-#   def getRootVariableID(self):
-#     pass
-#
-#
-# class EntityBehaviourGraphs(EntityBehaviour):
-#
-#   def __init__(self, networks, entities):
-#     super().__init__(networks, entities)
+    super().__init__(radio_class, receiver, label_list, layout, mode=mode, autoexclusive=autoexclusive)
 
-def variantMapping(variant_list):
-  """
-  maps the variants to the fixed IDs defined for the selector
-  """
 
-  variant_map = {}
-  extended_variant_list = []
+  def updateVariants(self, label_list_initial):
+    self.labels, self.variant_map, self.variant_indices_map = self.variantMapping(label_list_initial)
+    self.label_indices, \
+    self.label_indices_inverse = indexList(self.labels)
 
-  variant_indices = ["variant_%s" % i for i in range(0, MAX_NUMBER_OF_VARIANTS)]
+  def variantMapping(self, variant_list):
+    """
+    maps the variants to the fixed IDs defined for the selector
+    """
 
-  for i in range(len(variant_indices)):
-    variant_map[i] = variant_indices[i]
-    extended_variant_list.append(variant_indices[i])
+    variant_map = {}
+    extended_variant_list = []
+    self.show_list = []
 
-  for i in range(len(variant_list)):
-    variant_map[i] = variant_list[i]
-    extended_variant_list[i] = variant_list[i]
+    variant_indices = ["variant_%s" % i for i in range(0, MAX_NUMBER_OF_VARIANTS)]
 
-  variant_inverse_map = invertDict(variant_map)
 
-  return extended_variant_list, variant_map, variant_inverse_map
+    for i in range(len(variant_indices)):
+      variant_map[i] = variant_indices[i]
+      extended_variant_list.append(variant_indices[i])
+
+    for i in range(len(variant_list)):
+      variant_map[i] = variant_list[i]
+      # self.labels[i] = variant_list[i]
+      extended_variant_list[i] = variant_list[i]
+      try:
+        self.radios[i].setText(variant_list[i])
+      except:
+        pass
+      self.show_list.append(i)
+
+    variant_inverse_map = invertDict(variant_map)
+
+    return extended_variant_list, variant_map, variant_inverse_map
 
 
 class MainWindowImpl(QtWidgets.QMainWindow):
@@ -256,7 +249,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       for entity_str_ID in loaded_entity_behaviours:  # careful there may not be all entities at least during
         # developments
         if not (loaded_entity_behaviours[entity_str_ID] == None):
-          self.entity_behaviours[entity_str_ID] = loaded_entity_behaviours[entity_str_ID]
+          data = loaded_entity_behaviours[entity_str_ID]
+          self.entity_behaviours[entity_str_ID] = VariantRecord(tree=data["tree"],
+                                                                nodes=data["nodes"],
+                                                                IDs=data["IDs"],
+                                                                root_variable=data["root_variable"],
+                                                                blocked_list= data["blocked"],
+                                                                buddies_list=data["buddies"])
 
     # interface components
     self.layout_InterNetworks = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
@@ -294,9 +293,10 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                                    self.layout_Entities)
     self.radio_Entities.showList([])
 
-    variant_list, variant_map, variant_indices_inverse = variantMapping(self.entity_behaviours.getVariantList())
-    self.variant_map = variant_map
-    self.radio_Variants = Selector("Variants",
+    # variant_list, variant_map, variant_indices_inverse = variantMapping(self.entity_behaviours.getVariantList())
+    # self.variant_map = variant_map
+    variant_list = self.entity_behaviours.getVariantList()
+    self.radio_Variants = VariantSelector("Variants",
                                    self.radioReceiverState,  # radioReceiverVariants,
                                    variant_list,
                                    self.layout_Variants)
@@ -330,7 +330,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.right_show_list = self.radio_Right.show_list
 
     # controls
-    self.actions = ["duplicates", "new_variant", "edit_variant", "instantiate_variant"]
+    self.actions = ["show", "duplicates", "new_variant", "edit_variant", "instantiate_variant"]
 
     # prepare lists
     self.current_base_var_ID = None
@@ -376,9 +376,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.ui.pushButtonRight.hide()
 
     elif radio_class == "Entities":
-      print("debugging -- receiver Entities", radio_class, ID)
-      print("debugging -- state %s"%self.state)
-      print("debugging -- is state %s"%self.isCompleteState())
+      # print("debugging -- receiver Entities", radio_class, ID)
+      # print("debugging -- state %s"%self.state)
+      # print("debugging -- is state %s"%self.isCompleteState())
 
       self.selected_Entity_ID = ID
 
@@ -391,101 +391,23 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         self.__makeBase()
 
       else:
-        print("debugging -- getting variant ")
-        if self.selected_variant_ID != None:
-          variant = self.radio_Variants.getStrID()
-          self.__makeAndDisplayEquationListLeft(variant)
+        # print("debugging -- getting variant ")
+        if self.radio_Variants.getStrID() != None:  # handle first pass
+          self.__makeAndDisplayEquationListLeftAndRight()
           self.ui.groupBoxControls.show()
-        variant_IDs, variant_list = self.__makeVariantList()
+          self.radio_Left.reset()
+        variant_IDs = self.__makeVariantRadioIDList()
         self.radio_Variants.showList(variant_IDs)
-
-        #
-        # updating interface
-        # self.radio_Left.reset()
-        # self.radio_Right.reset()
-        # self.ui.pushButtonLeft.hide()
-        # self.ui.pushButtonRight.hide()
 
     elif radio_class == "Variants":
       print("debugging -- ReceiverVariants")
+      self.ui.radioButtonShowVariant.setChecked(True)
       self.ui.groupBoxControls.show()
-      self.selected_variant_ID = ID
-      variant = self.variant_map[self.selected_variant_ID]
-      self.__makeAndDisplayEquationListLeft(variant)
+      variant = self.radio_Variants.getStrID()
+      self.__makeAndDisplayEquationListLeftAndRight()
 
     else:
       print("error in state %s does not fit any case" % radio_class)
-
-  # def radioReceiverInterNetworks(self, text, ID):
-  #   print("debugging -- receiver InterNetworks", text, ID)
-  #   self.selected_InterNetwork_ID = ID
-  #   nw_label_current = self.radio_InterNetworks.label_indices[ID]
-  #
-  #   current_entities = self.reduced_network_node_list[nw_label_current]
-  #   show_list = []
-  #   for i in current_entities:
-  #     show_list.append(self.radio_Entities.label_indices_inverse[i])
-  #   self.radio_Entities.showList(show_list)
-  #
-  #   #
-  #   # updating interface
-  #   self.radio_Variants.reset()
-  #   self.radio_Left.reset()
-  #   self.radio_Right.reset()
-  #   self.ui.pushButtonLeft.hide()
-  #   self.ui.pushButtonRight.hide()
-
-  # def radioReceiverEntities(self, text, ID):
-  #   print("debugging -- receiver Entities", text, ID)
-  #
-  #   self.selected_Entity_ID = ID
-  #
-  #   nw_str_ID = self.radio_InterNetworks.getStrID()
-  #   entity_label_ID = self.radio_Entities.getStrID()
-  #   base_variant_str_ID = functionMakeObjectStringID(nw_str_ID, entity_label_ID, "base")
-  #
-  #   if not self.entity_behaviours[base_variant_str_ID]:
-  #     self.__makeBase()
-  #
-  #   else:
-  #     variant_IDs, variant_list = self.__makeVariantList()
-  #     self.radio_Variants.showList(variant_IDs)
-  #
-  #     #
-  #     # updating interface
-  #     self.radio_Left.reset()
-  #     self.radio_Right.reset()
-  #     self.ui.pushButtonLeft.hide()
-  #     self.ui.pushButtonRight.hide()
-
-  # print("debugging -- end of receiver Entities")
-
-  # def radioReceiverVariants(self, text, ID):
-  #   print("debugging -- ReceiverVariants")
-  #   self.ui.groupBoxControls.show()
-  #   self.selected_variant_ID = ID
-  #
-  #   network = self.radio_InterNetworks.getStrID()
-  #   entity = self.radio_Entities.getStrID()
-  #   variant = self.variant_map[ID]
-  #
-  #   entity_str_ID = functionMakeObjectStringID(network, entity, variant)
-  #   var_ID = self.entity_behaviours.getRootVariableID(entity_str_ID)
-  #
-  #   var_equ_tree_graph, assignments = self.analyseBiPartiteGraph(entity, var_ID)
-  #
-  #   equation_ID_str_list = assignments.getEquationIDList()
-  #
-  #   # generate radio_ID list
-  #   equ_radio_list = []
-  #   for eq_str_ID in equation_ID_str_list:
-  #     equ_radio_list.append(self.equation_inverse_index[int(eq_str_ID)])
-  #
-  #   print("debugging -- selected variable", var_ID)
-  #   self.radio_Left.showList(equ_radio_list)
-  #   self.status_report("editing entity-behaviour for entity  > %s <  variant  > %s < "
-  #                      % (self.selected_Entity_ID, self.selected_variant_ID))
-  #   pass
 
   def radioReceiverLeftEquations(self, text, eq_radio_ID):
 
@@ -498,7 +420,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
       self.current_base_var_ID = var_ID
 
-    elif self.state == "duplicates":
+    elif self.state in ["duplicates", "new_variant"]:
       print("debugging -- duplicates to be processed")
       self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
@@ -512,16 +434,20 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(entity, var_ID, self.blocked)
       graph_file = var_equ_tree_graph.render()
       self.status_report("generated graph for %s " % (self.selected_Entity_ID))
-      self.entity_behaviours.addVariant(nw, entity, variant, entity_assignments)
+      #
+      if self.state == "duplicates":
+        duplicate_variant = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES%variant
+        self.entity_behaviours.addVariant(nw, entity, duplicate_variant, entity_assignments)
 
       self.radio_Left.showIt()
       self.radio_Right.showIt()
 
-    elif self.state == "new_variant":
-      self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+    # elif self.state == "new_variant":
+    #   self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+    #
+    #   eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+    #   self.current_base_var_ID = var_ID
 
-      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
-      self.current_base_var_ID = var_ID
 
       pass
 
@@ -530,7 +456,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     if self.state == "make_base":
       return
 
-    elif self.state == "duplicates":
+    elif self.state in ["duplicates", "new_variant"]:
       print("debugging -- duplicates to be processed")
       self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
@@ -544,7 +470,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.radio_Right.showIt()
 
   def on_pushButtonLeft_pressed(self):
-    # print("debugging -- push left button state:",self.state)
+    print("debugging -- push left button state:",self.state)
 
     nw_str_ID = self.radio_InterNetworks.getStrID()
     entity_label_ID = self.radio_Entities.getStrID()
@@ -563,27 +489,42 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.selected_variant_str_ID = variant
       self.ui.pushButtonLeft.hide()
 
-      variant_IDs, variant_list = self.__makeVariantList()
+      variant_IDs = self.__makeVariantRadioIDList()
       self.radio_Variants.showList(variant_IDs)
       self.radio_Left.showList([])
 
-    elif self.state == "duplicates":  # accepting
-      print("debugging -- accepting duplicate reduced entity object")
+    elif self.state in ["duplicates", "new_variant"]:  # accepting
+      print("debugging -- accepting >>> %s <<< reduced entity object"%self.state)
       var_ID = self.selected_base_variable
       entity_object_str = self.__makeEntityObjectStrID()
       nw, entity, variant = entity_object_str.split(".")
-      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(entity, var_ID, self.blocked)
+      var_equ_tree_graph, _entity_assignments = self.analyseBiPartiteGraph(entity, var_ID, self.blocked)
       graph_file = var_equ_tree_graph.render()
-      self.status_report("generated graph for %s " % (self.selected_Entity_ID))
-      self.entity_behaviours.addVariant(nw, entity, variant, entity_assignments)
+
+      if self.state in ["duplicates"]:
+        duplicate_variant = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES%variant
+        entity_assignments = _entity_assignments
+      else:
+        limiting_list = self.__makeVariantStringList()
+        duplicate_variant = self.__askForNewVariantName(limiting_list)
+        print("debugging -- new variant", duplicate_variant)
+        entity_assignments = deepcopy(_entity_assignments)
+      self.entity_behaviours.addVariant(nw, entity, duplicate_variant, entity_assignments)
+      variants = self.entity_behaviours.getVariantList()
+      self.radio_Variants.updateVariants(variants)
+
+      self.status_report("generated graph for %s " % (duplicate_variant))
 
       self.radio_Left.reset()
       self.radio_Right.reset()
-      self.radio_Variants.reset()
+      self.radio_Variants.showIt()
 
-    elif self.state == "new_variant":
+    # elif self.state == "new_variant":
+    #
+    #   self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
 
-      self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+    elif self.state == "show":
+      print("debugging -- show don't do anything")
 
   # push buttons
   def on_pushButtonRight_pressed(self):
@@ -600,30 +541,42 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def on_pushButtonInformation_pressed(self):
     print("todo: not yet implemented")
 
+  def on_radioButtonShowVariant_pressed(self):
+    # print("debugging -- show variant")
+    self.state = "show"
+    self.__makeAndDisplayEquationListLeftAndRight()
+
+
+
   def on_radioButtonDuplicates_pressed(self):
     print("debugging -- duplicates")
     self.state = "duplicates"
+    self.blocked = []
+
     entity_object_str = self.__makeEntityObjectStrID()
-
     self.selected_base_variable = self.entity_behaviours[entity_object_str]["root_variable"]  # var_ID : int
-
-
     show = self.__makeDuplicateShows()
-    radio_show_list = self.__makeLeftSelector(show)
+    radio_show_list = self.__makeRadioShowList(show)
     self.radio_Left.showList(radio_show_list)
 
   def on_radioButtonNewVariant_pressed(self):
     self.state = "new_variant"
-    variant_IDs, limiting_list = self.__makeVariantList()
+    # variant_IDs, limiting_list = self.__makeVariantList()
+    # self.new_variant = "gugus" #self.__askForNewVariantName(limiting_list)
+    # print("debugging -- new variant", self.new_variant)
+    self.__makeAndDisplayEquationListLeftAndRight() #self.selected_variant_str_ID)
 
-    self.dialoge = UI_String("Provide a new variant name", placeholdertext="variant", limiting_list=limiting_list)
-    self.dialoge.exec_()
-    self.new_variant = self.dialoge.getText()
-    print("debugging -- new variant", self.new_variant)
-    self.__makeAndDisplayEquationListLeft(self.selected_variant_str_ID)
+  def __askForNewVariantName(self, limiting_list):
+    dialoge = UI_String("Provide a new variant name", placeholdertext="variant", limiting_list=limiting_list)
+    dialoge.exec_()
+    variant = dialoge.getText()
+    del dialoge
+    return variant
 
   def on_radioButtonEditVariant_pressed(self):
     print("debugging -- edit variant")
+    self.state= "edit_variant"
+    self.__makeAndDisplayEquationListLeftAndRight()
 
   def on_radioButtonInstantiateVariant_pressed(self):
     print("debugging -- instantiate variant")
@@ -639,16 +592,22 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                                                             obj)
     return var_equ_tree_graph, assignments
 
-  def __makeAndDisplayEquationListLeft(self, variant):
-    print("debugging -- making and displaying left list")
+  def __makeAndDisplayEquationListLeftAndRight(self):
+    # print("debugging -- making and displaying left list")
     network = self.radio_InterNetworks.getStrID()
     entity = self.radio_Entities.getStrID()
-    # variant = self.variant_map[self.selected_variant_ID]
+    variant = self.radio_Variants.getStrID()
     entity_str_ID = functionMakeObjectStringID(network, entity, variant)
 
-    root_variable_ID = self.entity_behaviours.getRootVariableID(entity_str_ID)
+    if self.state == "new_variant":
+      print("debugging -- new variant, entity string", entity_str_ID)
+      if "base" in entity_str_ID:
+        print("debugging -- found D-D", entity_str_ID)
+
+    self.selected_base_variable = self.entity_behaviours.getRootVariableID(entity_str_ID)
     equation_ID_list = self.entity_behaviours.getEquationIDList(entity_str_ID)
-    blocked = self.entity_behaviours.getBlocked(entity_str_ID)
+    blocked_ = self.entity_behaviours.getBlocked(entity_str_ID)  # ok that is a copy
+    blocked= deepcopy(blocked_)
     root_equation = equation_ID_list.pop(0)
 
     eq_radio_ID = self.equation_inverse_index[root_equation]
@@ -656,37 +615,26 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
 
-    print("debugging -- left list showing ", equation_ID_list[0:5])
-    show = self.__makeLeftSelector(equation_ID_list)
-    print("debugging -- left list showing ", show[0:5])
-    self.radio_Left.showList(show)
-    self.radio_Right.showList(blocked)
+    # print("debugging -- left list showing ", equation_ID_list[0:5])
+    show_left = self.__makeRadioShowList(equation_ID_list)
+    show_right = self.__makeRadioShowList((blocked))
+    self.blocked = deepcopy(blocked)
 
+    # print("debugging -- left list showing ", show_left[0:5])
+    self.radio_Left.showList(show_left)
+    self.radio_Right.showList(show_right)
 
-
-    # var_ID = self.entity_behaviours.getRootVariableID(entity_str_ID)
-    # var_equ_tree_graph, assignments = self.analyseBiPartiteGraph(entity, var_ID, blocked)
-    # equation_ID_str_list = assignments.getEquationIDList()
-    # # generate radio_ID list
-    # equ_radio_list = []
-    # for eq_str_ID in equation_ID_str_list:
-    #   equ_radio_list.append(self.equation_inverse_index[int(eq_str_ID)])
-    # print("debugging -- selected variable", var_ID)
-    # self.radio_Left.showList(equ_radio_list)
-    # self.status_report("editing entity-behaviour for entity  > %s <  variant  > %s < "
-    #                    % (self.selected_Entity_ID, self.selected_variant_ID))
-    pass
 
   def __makeEntityObjectStrID(self):
     nw_str_ID = self.radio_InterNetworks.label_indices[self.selected_InterNetwork_ID]
     entity_label_ID = self.radio_Entities.label_indices[self.selected_Entity_ID]
-    variant = self.radio_Variants.label_indices[self.selected_variant_ID]
+    variant = self.radio_Variants.getStrID() #label_indices[self.radio_Variants.getStrID()] #selected_variant_ID]
     entity_object_str = functionMakeObjectStringID(nw_str_ID, entity_label_ID, variant)
     return entity_object_str
 
-  def __makeLeftSelector(self, show):
+  def __makeRadioShowList(self, show):
     radio_show_list = []
-    print("debugging -- halting point")
+    # print("debugging -- halting point")
     for i in self.equation_information:
       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[i]
       if eq_ID in show:
@@ -716,9 +664,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   #   # self.entity_behaviour_graphs.addVariant(nw, entity, variant, var_equ_tree_graph)
 
   def __makeDuplicateShows(self):
-    nw = self.selected_InterNetwork_ID
-    entity = self.selected_Entity_ID
-    variant = self.selected_variant_ID
+    # nw = self.selected_InterNetwork_ID
+    # entity = self.selected_Entity_ID
+    # variant = self.selected_variant_ID
     entity_object_str = self.__makeEntityObjectStrID()
 
     nodes = self.entity_behaviours[entity_object_str]["nodes"]
@@ -751,40 +699,40 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     button.show()
     return
 
-  def __clearEntityInfrastructure(self):
-    if not self.entity_layout_clean:
-      clearLayout(self.layout_Entities)
-    self.selected_Entity_ID = None
-    self.__clearVariantInfrastructure()
-    self.ui.pushButtonLeft.hide()
-    self.ui.pushButtonRight.hide()
-    # print("debugging -- clearing entity infrastructure")
-    self.entity_layout_clean = True
-
-  def __clearVariantInfrastructure(self):
-    if not self.variant_layout_clean:
-      clearLayout(self.layout_Variants)
-    self.selected_variant_ID = None
-    self.__clearEquationInfrastructure()
-    # print("debugging -- clearing variant infrastructure")
-    self.variant_layout_clean = True
-
-  def __clearEquationInfrastructure(self):
-    if not self.equation_left_clean:
-      clearLayout(self.layout_Left)
-      self.equation_left_clean = True
-      # print("debugging -- clearing left ")
-    if not self.equation_right_clean:
-      clearLayout(self.layout_Right)
-      self.equation_left_clean = True
-      # print("debugging -- clearing right ")
-    self.ui.pushButtonLeft.hide()
-    self.ui.pushButtonRight.hide()
-    # print("debugging -- clearing equation infrastructure")
+  # def __clearEntityInfrastructure(self):
+  #   if not self.entity_layout_clean:
+  #     clearLayout(self.layout_Entities)
+  #   self.selected_Entity_ID = None
+  #   self.__clearVariantInfrastructure()
+  #   self.ui.pushButtonLeft.hide()
+  #   self.ui.pushButtonRight.hide()
+  #   # print("debugging -- clearing entity infrastructure")
+  #   self.entity_layout_clean = True
+  #
+  # def __clearVariantInfrastructure(self):
+  #   if not self.variant_layout_clean:
+  #     clearLayout(self.layout_Variants)
+  #   self.selected_variant_ID = None
+  #   self.__clearEquationInfrastructure()
+  #   # print("debugging -- clearing variant infrastructure")
+  #   self.variant_layout_clean = True
+  #
+  # def __clearEquationInfrastructure(self):
+  #   if not self.equation_left_clean:
+  #     clearLayout(self.layout_Left)
+  #     self.equation_left_clean = True
+  #     # print("debugging -- clearing left ")
+  #   if not self.equation_right_clean:
+  #     clearLayout(self.layout_Right)
+  #     self.equation_left_clean = True
+  #     # print("debugging -- clearing right ")
+  #   self.ui.pushButtonLeft.hide()
+  #   self.ui.pushButtonRight.hide()
+  #   # print("debugging -- clearing equation infrastructure")
 
   def __makeBase(self):
     self.ui.groupBoxControls.hide()
-    print("debugging -- define base")
+    # print("debugging -- define base")
     self.state = "make_base"
     selected_state_equation_list, selected_state_radio_entries = self.__makeStateEquationSelector()
 
@@ -822,21 +770,36 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     return selected_state_equation_list, selected_state_radio_entries
 
-  def __makeVariantList(self):
+  def __makeVariantStringList(self):
 
     nw_str_ID = self.radio_InterNetworks.getStrID()
 
     entity_str_IDs = sorted(self.entity_behaviours)
-    variants_IDs = set()
+    variants_radio_IDs = set()
     variants = set()
     for o in entity_str_IDs:
       network, entity, variant = functionGetObjectsFromObjectStringID(o)
       if network == nw_str_ID:
-        variant_ID = self.radio_Variants.label_indices_inverse[variant]
-        variants_IDs.add(variant_ID)
+        variant_radio_ID = self.radio_Variants.label_indices_inverse[variant]
+        variants_radio_IDs.add(variant_radio_ID)
         variants.add(variant)
 
-    return list(variants_IDs), list(variants)
+    return list(variants_radio_IDs), list(variants)
+
+
+  def __makeVariantRadioIDList(self):
+
+    nw_str_ID = self.radio_InterNetworks.getStrID()
+
+    entity_str_IDs = sorted(self.entity_behaviours)
+    variants_radio_IDs = set()
+    for o in entity_str_IDs:
+      network, entity, variant = functionGetObjectsFromObjectStringID(o)
+      if network == nw_str_ID:
+        variant_radio_ID = self.radio_Variants.label_indices_inverse[variant]
+        variants_radio_IDs.add(variant_radio_ID)
+
+    return list(variants_radio_IDs)
 
   def __makeRadioSelectorLists(self, selector_list):
 
@@ -908,6 +871,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       equations[eq_ID] = (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation)
 
     return equations
+
 
   def __make_icon(self, eq_ID):
 

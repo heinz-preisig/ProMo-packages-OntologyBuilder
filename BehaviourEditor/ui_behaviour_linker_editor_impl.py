@@ -118,11 +118,11 @@ class Selector(QtCore.QObject):
   def showList(self, show):
     self.show_list = show
     self.showIt()
-    self.resetChecked()
+    # self.resetChecked()
 
   def showIt(self):
     for ID in self.radios:
-      self.radios[ID].setChecked(False)
+      # self.radios[ID].setChecked(False)
       if ID not in self.show_list:
         self.radios[ID].hide()
       else:
@@ -395,15 +395,16 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         if self.selected_variant_ID != None:
           variant = self.radio_Variants.getStrID()
           self.__makeAndDisplayEquationListLeft(variant)
+          self.ui.groupBoxControls.show()
         variant_IDs, variant_list = self.__makeVariantList()
         self.radio_Variants.showList(variant_IDs)
 
         #
         # updating interface
-        self.radio_Left.reset()
-        self.radio_Right.reset()
-        self.ui.pushButtonLeft.hide()
-        self.ui.pushButtonRight.hide()
+        # self.radio_Left.reset()
+        # self.radio_Right.reset()
+        # self.ui.pushButtonLeft.hide()
+        # self.ui.pushButtonRight.hide()
 
     elif radio_class == "Variants":
       print("debugging -- ReceiverVariants")
@@ -655,8 +656,10 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
 
-
-    self.radio_Left.showList(equation_ID_list)
+    print("debugging -- left list showing ", equation_ID_list[0:5])
+    show = self.__makeLeftSelector(equation_ID_list)
+    print("debugging -- left list showing ", show[0:5])
+    self.radio_Left.showList(show)
     self.radio_Right.showList(blocked)
 
 

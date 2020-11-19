@@ -51,6 +51,15 @@ pixel_or_text = "text"  # NOTE: variable to set the mode
 
 
 class Selector(QtCore.QObject):
+  """
+  Generates a selector for a set of radio buttons.
+  The radio buttons are added to a given layout.
+  Layouts are handling the buttons in autoexclusive mode.
+  The current version is exclusively operating in autoexclusive mode even though there is a variable
+    indicating to opposite. It does not work if not every button is set to autoexclusive explicitly. In that case
+    the exclusive mode must be handled manually.
+    TODO: implement manual handling -- tip: define new button adding group-internal communication
+  """
   radio_signal = QtCore.pyqtSignal(str, int)
 
   def __init__(self, radio_class, receiver, label_list, layout, mode="text", autoexclusive=False):
@@ -95,14 +104,11 @@ class Selector(QtCore.QObject):
         self.radios[ID].setAutoExclusive(True)
       self.layout.addWidget(self.radios[ID])
       self.radios[ID].toggled.connect(self.selector_toggled)
-      # self.radios[ID].pressed.connect(self.selector_pressed)
-      # self.radios[label_ID].released.connect(self.selector_released)
 
   def makePixelSelector(self):
 
     for ID in self.label_indices:
       icon, label, size = self.labels[ID]
-      # for (icon, label, size) in self.labels:
       label = QtWidgets.QLabel()
       self.radios[ID] = QtWidgets.QRadioButton(label)
       self.radios[ID].setIcon(icon)
@@ -194,7 +200,6 @@ class VariantSelector(Selector):
 
     for i in range(len(variant_list)):
       variant_map[i] = variant_list[i]
-      # self.labels[i] = variant_list[i]
       extended_variant_list[i] = variant_list[i]
       try:
         self.radios[i].setText(variant_list[i])
@@ -276,7 +281,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     # initialisations
     # network selector
     self.radio_InterNetworks = Selector("InterNetworks",
-                                        self.radioReceiverState,  # self.radioReceiverInterNetworks,
+                                        self.radioReceiverState,
                                         networks,
                                         self.layout_InterNetworks)
 
@@ -288,16 +293,14 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     entity_list = sorted(entity_set)
 
     self.radio_Entities = Selector("Entities",
-                                   self.radioReceiverState,  # radioReceiverEntities,
+                                   self.radioReceiverState,
                                    entity_list,
                                    self.layout_Entities)
     self.radio_Entities.showList([])
 
-    # variant_list, variant_map, variant_indices_inverse = variantMapping(self.entity_behaviours.getVariantList())
-    # self.variant_map = variant_map
     variant_list = self.entity_behaviours.getVariantList()
     self.radio_Variants = VariantSelector("Variants",
-                                   self.radioReceiverState,  # radioReceiverVariants,
+                                   self.radioReceiverState,
                                    variant_list,
                                    self.layout_Variants)
     self.radio_Variants.showIt()
@@ -395,9 +398,15 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         if self.radio_Variants.getStrID() != None:  # handle first pass
           self.__makeAndDisplayEquationListLeftAndRight()
           self.ui.groupBoxControls.show()
+        else:
+          self.radio_Variants.reset()
           self.radio_Left.reset()
+          self.radio_Right.reset()
+          self.ui.pushButtonLeft.hide()
+          self.ui.pushButtonRight.hide()
         variant_IDs = self.__makeVariantRadioIDList()
         self.radio_Variants.showList(variant_IDs)
+
 
     elif radio_class == "Variants":
       print("debugging -- ReceiverVariants")
@@ -442,14 +451,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.radio_Left.showIt()
       self.radio_Right.showIt()
 
-    # elif self.state == "new_variant":
-    #   self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
-    #
-    #   eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
-    #   self.current_base_var_ID = var_ID
-
-
-      pass
 
   def radioReceiverRightEquations(self, text, eq_radio_ID):
 
@@ -474,7 +475,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     nw_str_ID = self.radio_InterNetworks.getStrID()
     entity_label_ID = self.radio_Entities.getStrID()
-    # nw, entity = entity_label_ID.split(ENTITY_OBJECT_SEPARATOR)
     entity_label_ID = self.radio_Entities.getStrID()
 
     if self.state == "make_base":
@@ -519,9 +519,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.radio_Right.reset()
       self.radio_Variants.showIt()
 
-    # elif self.state == "new_variant":
-    #
-    #   self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
 
     elif self.state == "show":
       print("debugging -- show don't do anything")
@@ -561,9 +558,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def on_radioButtonNewVariant_pressed(self):
     self.state = "new_variant"
-    # variant_IDs, limiting_list = self.__makeVariantList()
-    # self.new_variant = "gugus" #self.__askForNewVariantName(limiting_list)
-    # print("debugging -- new variant", self.new_variant)
     self.__makeAndDisplayEquationListLeftAndRight() #self.selected_variant_str_ID)
 
   def __askForNewVariantName(self, limiting_list):

@@ -271,7 +271,7 @@ def seekList(obj, objectlist, parents, lists, first=True):
     lists.append((parents, obj, objectlist))
 
 
-def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
+def makeOntologyDotGraph(ontology_tree, ontology_name, show="write"):
   """
   makes the ontology tree for each domain as a pdf and one pdf with all together
   """
@@ -301,9 +301,13 @@ def makeOntologyDotGraph(ontology_tree, ontology_name, show="summary"):
   ontology_hierarchy = walkTreeOnly(ontology, "root", simple_graph)
 
   print(ontology_hierarchy)
-  if show != "summary":
+  if show == "view":
     simple_graph.view()  # generates pdf
-    os.remove(f)
+  else:
+    simple_graph.render()
+
+  os.remove(f)
+
 
   #
   # one node at the time starting with the root node in the network tree

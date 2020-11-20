@@ -129,6 +129,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
+
     roundButton(self.ui.pushInfo, "info", tooltip="information")
     roundButton(self.ui.pushGraph, "dot_graph", tooltip="make ProMo ontology graphs")
     roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
@@ -143,7 +144,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     new_variable_file = False
 
     if not ontology_name:  # RULE: No ontology chosen -- ask for new ontology
-      ui_ask = UI_String("give new ontology name ", "model name or exit", limiting_list=ontologies)
+      ui_ask = UI_String("give new ontology name ", "ontology name", limiting_list=ontologies)
       ui_ask.exec_()
       ontology_name = ui_ask.getText()
       if not ontology_name:  # RULE: no new ontology -- exit
@@ -1073,7 +1074,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     msg_popup.exec_()
 
   def on_pushGraph_pressed(self):
-    makeOntologyDotGraph(self.ontology_tree, self.ontology_name)
+    makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="view")
 
   def on_pushSave_pressed(self):
 

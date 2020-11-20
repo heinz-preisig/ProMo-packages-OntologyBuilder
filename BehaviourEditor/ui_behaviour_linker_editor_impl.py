@@ -218,7 +218,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     super().__init__()
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
-    self.move(QtCore.QPoint(0, 0))
 
     roundButton(self.ui.pushButtonInformation, "info", tooltip="information")
     roundButton(self.ui.pushButtonSave, "save", tooltip="save entity behaviour")

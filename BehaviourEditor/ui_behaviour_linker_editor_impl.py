@@ -554,17 +554,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     show = self.__makeDuplicateShows()
     radio_show_list = self.__makeRadioShowList(show)
     self.radio_Left.showList(radio_show_list)
+    self.ui.pushButtonLeft.hide()
 
   def on_radioButtonNewVariant_pressed(self):
     self.state = "new_variant"
     self.__makeAndDisplayEquationListLeftAndRight() #self.selected_variant_str_ID)
 
-  def __askForNewVariantName(self, limiting_list):
-    dialoge = UI_String("Provide a new variant name", placeholdertext="variant", limiting_list=limiting_list)
-    dialoge.exec_()
-    variant = dialoge.getText()
-    del dialoge
-    return variant
 
   def on_radioButtonEditVariant_pressed(self):
     print("debugging -- edit variant")
@@ -584,6 +579,15 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                                                             blocked,
                                                             obj)
     return var_equ_tree_graph, assignments
+
+
+
+  def __askForNewVariantName(self, limiting_list):
+    dialoge = UI_String("Provide a new variant name", placeholdertext="variant", limiting_list=limiting_list)
+    dialoge.exec_()
+    variant = dialoge.getText()
+    del dialoge
+    return variant
 
   def __makeAndDisplayEquationListLeftAndRight(self):
     # print("debugging -- making and displaying left list")

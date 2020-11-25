@@ -36,14 +36,12 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 from Common.common_resources import getData
-from Common.resources_icons import getIcon
 from Common.common_resources import getOntologyName
 # from Common.common_resources import globalEquationID # NOTE: removed for the time being. IDs are now local to ontology
 # from Common.common_resources import globalVariableID # NOTE: removed for the time being. IDs are now local to ontology
 from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import putDataOrdered
-from Common.resources_icons import roundButton
 from Common.common_resources import saveBackupFile
 from Common.qt_resources import NO
 from Common.qt_resources import YES
@@ -56,6 +54,8 @@ from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resource_initialisation import ONTOLOGY_VERSION
 from Common.resource_initialisation import VARIABLE_EQUATIONS_VERSION
+from Common.resources_icons import getIcon
+from Common.resources_icons import roundButton
 from Common.ui_string_dialog_impl import UI_String
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyFoundationEditor.editor_foundation_ontology_gui import Ui_MainWindow
@@ -129,7 +129,6 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
-
     roundButton(self.ui.pushInfo, "info", tooltip="information")
     roundButton(self.ui.pushGraph, "dot_graph", tooltip="make ProMo ontology graphs")
     roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
@@ -172,23 +171,26 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
 
       # RULE: if variable file exists then delete & rename is to be blocked
       variable_file = FILES["variables_file"] % ontology_name
+
+      self.new_variable_file = False
       if OS.path.exists(variable_file):
         # print("debugging -- found equation file", variable_file)
         reply = QtWidgets.QMessageBox.question(self, "choose",
                                                "There is a variable file \n -- do you want to delete it and restart "
                                                "the whole process?",
-                                               YES, NO,)
+                                               YES, NO, )
         if reply == YES:
           self.lock_delete = False
           old, new = saveBackupFile(variable_file)
           self.__writeMessage("variable file has been renamed from %s to %s" % (old, new))
-          new_variable_file = True
+          self.new_variable_file = True
         else:
           self.lock_delete = True
 
       else:
         self.__writeMessage("did not find equation file %s" % variable_file)
         self.lock_delete = False
+        self.new_variable_file = True
 
       self.__makeOntology()
 
@@ -304,6 +306,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "start"                            : [  #
                     ui.groupBoxFile,
@@ -311,6 +314,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.tabWidget,
                     ui.groupBoxNetwork,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "new_variable_file"                : [
                     # ui.groupBoxFile,
@@ -336,6 +340,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "network_selected_no_tokens"       : [  #
                     ui.listViewStructure,
@@ -386,6 +391,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "behaviour_selected"               : [  #
                     # ui.groupBoxFile,
@@ -410,6 +416,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     # ui.pushDeleteBehaviourElement,
                     # ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "structure_node_selected"          : [  #
                     # ui.groupBoxFile,
@@ -688,6 +695,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "behaviour_prop_selected"          : [  #
                     # ui.groupBoxFile,
@@ -714,6 +722,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     # ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             "behaviour_prop_selected_node"     : [  #
                     # ui.groupBoxFile,
@@ -764,6 +773,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     # ui.pushDeleteBehaviourElement,
                     # ui.widgetToken,
                     ui.radioButtonHasPortVariables,
+                    ui.radioButtonIsState,
                     ],
             }
     self.actions = actions
@@ -1082,9 +1092,8 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
 
     putDataOrdered(self.ontology, self.ontology_file)
 
-    variables_f_name = FILES["variables_file_v7"] % self.ontology_name
-
-    if not OS.path.exists(variables_f_name):
+    if self.new_variable_file:
+      variables_f_name = FILES["variables_file"] % self.ontology_name
       # globalVariableID(update=False, reset=True)  # RULE: for a new variable file reset global variable ID
       # globalEquationID(update=False, reset=True)  # RULE: and global equation ID
       variables = {}
@@ -1092,8 +1101,9 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       ProMoIRI = RecordProMoIRI()
       data = VariableFile(variables, indices, VARIABLE_EQUATIONS_VERSION, ProMoIRI)
       putData(data, variables_f_name)
-
-    self.__writeMessage("saved file : %s" % variables_f_name)
+      self.__writeMessage("ontology file written and new data file generated : %s" % variables_f_name)
+    else:
+      self.__writeMessage("ontology file written")
 
   def on_pushAddChild_pressed(self):
     self.__ui_status("add_child_selected")
@@ -1225,6 +1235,16 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     self.ontology["rules"]["variable_classes_having_port_variables"] = sorted(
             variable_classes_having_port_variables)
 
+  def on_radioButtonIsState_toggled(self, position):
+    # print("debugging -- radio button position: ", position)
+    variable_classes_being_state_variables = set(self.ontology["rules"]["variable_classes_being_state_variables"])
+    if position:
+      variable_classes_being_state_variables.add(self.current_behaviour_variable)
+    else:
+      variable_classes_being_state_variables.difference_update()
+    self.ontology["rules"]["variable_classes_being_state_variables"] = sorted(
+            variable_classes_being_state_variables)
+
   def on_radioButtonBehaviourNode_toggled(self, position):
     self.radio["behaviour_node"] = position
     if position:
@@ -1321,12 +1341,20 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     variable_name = self.ui.listViewBehaviour.currentItem().text()
     # print("debugging -- behaviour selected : ", variable_name)
     # print("debugging -- selected component :",self.current_behaviour_component )
-    if self.current_behaviour_component in ["node", "graph"]:  # ....RULE: variable classes related to node and graph may have port variables
+    if self.current_behaviour_component in ["node",
+                                            "graph"]:  # ....RULE: variable classes related to node and graph may
+      # have port variables
       self.__ui_status("behaviour_prop_selected_node")
       if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_having_port_variables"]:
         self.ui.radioButtonHasPortVariables.setChecked(True)
       else:
         self.ui.radioButtonHasPortVariables.setChecked(False)
+
+      if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_being_state_variables"]:
+        self.ui.radioButtonIsState.setChecked(True)
+      else:
+        self.ui.radioButtonIsState.setChecked(False)
+
     else:
       self.__ui_status("behaviour_prop_selected")
 

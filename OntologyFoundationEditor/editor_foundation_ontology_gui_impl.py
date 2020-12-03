@@ -1086,14 +1086,22 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
   def on_pushGraph_pressed(self):
     makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="view")
 
+
+  def __addFixedRules(self):  #RULE: fixed rules
+    self.ontology["rules"]["nodes_allowing_token_injection"] = ["constant"]
+    self.ontology["rules"]["nodes_allowing_token_conversion"] = ["dynamic", "event"]
+    self.ontology["rules"]["nodes_allowing_token_transfer"] = ["intraface"]
   def on_pushSave_pressed(self):
 
     self.__ui_status("saved")
+    self.__addFixedRules()
 
     putDataOrdered(self.ontology, self.ontology_file)
 
+
     if self.new_variable_file:
       variables_f_name = FILES["variables_file"] % self.ontology_name
+      # NOTE: do not delete the below
       # globalVariableID(update=False, reset=True)  # RULE: for a new variable file reset global variable ID
       # globalEquationID(update=False, reset=True)  # RULE: and global equation ID
       variables = {}

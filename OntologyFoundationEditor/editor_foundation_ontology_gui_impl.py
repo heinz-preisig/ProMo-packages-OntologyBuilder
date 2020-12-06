@@ -20,10 +20,6 @@ __version__ = "7.04"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
-# TODO: add interactive feature to define which of the classes can define port variables --
-# TODO: + currently in rules file read in by ontology_container
-# TODO: add feature to define what typed token can convert
-# TODO: + currently as separate file in ontology directory read in by ontology_container
 # TODO: handle differential indices differently states and frames generate a differential space automatically ! danger !
 
 import os as OS
@@ -196,15 +192,15 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
 
     self.ontology_name = ontology_name
 
-    lock_file = FILES["lock_file"] % ontology_name  # TODO: one could do without the lock file -- check
-    if self.lock_delete:
-      f = open(lock_file, "w")
-      f.write("update index files")
-      f.close()
+    # lock_file = FILES["lock_file"] % ontology_name  # TODO: one could do without the lock file -- check
+    # if self.lock_delete:
+    #   f = open(lock_file, "w")
+    #   f.write("update index files")
+    #   f.close()
 
-    else:
-      if OS.path.exists(lock_file):
-        OS.remove(lock_file)
+    # else:
+    #   if OS.path.exists(lock_file):
+    #     OS.remove(lock_file)
 
     ### initialisations  ===========
     self.current_network = None
@@ -1086,18 +1082,15 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
   def on_pushGraph_pressed(self):
     makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="view")
 
-
-  def __addFixedRules(self):  #RULE: fixed rules
+  def __addFixedRules(self):  # RULE: fixed rules
     self.ontology["rules"]["nodes_allowing_token_injection"] = ["constant"]
     self.ontology["rules"]["nodes_allowing_token_conversion"] = ["dynamic", "event"]
     self.ontology["rules"]["nodes_allowing_token_transfer"] = ["intraface"]
-  def on_pushSave_pressed(self):
 
+  def on_pushSave_pressed(self):
     self.__ui_status("saved")
     self.__addFixedRules()
-
     putDataOrdered(self.ontology, self.ontology_file)
-
 
     if self.new_variable_file:
       variables_f_name = FILES["variables_file"] % self.ontology_name

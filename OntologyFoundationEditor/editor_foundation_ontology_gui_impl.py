@@ -160,7 +160,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       src = DIRECTORIES["new_ontology_starting_set"]
       copy_tree(src, self.ontology_dir)
       self.ontology_file = FILES["ontology_file"] % ontology_name
-      self.__makeOntology()
+      # self.__makeOntology()
 
     else:  # edit
       self.ontology_file = FILES["ontology_file"] % ontology_name
@@ -188,7 +188,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
         self.lock_delete = False
         self.new_variable_file = True
 
-      self.__makeOntology()
+    self.__makeOntology()
 
     self.ontology_name = ontology_name
 
@@ -271,6 +271,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       self.__createRoot()
     self.__writeMessage("preparing ontology")
 
+    self.__addFixedRules()  #RULE: here we add the rule system for the time being
   def __automaton(self):
     """
     Sets the hidden/show for the various GUI items -- thus enables selective control of the interface.
@@ -1083,7 +1084,12 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="view")
 
   def __addFixedRules(self):  # RULE: fixed rules
-    self.ontology["rules"]["nodes_allowing_token_injection"] = ["constant"]
+    rules = self.ontology["rules"]
+    if "variable_classes_having_port_variables" not in rules:
+      rules["variable_classes_having_port_variables"] = []
+    if "variable_classes_being_state_variables" not in rules:
+      rules["variable_classes_being_state_variables"] = []
+    self.ontology["rules"]["nodes_allowing_token_injection"] = ["constant", "dynamic"]
     self.ontology["rules"]["nodes_allowing_token_conversion"] = ["dynamic", "event"]
     self.ontology["rules"]["nodes_allowing_token_transfer"] = ["intraface"]
 

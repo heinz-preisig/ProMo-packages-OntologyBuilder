@@ -1089,9 +1089,9 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       rules["variable_classes_having_port_variables"] = []
     if "variable_classes_being_state_variables" not in rules:
       rules["variable_classes_being_state_variables"] = []
-    self.ontology["rules"]["nodes_allowing_token_injection"] = ["constant", "dynamic"]
-    self.ontology["rules"]["nodes_allowing_token_conversion"] = ["dynamic", "event"]
-    self.ontology["rules"]["nodes_allowing_token_transfer"] = ["intraface"]
+    rules["nodes_allowing_token_injection"] = ["constant", "dynamic"]
+    rules["nodes_allowing_token_conversion"] = ["dynamic", "event"]
+    rules["nodes_allowing_token_transfer"] = ["intraface"]
 
   def on_pushSave_pressed(self):
     self.__ui_status("saved")

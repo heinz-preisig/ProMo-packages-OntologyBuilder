@@ -827,8 +827,8 @@ class VarEqTree():
     stack = []
     eq_IDs = set(self.get_equs(var_ID)) - blocked_set
     for eq_ID in eq_IDs:
-      if eq_ID == 4:
-        print("debugging -- found 4")
+      # if eq_ID == 4:
+      #   print("debugging -- found 4")
       stack.append((var_ID, eq_ID))
     first = True
 

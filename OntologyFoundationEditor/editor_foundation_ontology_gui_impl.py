@@ -177,7 +177,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                                                YES, NO, )
         if reply == YES:
           self.lock_delete = False
-          old, new = saveBackupFile(variable_file)
+          old, new, next = saveBackupFile(variable_file)
           self.__writeMessage("variable file has been renamed from %s to %s" % (old, new))
           self.new_variable_file = True
         else:

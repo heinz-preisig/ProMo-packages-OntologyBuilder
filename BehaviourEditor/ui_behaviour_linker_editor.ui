@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
+    <width>827</width>
     <height>696</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout" columnstretch="30,50,50">
     <item row="0" column="1">
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayoutSecondColumn">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -42,7 +42,7 @@
           <rect>
            <x>20</x>
            <y>30</y>
-           <width>231</width>
+           <width>161</width>
            <height>141</height>
           </rect>
          </property>
@@ -84,6 +84,19 @@
           </item>
          </layout>
         </widget>
+        <widget class="QPushButton" name="pushButtonDelete">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>30</y>
+           <width>51</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </widget>
       </item>
       <item>
@@ -103,7 +116,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>247</width>
+           <width>302</width>
            <height>387</height>
           </rect>
          </property>
@@ -124,7 +137,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>146</width>
+           <width>180</width>
            <height>203</height>
           </rect>
          </property>
@@ -141,7 +154,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>146</width>
+           <width>180</width>
            <height>202</height>
           </rect>
          </property>
@@ -158,7 +171,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>146</width>
+           <width>180</width>
            <height>203</height>
           </rect>
          </property>
@@ -195,7 +208,7 @@
            <height>115</height>
           </rect>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2">
+         <layout class="QGridLayout" name="gridLayoutApplication">
           <item row="1" column="0">
            <widget class="QPushButton" name="pushButtonInformation">
             <property name="text">
@@ -267,7 +280,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>246</width>
+           <width>303</width>
            <height>387</height>
           </rect>
          </property>

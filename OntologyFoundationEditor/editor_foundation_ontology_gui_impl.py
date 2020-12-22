@@ -271,7 +271,8 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       self.__createRoot()
     self.__writeMessage("preparing ontology")
 
-    self.__addFixedRules()  #RULE: here we add the rule system for the time being
+    self.__addFixedRules()  # RULE: here we add the rule system for the time being
+
   def __automaton(self):
     """
     Sets the hidden/show for the various GUI items -- thus enables selective control of the interface.
@@ -1084,14 +1085,30 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="view")
 
   def __addFixedRules(self):  # RULE: fixed rules
+
+    FIXED_RULES = {
+            "variable_classes_having_port_variables": [],
+            "variable_classes_being_state_variables": [],
+            "numerical_value"                       : "value",
+            "nodes_allowing_token_injection"        : ["constant", "dynamic"],
+            "nodes_allowing_token_conversion"       : ["dynamic", "event"],
+            "nodes_allowing_token_transfer"         : ["intraface"],
+            }
+
     rules = self.ontology["rules"]
-    if "variable_classes_having_port_variables" not in rules:
-      rules["variable_classes_having_port_variables"] = []
-    if "variable_classes_being_state_variables" not in rules:
-      rules["variable_classes_being_state_variables"] = []
-    rules["nodes_allowing_token_injection"] = ["constant", "dynamic"]
-    rules["nodes_allowing_token_conversion"] = ["dynamic", "event"]
-    rules["nodes_allowing_token_transfer"] = ["intraface"]
+    for r in FIXED_RULES:
+      if r not in rules:
+        rules[r] = FIXED_RULES[r]
+
+    # if "variable_classes_having_port_variables" not in rules:
+    #   rules["variable_classes_having_port_variables"] = []
+    # if "variable_classes_being_state_variables" not in rules:
+    #   rules["variable_classes_being_state_variables"] = []
+    # if "numerical_value" not in rules:
+    #   rules[]
+    # rules["nodes_allowing_token_injection"] = ["constant", "dynamic"]
+    # rules["nodes_allowing_token_conversion"] = ["dynamic", "event"]
+    # rules["nodes_allowing_token_transfer"] = ["intraface"]
 
   def on_pushSave_pressed(self):
     self.__ui_status("saved")

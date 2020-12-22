@@ -616,6 +616,23 @@ def setValidator(lineEdit):
   return validator
 
 
+def isVariableInExpression(expression, variable_ID):
+  """
+  is a defined variable in expression? -- logical
+  expression : internally coded
+  variable_ID : integer ID
+  """
+
+  items = expression.split(" ")
+  for w in items:
+    if len(w) > 0:
+      if w[0] == "V":
+        lbl,strID = w.split("_")
+        v_ID = int(strID) # w.replace("V_", "").strip())
+        if v_ID == variable_ID:
+          return True
+  return False
+
 def renderExpressionFromGlobalIDToInternal(expression, variables, indices):
   """
   render from global ID representation to internal text representation

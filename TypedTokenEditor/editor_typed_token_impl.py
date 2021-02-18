@@ -28,11 +28,18 @@ from Common.common_resources import getOntologyName
 from Common.common_resources import M_None
 from Common.common_resources import putData
 from Common.ontology_container import OntologyContainer
+from Common.ui_two_list_selector_dialog_impl import UI_TwoListSelector
 from Common.resource_initialisation import FILES
 from OntologyBuilder.TypedTokenEditor.editor_typed_token import Ui_MainWindow
 
 SPACING = 20
-INSTANCES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", ]
+INSTANCES_Generic = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+             "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+             "U", "V", "W", "X", "Y", "Z"]
+INSTANCES = ["A", "W", "C", "R", "I"]# "F", "G", "H", "I", "J",
+             # "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+             # "U", "V", "W", "X", "Y", "Z"]
+
 
 
 class Conversion(dict):
@@ -94,13 +101,21 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
     self.DATA = TypedTokenData()
 
     typed_tokens = []
+    self.instances = {}
     for nw in self.networks:
       for token in ontology.token_typedtoken_on_networks[nw]:
         for typed_token in ontology.token_typedtoken_on_networks[nw][token]:
           typed_tokens.append(typed_token)
+          self.instances[typed_token] = INSTANCES
 
     self.DATA.initialise(typed_tokens)
     self.__interfaceLogics("start")
+    self.new = False
+    self.selected_typed_token_class = None
+
+  def __interfaceLogics(self, state):
+    self.new = False
+    self.selected_typed_token_class = None
 
   def __interfaceLogics(self, state):
 
@@ -110,7 +125,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
       self.ui.groupConversion.hide()
       #
       # TODO: "save as" is not yet implemented - file name is fixed and one only
-      self.ui.pushSaveAs.hide()
+      # self.ui.pushSaveAs.hide()
 
     elif state == "new":
       self.ui.pushLoad.hide()
@@ -119,16 +134,16 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
 
     elif state == "loaded":
       self.ui.groupToken.show()
-      self.ui.spinNumberOfTypedTokens.hide()
+      # self.ui.spinNumberOfTypedTokens.hide()
       self.ui.groupStart.hide()
 
     elif state == "converting token defined":
       self.ui.groupConversion.show()
-      self.ui.spinNumberOfTypedTokens.show()
+      # self.ui.spinNumberOfTypedTokens.show()
 
     elif state == "not converting token define":
       self.ui.groupConversion.hide()
-      self.ui.spinNumberOfTypedTokens.show()
+      # self.ui.spinNumberOfTypedTokens.show()
 
     elif state == "modified":
       self.ui.groupSaving.show()
@@ -140,32 +155,32 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
 
     self.ui.comboTokenWithTypedTokens.clear()
     self.ui.comboTokenWithTypedTokens.addItem(M_None)
-    ### tokens
-    tokens = sorted(self.DATA.keys())  # self.tokens_without_conversion | self.tokens_with_conversion
-    self.ui.comboTokenWithTypedTokens.addItems(list(tokens))
+    ### typed_tokens_class
+    typed_tokens_class = sorted(self.DATA.keys())  # self.typed_token_classs_without_conversion | self.typed_token_classs_with_conversion
+    self.ui.comboTokenWithTypedTokens.addItems(list(typed_tokens_class))
 
-    return list(tokens)
+    return list(typed_tokens_class)
 
-  def __setupSpinNumberOfTypedTokens(self):
-    min_no = self.__minNumberTypedTokens()
-    self.ui.spinNumberOfTypedTokens.setMinimum(min_no)
-    # print("min no", min_no)
+  # def __setupSpinNumberOfTypedTokens(self):
+  #   min_no = self.__minNumberTypedTokens()
+  #   self.ui.spinNumberOfTypedTokens.setMinimum(min_no)
+  #   # print("min no", min_no)
 
   def __makeConversionCombos(self):
-    self.ui.comboConversion.clear()
+    # self.ui.comboConversion.clear()
 
-    conversions = self.DATA[self.token]["conversions"]
+    conversions = self.DATA[self.typed_token_class]["conversions"]
 
     if len(conversions) == 0:
-      self.ui.spinConverstion.hide()
+      self.ui.spinConversion.hide()
       self.ui.comboConversion.hide()
     else:
-      self.ui.spinConverstion.setMinimum(0)
-      self.ui.spinConverstion.setMaximum(len(conversions) - 1)
+      self.ui.spinConversion.setMinimum(0)
+      self.ui.spinConversion.setMaximum(len(conversions) - 1)
       for c in conversions:
         s = "%s --> %s" % (c["reactants"], c["products"])
         self.ui.comboConversion.addItem(s)
-      self.ui.spinConverstion.show()
+      self.ui.spinConversion.show()
       self.ui.comboConversion.show()
 
   def __clearLayout(self, layout):
@@ -177,19 +192,35 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
       # remove it from the gui
       widgetToRemove.setParent(None)
 
-  def on_comboTokenWithTypedTokens_activated(self, token):
-    s = self.ui.comboTokenWithTypedTokens.currentText()  # str(token)
-    if s == M_None: return
+  def on_comboTokenWithTypedTokens_currentTextChanged(self, token):
+    self.selected_typed_token_class = self.ui.comboTokenWithTypedTokens.currentText()  # str(token)
+    if self.selected_typed_token_class == M_None: return
 
-    self.token = s
+    self.typed_token_class = self.selected_typed_token_class
     self.__interfaceLogics("converting token defined")
+    if self.new:
+      two_list_selector = UI_TwoListSelector()
+      two_list_selector.populateLists(INSTANCES_Generic, [])
+      two_list_selector.exec_()
+
+      selection = two_list_selector.getSelected()
+      if len(selection) > 0:
+        self.new = False
+        self.instances[self.selected_typed_token_class]= selection
+        self.ui.message_box.setText("allocated %s"%(self.instances))
+
+    else:
+      self.instances[self.selected_typed_token_class]=self.DATA[self.selected_typed_token_class]["instances"]
+      self.ui.message_box.setText("allocated "%(self.instances))
 
     min_no = self.__minNumberTypedTokens()
-    self.ui.spinNumberOfTypedTokens.setValue(min_no)
+    # self.ui.spinNumberOfTypedTokens.setValue(min_no)
+    # self.ui.spinNumberOfTypedTokens.setMaximum(len(self.instances))
     self.__makeConversionCombos()
+    self.__setupReactantsProductRadios()
 
   def __minNumberTypedTokens(self):
-    conversions = self.DATA[self.token]["conversions"]
+    conversions = self.DATA[self.typed_token_class]["conversions"]
     if len(conversions) == 0:
       return 1
 
@@ -208,9 +239,33 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
 
     return index + 1
 
+  def __setupReactantsProductRadios(self):
+    self.ui.message_box.clear()
+    token = self.typed_token_class
+    print("debugging -- instances", self.instances)
+    self.ui.message_box.setText("%s"%self.instances)
+    # no_of_typed_tokens = len(self.instances[self.selected_typed_token_class])
+    tmp_instances = self.instances[self.selected_typed_token_class]#INSTANCES#[0:int(no_of_typed_tokens)]
+    differences = list(set(self.DATA[token]['instances']) - set(tmp_instances))
+    strt = "<span style=\" font-size:10pt; font-weight:600;color:#ff0000;\">\n"
+    msg = 'ERROR: Cannot remove typed token: {} \n used in conversion: {}'
+    end_of_string = "</span>"
+    for diff in differences:
+      for i, conversion in enumerate(self.DATA[token]['conversions']):
+        if diff in conversion['reactants'] or diff in conversion['reactants']:
+          out_msg = msg.format(diff, i)
+          self.ui.pushSave.hide()
+          self.ui.message_box.setText(strt + out_msg + end_of_string)
+          return  # Exit before redrawing
+    self.ui.pushSave.show()
+    self.redraw_conversion_radios()
+    self.DATA[self.typed_token_class]["instances"] = tmp_instances
+    ok_msg = 'Last new typed token: {}'
+    self.ui.message_box.setText(ok_msg.format(tmp_instances[-1]))
+
   def on_spinNumberOfTypedTokens_valueChanged(self, no_of_typed_tokens):
     self.ui.message_box.clear()
-    token = self.token
+    token = self.typed_token_class
     tmp_instances = INSTANCES[0:int(no_of_typed_tokens)]
     differences = list(set(self.DATA[token]['instances']) - set(tmp_instances))
     strt = "<span style=\" font-size:10pt; font-weight:600;color:#ff0000;\">\n"
@@ -224,14 +279,15 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
           self.ui.message_box.setText(strt + out_msg + end_of_string)
           return  # Exit before redrawing
     self.ui.pushSave.show()
-    self.redraw_conversion_radios(no_of_typed_tokens)
-    self.DATA[self.token]["instances"] = tmp_instances
+    self.redraw_conversion_radios()
+    self.DATA[self.typed_token_class]["instances"] = tmp_instances
     ok_msg = 'Last new typed token: {}'
     self.ui.message_box.setText(ok_msg.format(tmp_instances[-1]))
 
-  def redraw_conversion_radios(self, no_of_typed_tokens):
+  def redraw_conversion_radios(self):
+    no_of_typed_tokens = len(self.instances[self.selected_typed_token_class])
     self.__interfaceLogics("modified")
-    token = self.token
+    token = self.typed_token_class
     self.__clearLayout(self.ui.formReactants)
     self.__clearLayout(self.ui.formProducts)
     self.radioButtonsTokens = {
@@ -240,7 +296,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
             }
     for no in range(int(no_of_typed_tokens)):
       self.radioButtonsTokens[token] = {}
-      t = INSTANCES[no]
+      t = self.instances[self.selected_typed_token_class][no]
       label = "%s :: %s" % (token, t)
       r = TypedRadioButton(label, t)
       self.radioButtonsTokens["reactants"][no] = r
@@ -250,7 +306,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
       self.ui.formProducts.setWidget(no, QtWidgets.QFormLayout.LabelRole, r)
 
   @QtCore.pyqtSlot(int)
-  def on_spinConverstion_valueChanged(self, index):
+  def on_spinConversion_valueChanged(self, index):
     # print(" change index: ", index)
     self.ui.comboConversion.setCurrentIndex(index)
 
@@ -258,19 +314,22 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
     set_products = self.ui.comboConversion.currentText()
     r, p = self.products = set_products.split('-->')
     index = self.ui.comboConversion.currentIndex()
-    self.ui.spinConverstion.setValue(index)
+    self.ui.spinConversion.setValue(index)
 
-  def on_pushNewSystem_pressed(self):
+  def on_pushNew_pressed(self):
     self.ui.message_box.clear()
     self.ui.message_box.setText('Setting up new typed token file')
-    tokens = self.__makeTokenWithTypedTokensCombo()
+
+    typed_tokens_class = self.__makeTokenWithTypedTokensCombo()
+    self.new = True
     self.__interfaceLogics("new")
 
   def on_pushLoad_pressed(self):
     self.ui.message_box.clear()
     self.ui.message_box.setText('Loading previous typed token file')
-    tokens = self.__makeTokenWithTypedTokensCombo()
+    typed_tokens_class = self.__makeTokenWithTypedTokensCombo()
     self.DATA.read(self.typed_token_file_spec)
+    self.new = False
     self.__interfaceLogics("loaded")
 
   def on_pushSave_pressed(self):
@@ -296,16 +355,18 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
       if b.isChecked():
         products.append(b.typed_token)
         b.setChecked(False)
-
+    if (not reactants) or (not products):
+      self.ui.message_box.setText("you need to define reactants and products to define a new conversion")
+      return
     c = Conversion(reactants, products)
-    self.DATA[self.token]["conversions"].append(c)
+    self.DATA[self.typed_token_class]["conversions"].append(c)
     min_inst = self.__minNumberTypedTokens()
-    self.DATA[self.token]["instances"] = INSTANCES[0:min_inst]
+    self.DATA[self.typed_token_class]["instances"] = INSTANCES[0:min_inst]
     self.__makeConversionCombos()
     self.__interfaceLogics("modified")
 
   def on_pushDelete_pressed(self):
-    c = self.DATA[self.token]["conversions"].pop(self.ui.spinConverstion.value())
+    c = self.DATA[self.typed_token_class]["conversions"].pop(self.ui.spinConversion.value())
     self.__makeConversionCombos()
-    self.__setupSpinNumberOfTypedTokens()
+    # self.__setupSpinNumberOfTypedTokens()
     self.__interfaceLogics("modified")

@@ -189,7 +189,7 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;defines &lt;span style=&quot; font-weight:600;&quot;&gt;structure&lt;/span&gt; --&amp;gt; bookkeeping &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;behaviour&lt;/span&gt; --&amp;gt; taxonometry of variabless&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_structure">
      <attribute name="title">

@@ -1132,7 +1132,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
   def on_pushAddChild_pressed(self):
     self.__ui_status("add_child_selected")
     models = list(self.ontology_tree.keys())
-    model_name = askForString("give new network name or exit ", "model name or exit", limiting_list=models)
+    model_name = askForString("give new network name or exit ", "name for new child", limiting_list=models)
     if not model_name:
       self.__ui_status("network_selected")
       return
@@ -1367,7 +1367,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     # print("debugging -- selected component :",self.current_behaviour_component )
     if self.current_behaviour_component in ["node",
                                             "graph"]:  # ....RULE: variable classes related to node and graph may
-      # have port variables
+      # RULE: ---continued-- have port variables
       self.__ui_status("behaviour_prop_selected_node")
       if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_having_port_variables"]:
         self.ui.radioButtonHasPortVariables.setChecked(True)

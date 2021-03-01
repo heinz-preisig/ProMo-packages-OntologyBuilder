@@ -43,7 +43,7 @@
            <x>20</x>
            <y>30</y>
            <width>161</width>
-           <height>141</height>
+           <height>170</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
@@ -257,6 +257,19 @@
            </spacer>
           </item>
          </layout>
+        </widget>
+        <widget class="QPushButton" name="pushButtonTokenTopologies">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>160</y>
+           <width>161</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>token topology</string>
+         </property>
         </widget>
        </widget>
       </item>

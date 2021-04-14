@@ -16,7 +16,7 @@ from Common.ontology_container import OntologyContainer
 from Common.record_definitions_equation_linking import EntityBehaviour
 from Common.record_definitions_equation_linking import functionGetObjectsFromObjectStringID
 from Common.record_definitions_equation_linking import functionMakeObjectStringID
-from Common.record_definitions_equation_linking import VariantRecord
+from Common.record_definitions_equation_linking import VariantRecord, NodeArcAssociations
 from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
@@ -258,6 +258,11 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     networks = self.ontology_container.list_inter_branches
     entities_list = self.reduced_network_node_list
     self.entity_behaviours = EntityBehaviour(networks, entities_list)
+
+
+    arc_objects = self.ontology_container.list_arc_objects_on_networks
+    node_objects = self.ontology_container.list_node_objects_on_networks_with_tokens
+    self.node_arc_associations = NodeArcAssociations(networks, node_objects, arc_objects)
     # self.entity_behaviour_graphs = EntityBehaviourGraphs(networks, entities_list)
 
     # get existing data
@@ -333,6 +338,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.left_show_list = self.radio_Left.show_list
     self.right_show_list = self.radio_Right.show_list
 
+    self.match_equations_label_list = []
+    self.match_equation_ID = {}
+
     # controls
     self.actions = ["show", "duplicates", "new_variant", "edit_variant", "instantiate_variant"]
 
@@ -351,7 +359,11 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def __readVariableAssignmentToEntity(self):
     f = FILES["variable_assignment_to_entity_object"] % self.ontology_name
-    loaded_entity_behaviours = getData(f)
+    # loaded_entity_behaviours = getData(f)
+    data = getData(f)
+    loaded_entity_behaviours = data["behaviours"]
+    self.node_arc_associations = data["associations"]
+
     if loaded_entity_behaviours:
       for entity_str_ID in loaded_entity_behaviours:  # careful there may not be all entities at least during
         # developments
@@ -507,14 +519,16 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     elif self.state in ["duplicates", "new_variant","edit_variant"]:
       print("debugging -- duplicates to be processed")
-      self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
-      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
-      self.blocked.remove(eq_ID)
-      # self.blocked_radio_ID.remove(eq_radio_ID)
-      self.radio_Left.show_list.append(eq_radio_ID)
-      self.radio_Right.show_list.remove(eq_radio_ID)
-      self.radio_Left.showIt()
-      self.radio_Right.showIt()
+      if self.state != "show":
+        self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+        eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+        self.blocked.remove(eq_ID)
+        # self.blocked_radio_ID.remove(eq_radio_ID)
+        self.radio_Left.show_list.append(eq_radio_ID)
+        self.radio_Right.show_list.remove(eq_radio_ID)
+
+    self.radio_Left.showIt()
+    self.radio_Right.showIt()
 
   def on_pushButtonLeft_pressed(self):
     print("debugging -- push left button state:", self.state)
@@ -599,8 +613,11 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     for obj in self.entity_behaviours:
       if self.entity_behaviours[obj]:
         self.__makeVariablesToBeValueInitialised(obj)
+    data = {"behaviours": self.entity_behaviours,
+            "associations": self.node_arc_associations}
 
-    putData(self.entity_behaviours, f)
+    # putData(self.entity_behaviours, f)
+    putData(data, f)
 
   def on_pushButtonInformation_pressed(self):
     print("todo: not yet implemented")
@@ -637,33 +654,70 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     entity_object_str = self.__makeEntityObjectStrID()
     self.__makeVariablesToBeValueInitialised(entity_object_str)
 
-  def on_pushButtonTokenTopologies_pressed(self):
+  def on_pushButtonNodeAssociations_pressed(self):
     print("debugging -- token topologies network %s"%self.selected_InterNetwork_ID)
     if not self.selected_InterNetwork_ID:
       self.status_report("define network first")
       return
 
     self.state = "token_topologies"
-    tokens_in_current_network = []
-    tokens_in_networks = self.ontology_container.token_typedtoken_on_networks
-    for t in tokens_in_networks:
-      nw = self.radio_InterNetworks.label_indices[self.selected_InterNetwork_ID]
-      if t == nw:
-        tokens_in_current_network.extend(tokens_in_networks[t])
+    nw = self.radio_InterNetworks.getStrID()
+    # node_objects = self.ontology_container.list_node_objects_on_networks_with_tokens[nw]
+    node_objects = sorted(self.node_arc_associations[nw]["nodes"].keys())
 
-    network_variables = []
-    for v in self.ontology_container.variables:
-      if self.ontology_container.variables[v]["type"] == "network":
-        text = self.ontology_container.variables[v]["label"]
-        network_variables.append(text)
+    self.match_equations_label_list = []
+    self.match_node_equation_inverse = {}
+    for ID in range(0, len(self.equation_inverse_index)):
+      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[ID]
+      if var_type == "state":
+        self.match_equations_label_list.append(equation_label)
+        self.match_node_equation_inverse[equation_label] = eq_ID, var_ID
 
-    selector = UI_MatchPairs(tokens_in_current_network,network_variables, self.matchReceiver)
+
+    selector = UI_MatchPairs(node_objects,self.match_equations_label_list, self.matchNodeReceiver, take_right=False)
+    self.update()
     gugus = selector.exec_()
 
+
+  def on_pushButtonArcAssociations_pressed(self):
+    print("debugging -- token topologies network %s"%self.selected_InterNetwork_ID)
+    if not self.selected_InterNetwork_ID:
+      self.status_report("define network first")
+      return
+
+    self.state = "token_topologies"
+    nw = self.radio_InterNetworks.getStrID()
+    # arc_objects = self.ontology_container.list_arc_objects_on_networks[nw]
+    arc_objects = sorted(self.node_arc_associations[nw]["arcs"].keys())
+    self.match_equations_label_list = []
+    self.match_arc_equation_inverse = {}
+    for ID in range(0, len(self.equation_inverse_index)):
+      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[ID]
+      if var_type == "transport":
+        self.match_equations_label_list.append(equation_label)
+        self.match_arc_equation_inverse[equation_label] = eq_ID, var_ID
+
+
+    selector = UI_MatchPairs(arc_objects,self.match_equations_label_list, self.matchArcReceiver, take_right=False)
+    self.update()
+    gugus = selector.exec_()
+
+  def matchNodeReceiver(self, selection):
+    print("match receiver -- selection", selection)
+    nw_str_ID = self.radio_InterNetworks.getStrID()
+    for node_object, equation in selection:
+      print("object : %s  \n equation : %s"%(node_object, equation ))
+      eq_ID, var_ID = self.match_node_equation_inverse[equation]
+      self.node_arc_associations[nw_str_ID]["nodes"][node_object] = (eq_ID, var_ID)
     print("debugging -- wait")
 
-  def matchReceiver(self, selection):
+  def matchArcReceiver(self, selection):
     print("match receiver -- selection", selection)
+    nw_str_ID = self.radio_InterNetworks.getStrID()
+    for arc_object, equation in selection:
+      print("object : %s  \n equation : %s"%(arc_object, equation ))
+      eq_ID, var_ID = self.match_arc_equation_inverse[equation]
+      self.node_arc_associations[nw_str_ID]["arcs"][arc_object] = (eq_ID, var_ID)
     print("debugging -- wait")
 
   def __makeVariablesToBeValueInitialised(self, entity_object_str):

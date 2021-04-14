@@ -157,7 +157,7 @@ class UI_Equations(QtWidgets.QWidget):
                                                          network,
                                                          enabled_types=enabled_var_types[network],
                                                          hide_vars=[NEW_VAR],
-                                                         hide_columns=[0, 5, 6],
+                                                         hide_columns=[0, 6, 7],
                                                          )
     self.variable_tables[network].hide()
     self.variable_tables[network].picked.connect(self.__insertSnipp)
@@ -243,7 +243,7 @@ class UI_Equations(QtWidgets.QWidget):
     self.status_new_variable = False
     self.ui.pushAccept.hide()
 
-    self.ui.lineExpression.show()
+    # self.ui.lineExpression.show()
     self.status_new_equation = True
     self.ui.lineDocumentation.show()
     self.MSG("new equation")
@@ -252,6 +252,7 @@ class UI_Equations(QtWidgets.QWidget):
     symbol = str(self.ui.lineNewVariable.text())
     if self.variables.existSymbol(self.network_for_variable, symbol):
       self.MSG("variable already defined")
+      self.ui.lineExpression.hide()
       return
     self.MSG("variable symbol OK")
     self.ui.lineExpression.show()
@@ -320,13 +321,15 @@ class UI_Equations(QtWidgets.QWidget):
           if self.checked_var.index_structures == var.index_structures:
             msg = "variable has \n" \
                   "- index structures : %s\n" \
-                  "- units            : %s\n" % (pretty_var_indices, pretty_var_units)
+                  "- units            : %s\n" \
+                  "- tokens           : %s\n"    % (pretty_var_indices, pretty_var_units, var.tokens)
             self.MSG(msg)
           else:
             msg = "missmatch of index structures \n" \
                   " - variable has   : %s\n" \
-                  " - expression has : %s" \
-                  % (pretty_var_indices, pretty_check_var_indices,)
+                  " - expression has : %s\n" \
+                  " - tokens         : %s " \
+                  % (pretty_var_indices, pretty_check_var_indices,var.tokens)
             self.MSG(msg)
             return False
         else:
@@ -347,8 +350,8 @@ class UI_Equations(QtWidgets.QWidget):
           return False
       # else:
       # print("debugging : ", expression)
-      msg = 'modified expression OK\n index struct: %s\n units: %s' % (
-              pretty_check_var_indices, pretty_check_var_units)
+      msg = 'modified expression OK\n index struct: %s\n units: %s\n tokens: %s\n' % (
+              pretty_check_var_indices, pretty_check_var_units, self.checked_var.tokens)
       self.MSG(msg)
       #       print("debugging: ", msg)
 
@@ -417,6 +420,7 @@ class UI_Equations(QtWidgets.QWidget):
                                                            },
                                                    aliases={},
                                                    port_variable=False,
+                                                   tokens=self.checked_var.tokens,
                                                    )
 
       self.variables.addNewVariable(ID=var_ID, **variable_record)

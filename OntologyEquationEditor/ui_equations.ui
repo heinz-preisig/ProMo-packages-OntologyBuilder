@@ -339,22 +339,6 @@ color :rgb(255, 255, 255)</string>
    <sender>lineNewVariable</sender>
    <signal>editingFinished()</signal>
    <receiver>lineExpression</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>130</x>
-     <y>168</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>290</x>
-     <y>169</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>lineNewVariable</sender>
-   <signal>editingFinished()</signal>
-   <receiver>lineExpression</receiver>
    <slot>setFocus()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -302,9 +302,11 @@ class VarError(Exception):
   def __str__(self):
     return ">>> %s" % self.msg
 
+
 class TrackingError(VarError):
   def __init__(self, msg):
     self.msg = msg
+
 
 class UnitError(VarError):
   """
@@ -477,6 +479,7 @@ class Units():
   def __str__(self):
     return str(self.asList())
 
+
 class Tracking(dict):
   def __init__(self):
     super().__init__(self)
@@ -500,13 +503,11 @@ class Tracking(dict):
     elif ID in self["changed"]:
       return
     else:
-      raise TrackingError("mp sicj OD %s "%ID)
+      raise TrackingError("mp sicj OD %s " % ID)
 
   def changedAll(self):
     self["changed"].extend(self["unchanged"])
     self["unchanged"] = []
-
-
 
   def remove(self, ID):
     for item in ["unchanged", "changed"]:
@@ -529,8 +530,6 @@ class TrackChanges(dict):
     self["equations"].add(new_ID)
 
 
-
-
 class Variables(OrderedDict):
   """
   container for variables
@@ -548,13 +547,13 @@ class Variables(OrderedDict):
     self.networks = ontology_container.networks
     self.ontology_hierarchy = ontology_container.ontology_hiearchy
     self.intraconnection_networks = list(ontology_container.intraconnection_network_dictionary.keys())
-    self.interconnection_networks = ontology_container.list_inter_branches_pairs #list(ontology_container.interconnection_network_dictionary.keys())
+    self.interconnection_networks = ontology_container.list_inter_branches_pairs  # list(ontology_container
+    # .interconnection_network_dictionary.keys())
     self.heirs_network_dictionary = ontology_container.heirs_network_dictionary
     self.ProMoIRI = self.ontology_container.ProMoIRI
 
     # keep track of changes and additions
     self.changes = TrackChanges()
-
 
   def resetProMoIRI(self):
     """
@@ -810,6 +809,15 @@ class Variables(OrderedDict):
         acc[nw][variable_class] = list(set(acc[nw][variable_class]))
     self.index_accessible_variables_on_networks = acc
 
+    self.tokens_linked = {}          # RULE: this assumes that the token names are unique
+    for token in self.ontology_container.tokens:
+      self.tokens_linked[token] = None
+      # print("debugging tokens", nw, tokens)
+      for ID in self:
+        if token in self[ID].tokens:
+          # print("debugging token found in equation")
+          self.tokens_linked[token] = ID
+
     return
 
   # def indexEquationsInNetworks(self):
@@ -852,7 +860,7 @@ class Variables(OrderedDict):
 
     self.indexVariables()  # indexEquationsInNetworks()
 
-  def replaceEquation(self, var_ID, old_equ_ID, new_equ_ID, documentation, equation_record ):
+  def replaceEquation(self, var_ID, old_equ_ID, new_equ_ID, documentation, equation_record):
     variable_record = self[var_ID]
     variable_record.doc = documentation
     # variable_record.index_structures = self.checked_var.index_structures
@@ -866,7 +874,6 @@ class Variables(OrderedDict):
 
     # record changes
     self.changes.replaceEquation(old_equ_ID, new_equ_ID)
-
 
   def existSymbol(self, network, label):
     """
@@ -978,7 +985,6 @@ class CompileSpace:
       else:
         raise VarError("fatal error -- not a propert index type %s" % ind_ID)
 
-
     # RULE: networks have access to the interfaces
 
     self.variable_definition_network = variable_definition_network
@@ -993,12 +999,11 @@ class CompileSpace:
     '''
     # print("get variable", symbol)
 
-
     v = None
-    networks=set()
+    networks = set()
     if CONNECTION_NETWORK_SEPARATOR in self.variable_definition_network:
       [source, sink] = self.variable_definition_network.split(CONNECTION_NETWORK_SEPARATOR)
-              # [source, self.variable_definition_network, self.expression_definition_network]
+      # [source, self.variable_definition_network, self.expression_definition_network]
       networks.add(str(source))
 
     networks.add(self.variable_definition_network)
@@ -1126,6 +1131,44 @@ class Operator(PhysicalVariable):
     self.type = TEMP_VARIABLE
     self.equation_type = equation_type
 
+  def mergeTokens(self, var_list):
+    """
+    a :: variable
+    b :: variable
+    """
+    s = set()
+    for v in var_list:
+      s = s | set(v.tokens)
+
+    return sorted(s)
+
+  def copyTokens(self, a):
+    return a.tokens
+
+  def reduceTokens(self, a, b, red_index):
+    indices = self.space.variables.ontology_container.indices
+    index = indices[red_index]
+
+    a_set = set(a.tokens)
+    b_set = set(b.tokens)
+    token = index["token"]
+    if token:
+      c = sorted(a_set|b_set)                           # RULE: for tokens to reduce define A,B :: tokens
+      if (token in a.tokens) and (token in b.tokens):   # RULE:  A,B red(B) A,B --> A
+        c.remove(token)
+      else:
+        c_set = a_set.symmetric_difference(b_set)       # RULE: A red(A) A,B -- B
+        c = sorted(c_set)
+    else:
+      c_set = a_set.symmetric_difference(b_set)
+      c = sorted(c_set)
+    tokens = c
+    return tokens
+    # a_set = set(a.tokens)
+    # b_set = set(b.tokens)
+    # r_set = a_set.symmetric_difference(b_set)
+    # return r_set
+
   def Khatri_Rao_indexing(self, a, b):
     # RULE: not considered ordered index sets required: N, A: AS, NS --> AS, NS
     # RULE: x,y,z cannot be block indices
@@ -1160,7 +1203,8 @@ class Operator(PhysicalVariable):
         if index_ID in base_indices:
           a_single.append(index)
     if len(a_single) > 2:  # TODO actually can be sharper -- must be the first one or two
-      raise IndexStructureError("first argument cannot have more than 2 base indices")
+      # raise IndexStructureError("first argument cannot have more than 2 base indices")
+      pass
 
     for index_ID in b.index_structures:
       index = copy.copy(index_ID)
@@ -1311,7 +1355,6 @@ class Add(BinaryOperator):
     if a.index_structures == b.index_structures:  # strictly the same
       self.index_structures = sorted(a.index_structures)
 
-
     else:
       print(" issue")
       print(self.space.indices.keys())
@@ -1320,6 +1363,8 @@ class Add(BinaryOperator):
       raise IndexStructureError("add incompatible index structures %s"
                                 % CODE[self.space.language][op] % (
                                         pretty_a_indices, pretty_b_indices))
+
+    self.tokens = self.mergeTokens([a, b])
 
 
 class KhatriRao(BinaryOperator):
@@ -1356,6 +1401,8 @@ class KhatriRao(BinaryOperator):
 
     # pattern recognition
     self.index_structures = sorted(self.Khatri_Rao_indexing(a, b))
+
+    self.tokens = self.mergeTokens([a, b])
 
     return
 
@@ -1418,6 +1465,9 @@ class ReduceProduct(BinaryOperator):
       msg += "\n second argument indices: %s" % pretty_b_indices
       raise IndexStructureError(msg)
     self.index_structures = sorted(s_index_a.symmetric_difference(s_index_b))
+
+    red_index = list(s_index_a & s_index_b)[0]
+    self.tokens = self.reduceTokens(a, b, red_index)
     # print("debugging")
 
   def __str__(self):
@@ -1454,7 +1504,7 @@ class ReduceBlockProduct(BinaryOperator):
     to_reduce_index_list = self.space.indices[self.product_index_ID]["indices"]
 
     if to_reduce_index_list.count(self.reducing_index_ID) > 0:
-      index_structures = [] #list(index_structures)
+      index_structures = []  # list(index_structures)
       for i in to_reduce_index_list:
         if i != self.reducing_index_ID:
           index_structures.append(i)
@@ -1465,14 +1515,14 @@ class ReduceBlockProduct(BinaryOperator):
       raise IndexStructureError("Index error a.index: %s, b.index: %s"
                                 % (a.index_structures, b.index_structures))
 
-
     for i in s_index_a | s_index_b:
       if i not in to_reduce_index_list:
         if i != self.product_index_ID:
           index_structures.append(i)
 
-
       self.index_structures = sorted(index_structures)
+
+    self.tokens = self.reduceTokens(a, b, self.reducing_index_ID)
 
     # print(">>>>>>>>>>>>>>>>>>>>>  debugging -- indices :", self.index_structures)
 
@@ -1505,15 +1555,8 @@ class ExpandProduct(BinaryOperator):
 
     self.doc = 'EXPAND '  # EXPAND TEMPLATES[op] % (a.label, b.label)
     self.units = a.units * b.units
-
-    # _s = set()
-    # for i in a.index_structures:
-    #   _s.add(i)
-    # for i in b.index_structures:
-    #   _s.add(i)
-
-    # self.index_structures = generateIndexSeq(list(_s), self.space.indices)
-    self.index_structures = self.expandProduct_indexing(a, b)  # sorted(list(_s))
+    self.index_structures = self.expandProduct_indexing(a, b)
+    self.tokens = self.mergeTokens([a, b])
     pass
 
   def __str__(self):
@@ -1610,6 +1653,7 @@ class Power(BinaryOperator):
 
     # rule for index structures
     self.index_structures = sorted(a.index_structures)
+    self.tokens = self.copyTokens(a)
 
   def __str__(self):
     language = self.space.language
@@ -1723,6 +1767,7 @@ class MaxMin(BinaryOperator):
       raise IndexStructureError("add incompatible index structures %s"
                                 % CODE[self.space.language][op] % (
                                         pretty_a_indices, pretty_b_indices))
+    self.tokens = self.mergeTokens([a, b])
 
   def __str__(self):
     language = self.space.language
@@ -1760,6 +1805,7 @@ class Implicit(Operator):
       self.msg = 'warning >>> variable %s not in incidence list' % var_to_solve
 
     self.units = var_to_solve.units
+    self.tokens = self.copyTokens(var_to_solve)
     self.index_structures = sorted(arg.index_structures)
 
   def __str__(self):
@@ -1781,6 +1827,7 @@ class Product(Operator):
 
     self.units = copy.deepcopy(argument.units)  # ............................... retains units
     self.index_structures = sorted(argument.index_structures)  # ................ retain indices
+    self.tokens = self.copyTokens(argument)
 
   def __str__(self):
     language = self.space.language
@@ -1854,6 +1901,11 @@ class UnitaryFunction(Operator):
     else:
       self.index_structures = sorted(arg.index_structures)
 
+    if fct in UNITARY_LOOSE_UNITS:
+      self.tokens = []              # RULE: they also use the tokens
+    else:
+      self.tokens = self.copyTokens(arg)
+
   def __str__(self):
     language = self.space.language
     self.indices = self.space.indices
@@ -1880,6 +1932,8 @@ class Instantiate(Operator):
       self.value = value
     self.index_structures = sorted(var.index_structures)
     self.units = var.units
+    self.tokens = self.copyTokens(var)
+    print("debugging ", self, var.tokens)
 
   def __str__(self):
     self.language = self.space.language
@@ -1930,6 +1984,7 @@ class Integral(Operator):
     units = [xunits[i] + yunits[i] for i in range(len(yunits))]
 
     self.units = Units(ALL=units)
+    self.tokens = self.copyTokens(y)
 
   def __str__(self):
     language = self.space.language
@@ -1958,6 +2013,7 @@ class TotDifferential(Operator):
     self.units = Units(ALL=units)
 
     self.index_structures = self.diffFraction_indexing(x, y)
+    self.tokens = self.mergeTokens([x, y])
 
   def __str__(self):
     return CODE[self.space.language]["TotalDiff"] % (self.x, self.y)
@@ -1981,6 +2037,7 @@ class ParDifferential(Operator):
     self.units = Units(ALL=units)
 
     self.index_structures = self.diffFraction_indexing(x, y)
+    self.tokens = self.mergeTokens([x,y])
 
   def __str__(self):
     return CODE[self.space.language]["ParDiff"] % (self.x, self.y)
@@ -1992,6 +2049,7 @@ class Brackets(Operator):
     self.a = a
     self.units = a.units
     self.index_structures = sorted(a.index_structures)
+    self.tokens = self.copyTokens(a)
 
   def __str__(self):
     return CODE[self.space.language]["bracket"] % self.a
@@ -2002,34 +2060,40 @@ class Stack(Operator):
 
     Operator.__init__(self, space)
 
-    self.the_list = []
+    self.variable_list = [variable]
     self.units = variable.units
     self.index_structures = sorted(variable.index_structures)
+    self.tokens = self.copyTokens(variable)
 
   def addItem(self, variable):
 
     test = self.units + variable.units  # check for consistent units
 
     if self.index_structures != variable.index_structures:  # strictly the same
-      pretty_a_indices = renderIndexListFromGlobalIDToInternal(self.the_list.index_structures, self.indices)
-      pretty_b_indices = renderIndexListFromGlobalIDToInternal(variable.index_structures, self.indices)
-      raise IndexStructureError("incompatible index structures in list definition:",
-                                pretty_a_indices,
-                                "is not equal to : ",
-                                pretty_b_indices)
+      pretty_a_indices = renderIndexListFromGlobalIDToInternal(self.index_structures, self.space.indices)
+      pretty_b_indices = renderIndexListFromGlobalIDToInternal(variable.index_structures, self.space.indices)
+      raise IndexStructureError("incompatible index structures in list definition: %s is not equal to: %s"
+                                %(pretty_a_indices,pretty_b_indices))
     else:
-      self.the_list.append(variable)
+      self.variable_list.append(variable)
+      self.tokens = self.mergeTokens(self.variable_list)
 
   def __str__(self):
 
     language = self.space.language
 
-    s = CODE[language]["delimiter"]["("]
-    s += str(self.variable_list[0])
+    # s_list = CODE[language]["delimiter"]["("]
+    # s_list += str(self.the_list[0])
+    # for i in range(1, len(self.the_list)):
+    #   s_list += CODE[language]["delimiter"][","]
+    #   s_list += str(self.the_list[i])
+    # s_list += CODE[language]["delimiter"][")"]
+
+    s_list = str(self.variable_list[0])
     for i in range(1, len(self.variable_list)):
-      s += CODE[language]["delimiter"][","]
-      s += str(self.variable_list[i])
-    s += CODE[language]["delimiter"][")"]
+      s_list += CODE[language][","]
+      s_list += str(self.variable_list[i])
+    s = CODE[language]["Stack"] % s_list
 
     return s
 
@@ -2037,13 +2101,12 @@ class Stack(Operator):
 class MixedStack(Operator):
 
   def __init__(self, variable_list, space):
-
     Operator.__init__(self, space)
 
     self.variable_list = variable_list
-    self.units = Units()                         # RULE: MixedStacks have no units
-    self.index_structures = []                   # RULE: MixedStacks have no index structures
-
+    self.units = Units()  # RULE: MixedStacks have no units
+    self.index_structures = []  # RULE: MixedStacks have no index structures
+    self.tokens = self.mergeTokens(variable_list)
 
   def __str__(self):
     language = self.space.language
@@ -2052,8 +2115,9 @@ class MixedStack(Operator):
       s_list += CODE[language][","]
       s_list += str(self.variable_list[i])
 
-    s = CODE[language]["MixedStack"]%s_list
+    s = CODE[language]["MixedStack"] % s_list
     return s
+
 
 # Note: that functions are defined in different places for the time being including resource
 #        one could consider writing the documentation/definition part of the parser using a template.

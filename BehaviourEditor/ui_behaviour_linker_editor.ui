@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>827</width>
-    <height>696</height>
+    <height>876</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>200</height>
+          <height>220</height>
          </size>
         </property>
         <property name="title">
@@ -43,7 +43,7 @@
            <x>20</x>
            <y>30</y>
            <width>161</width>
-           <height>170</height>
+           <height>151</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
@@ -117,7 +117,7 @@
            <x>0</x>
            <y>0</y>
            <width>302</width>
-           <height>387</height>
+           <height>547</height>
           </rect>
          </property>
         </widget>
@@ -138,7 +138,7 @@
            <x>0</x>
            <y>0</y>
            <width>180</width>
-           <height>203</height>
+           <height>263</height>
           </rect>
          </property>
         </widget>
@@ -155,7 +155,7 @@
            <x>0</x>
            <y>0</y>
            <width>180</width>
-           <height>202</height>
+           <height>262</height>
           </rect>
          </property>
         </widget>
@@ -172,7 +172,7 @@
            <x>0</x>
            <y>0</y>
            <width>180</width>
-           <height>203</height>
+           <height>263</height>
           </rect>
          </property>
         </widget>
@@ -193,7 +193,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>200</height>
+          <height>220</height>
          </size>
         </property>
         <property name="title">
@@ -258,18 +258,31 @@
           </item>
          </layout>
         </widget>
-        <widget class="QPushButton" name="pushButtonTokenTopologies">
+        <widget class="QWidget" name="verticalLayoutWidget_2">
          <property name="geometry">
           <rect>
            <x>40</x>
-           <y>160</y>
-           <width>161</width>
-           <height>25</height>
+           <y>140</y>
+           <width>160</width>
+           <height>61</height>
           </rect>
          </property>
-         <property name="text">
-          <string>token topology</string>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QPushButton" name="pushButtonNodeAssociations">
+            <property name="text">
+             <string>node associations</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonArcAssociations">
+            <property name="text">
+             <string>arc associations</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>
@@ -294,7 +307,7 @@
            <x>0</x>
            <y>0</y>
            <width>303</width>
-           <height>387</height>
+           <height>547</height>
           </rect>
          </property>
         </widget>

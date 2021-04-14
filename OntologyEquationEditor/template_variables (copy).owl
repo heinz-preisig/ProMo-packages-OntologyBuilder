@@ -62,17 +62,6 @@ onto = o.setupOnto()
 with onto:
   class ProMoVar(onto.VAR):
     pass
-
-  class has_function(ObjectProperty):
-    domain = [ProMoVar]
-    range  = [ProMoVar]
-    pass
-
-  class function(Thing):
-    domain  = [ProMoVar]
-    range   = [ProMoVar]
-    pass
-
   class is_function_of(ObjectProperty):
     domain = [ProMoVar]
     range  = [ProMoVar]
@@ -106,29 +95,20 @@ V_{{var_ID}}.light = [ units[6] ]
 
 {% endfor -%}
 
-# functions assignments
 {% for var_ID in variables %}
 
-#{{var_ID}}
-
-V_{{var_ID}}.has_function = []
-{%- for eq_ID in variables[var_ID].equations -%}
+{% for eq_ID in variables[var_ID].equations -%}
 {% raw %}
 incidence_list = []
 {% endraw %}
-{%- set e = variables[var_ID].equations[eq_ID]["rhs"].split(" ") %}
+{%- set e = variables[var_ID].equations[eq_ID]["rhs"].split(" ") -%}
 {% for v in e %}
 {% if "V_" in v %}
 incidence_list.append( {{v}} )
 {% endif %}
 {%- endfor -%}
-F_ID = "F_{{eq_ID}}"
-F_{{eq_ID}} = onto.function( F_ID )
-F_{{eq_ID}}.is_function_of = incidence_list
-V_{{var_ID}}.has_function.append( F_{{eq_ID}} )
+V_{{var_ID}}.is_function_of = incidence_list
 {%- endfor -%}
-{%- if equation_list -%}
-{% endif %}
 {%- endfor -%}
 
 {% raw %}

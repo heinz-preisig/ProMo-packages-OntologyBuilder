@@ -52,6 +52,7 @@ class UI_VariableTableDialog(VariableTable):
                title,
                variables,
                indices,
+               tokens_on_networks,
                variable_types_on_networks,
                network,
                network_expression,
@@ -81,6 +82,7 @@ class UI_VariableTableDialog(VariableTable):
     enabled_variable_types = [choice]
     self.variable_types_on_networks = variable_types_on_networks
     self.selected_variable_type = choice
+    self.tokens_on_networks = tokens_on_networks
 
     VariableTable.__init__(self,
                            title,
@@ -217,6 +219,18 @@ class UI_VariableTableDialog(VariableTable):
   ### table handling
   def on_tableVariable_itemClicked(self, item):
 
+    # table control
+
+    # columns are
+    # 0 type --> new variable
+    # 1 symbol
+    # 2 description / documentation
+    # 3 tokens
+    # 4 units
+    # 5 indices
+    # 6 equations
+    # 7 delete
+
     c = int(item.column())
     r = int(item.row())
     # print("debugg row chosen is: %s" % r)
@@ -225,7 +239,10 @@ class UI_VariableTableDialog(VariableTable):
     self.selected_variable_type = str(item(r, 0).text())  # DOC: here I know if a new dimension must be generated
 
     # picking only
-    self.selected_variable_symbol = str(item(r, 1).text())
+    try:
+      self.selected_variable_symbol = str(item(r, 1).text())   # in some circumstances this can be empty.
+    except:
+      return
 
     # get out if variable is disabled
     if self.selected_variable_symbol in self.disabled_variables:
@@ -237,50 +254,51 @@ class UI_VariableTableDialog(VariableTable):
     self.selected_ID = selected_ID
     v = self.variables[selected_ID]
 
+    not_yet_used = (self.variables.inv_incidence_dictionary[selected_ID] == []) and \
+                   (len(self.variables[selected_ID].equations.keys()) == 0)
+
     if c == 0:
       self.__change_variable_type_dialogue()
       return
 
-    l = len(v.equations)
-    not_yet_used = (self.variables.inv_incidence_dictionary[selected_ID] == []) and \
-                   (len(self.variables[selected_ID].equations.keys()) == 0)
-    if l != 0:
-      if 3 in self.enabled_columns:
-        self.enabled_columns.remove(3)
-      if 4 in self.enabled_columns:
-        self.enabled_columns.remove(4)
-    else:
-      if 3 not in self.enabled_columns:
-        self.enabled_columns += [3]
-      if 4 not in self.enabled_columns:
-        self.enabled_columns += [4]
-
-    if c not in self.enabled_columns:
-      return
+    # l = len(v.equations)
+    # if l != 0:
+    #   if 4 in self.enabled_columns:
+    #     self.enabled_columns.remove(4)
+    #   if 5 in self.enabled_columns:
+    #     self.enabled_columns.remove(5)
+    # else:
+    #   if 4 not in self.enabled_columns:
+    #     self.enabled_columns += [4]
+    #   if 5 not in self.enabled_columns:
+    #     self.enabled_columns += [5]
+    #
+    # if c not in self.enabled_columns:
+    #   return
 
     # execute requested command
     if c == 1:
       # print("clicked 1 - symbol ", self.selected_variable_symbol)
-      forbidden_symbols = []
-      for ID in self.variables_in_table:
-        forbidden_symbols.append(self.variables[ID].label)
-      self.__changeSymbol(v, forbidden_symbols)
+      self.__changeSymbol(v)
     elif c == 2:
       # print("clicked 2 - description ", v.doc)
       self.__changeDocumentation(v)
     elif c == 3:
-      # print("clicked 3 - units ", v.units)
+      self.__changeToken(v)
+      print("debugging token dialog")
+    elif c == 4:
+      # print("clicked 4 - units ", v.units)
       if not_yet_used:
         self.__changeUnits(v)
-    elif c == 4:
-      # print("clicked 4 - indexing ", v.index_structures)
+    elif c == 5:
+      # print("clicked 5 - indexing ", v.index_structures)
       if not_yet_used:
         self.__changeIndexing(v)
-    elif c == 5:
-      # print("clicked 5 - equations ", selected_number_of_equations)
-      self.new_equation.emit(selected_ID)
     elif c == 6:
-      # print("clicked 6 - delete ")
+      # print("clicked 6 - equations ", selected_number_of_equations)
+      self.new_equation.emit(selected_ID)
+    elif c == 7:
+      # print("clicked 7 - delete ")
       self.__showDeleteDialog(selected_ID)
     return
 
@@ -298,6 +316,7 @@ class UI_VariableTableDialog(VariableTable):
                                                  equations={},
                                                  aliases={},
                                                  port_variable=True,
+                                                 tokens=[],
                                                  )
 
     self.variables.addNewVariable(ID=var_ID, **variable_record)
@@ -305,7 +324,10 @@ class UI_VariableTableDialog(VariableTable):
     enabled_columns = ENABLED_COLUMNS["edit"]["constant"]
     self.enable_column_selection(enabled_columns)
 
-  def __changeSymbol(self, variable, forbidden_symbols):
+  def __changeSymbol(self, variable): #, forbidden_symbols):
+    forbidden_symbols = []
+    for ID in self.variables_in_table:
+      forbidden_symbols.append(self.variables[ID].label)
     self.ui_symbol.setUp(variable, forbidden_symbols)
     self.ui_symbol.show()
 
@@ -328,6 +350,12 @@ class UI_VariableTableDialog(VariableTable):
     else:
       self.label_ID_dict = self.__getIndexListPerNetwork(self.network)
       index_structures_labels = [self.indices[ind_ID]["label"] for ind_ID in self.label_ID_dict.keys()]
+
+
+    try:
+      del self.ui_selector
+    except:
+      pass
     self.ui_selector = UI_RadioSelector(index_structures_labels,
                                         phys_var.index_structures,
                                         allowed=5)  # RULE: number of allowed indices is currently 5
@@ -348,6 +376,36 @@ class UI_VariableTableDialog(VariableTable):
     self.phys_var.index_structures = indexing_sets
     self.reset_table()
 
+  def __changeToken(self, phys_var):
+    tokens = sorted(self.tokens_on_networks[self.network])
+    if self.selected_variable_type == "constant":  # RULE: constants can be connected to tokens
+      tokens_not_linked = tokens
+    else:
+      linked_tokens = self.variables.tokens_linked
+      tokens_not_linked = []
+      for token in tokens:
+        if not linked_tokens[token]:
+          tokens_not_linked.append(token)
+      if len(tokens_not_linked) == 0:
+        return
+    print("debugging -- token list generation", tokens)
+    self.phys_var = phys_var                          # used to change things
+    try:
+      del self.ui_selector
+    except:
+      pass
+    self.ui_selector = UI_RadioSelector(tokens_not_linked,
+                                        phys_var.tokens,
+                                        allowed=1)  # RULE: number of allowed tokens is currently 1
+    self.ui_selector.newSelection.connect(self.__gotNewTokens)
+    self.ui_selector.show()
+
+  def __gotNewTokens(self, token_list):
+    print("debugging got tokens", token_list)
+    self.phys_var.tokens = token_list
+    self.reset_table()
+
+
   def on_pushFinished_pressed(self):
     self.closeEvent(None)
 
@@ -356,8 +414,14 @@ class UI_VariableTableDialog(VariableTable):
       if self.variables[ID].label == NEW_VAR:
         self.variables.removeVariable(ID)
 
+
     try:
       self.ui_symbol.close()
+    except:
+      pass
+
+    try:
+      self.ui_selector_tokens.close()
     except:
       pass
 
@@ -374,6 +438,8 @@ class UI_VariableTableDialog(VariableTable):
       self.ui_documentation.close()
     except:
       pass
+
+
     self.completed.emit("close")
 
     self.close()

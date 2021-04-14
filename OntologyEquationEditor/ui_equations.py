@@ -134,7 +134,6 @@ class Ui_Form(object):
         self.textBrowser.raise_()
 
         self.retranslateUi(Form)
-        self.lineNewVariable.editingFinished.connect(self.lineExpression.show)
         self.lineNewVariable.editingFinished.connect(self.lineExpression.setFocus)
         self.lineExpression.editingFinished.connect(self.lineDocumentation.setFocus)
         self.lineDocumentation.editingFinished.connect(self.lineExpression.setFocus)

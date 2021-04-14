@@ -133,13 +133,19 @@ class VariableTable(QtWidgets.QDialog):
           self.__addQtTableItem(tab, v.type, rowCount, 0)
           self.__addQtTableItem(tab, symbol, rowCount, 1)
           self.__addQtTableItem(tab, v.doc, rowCount, 2)
-          self.__addQtTableItem(tab, v.units.prettyPrintUIString(), rowCount, 3)
+          toks=""
+          for t in v.tokens:
+            toks += t.strip("[],")
+            toks += ","
+          toks = toks[:-1] # remove last ,
+          self.__addQtTableItem(tab, toks, rowCount, 3)
+          self.__addQtTableItem(tab, v.units.prettyPrintUIString(), rowCount, 4)
           # index_structures_labels = [self.indices[ind_ID]["label"] for ind_ID in v.index_structures]
-          self.__addQtTableItem(tab, str(index_structures_labels), rowCount, 4)
+          self.__addQtTableItem(tab, str(index_structures_labels), rowCount, 5)
           _l = len(v.equations)
-          self.__addQtTableItem(tab, str(_l), rowCount, 5)
-          self.__addQtTableItem(tab, 'x', rowCount, 6)
-          self.__addQtTableItem(tab, v.network, rowCount, 7)
+          self.__addQtTableItem(tab, str(_l), rowCount, 6)
+          self.__addQtTableItem(tab, 'x', rowCount, 7)
+          self.__addQtTableItem(tab, v.network, rowCount, 8)
           rowCount += 1
 
     self.variables_in_table = list(variable_ID_list)

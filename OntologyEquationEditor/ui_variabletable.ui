@@ -86,6 +86,11 @@
    </column>
    <column>
     <property name="text">
+     <string>token</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
      <string>units</string>
     </property>
    </column>

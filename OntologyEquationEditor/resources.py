@@ -55,6 +55,7 @@ TOOLTIPS["edit"]["eqs"] = "add equation"
 TOOLTIPS["edit"]["variable"] = "no action"
 TOOLTIPS["edit"]["del"] = "delete"
 TOOLTIPS["edit"]["network"] = "network where variable is defined"
+TOOLTIPS["edit"]["token"] = "tokens for this variable"
 
 TOOLTIPS["pick"] = {}
 s = "click copy variable symbol into expression editor"
@@ -67,6 +68,7 @@ TOOLTIPS["pick"]["eqs"] = s
 TOOLTIPS["pick"]["variable"] = s
 TOOLTIPS["pick"]["del"] = s
 TOOLTIPS["pick"]["network"] = s
+TOOLTIPS["pick"]["token"] = s
 
 TOOLTIPS["show"] = {}
 s = "sorting is enabled & click to see equation"
@@ -79,6 +81,7 @@ TOOLTIPS["show"]["eqs"] = s
 TOOLTIPS["show"]["variable"] = s
 TOOLTIPS["show"]["del"] = s
 TOOLTIPS["show"]["network"] = s
+TOOLTIPS["show"]["token"] = s
 
 # ------------
 TEMPLATES = {}
@@ -104,37 +107,38 @@ TEMPLATES["differential_space"] = "d%s"
 # 0 type --> new variable
 # 1 symbol
 # 2 description / documentation
-# 3 units
-# 4 indices
-# 5 equations
-# 6 delete
+# 3 tokens
+# 4 units
+# 5 indices
+# 6 equations
+# 7 delete
 
 ENABLED_COLUMNS = {}  # TODO: remove hard wiring
 ENABLED_COLUMNS["initialise"] = {}
-ENABLED_COLUMNS["initialise"]["constant"] = [0, 1, 2, 3, 4, 5]
-ENABLED_COLUMNS["initialise"]["state"] = [1, 2, 3, ]
-ENABLED_COLUMNS["initialise"]["frame"] = [1, 2, 3, ]
-ENABLED_COLUMNS["initialise"]["network"] = [1, 2, 4]
+ENABLED_COLUMNS["initialise"]["constant"] = [0, 1, 2, 3, 4, 5, 6]
+ENABLED_COLUMNS["initialise"]["state"] = [1, 2, 3, 4 ]
+ENABLED_COLUMNS["initialise"]["frame"] = [1, 2, 3, 4 ]
+ENABLED_COLUMNS["initialise"]["network"] = [1, 2, 5]
 ENABLED_COLUMNS["initialise"]["others"] = []
 
 ENABLED_COLUMNS["edit"] = {}
-ENABLED_COLUMNS["edit"]["constant"] = [0, 1, 2, 3, 4, 5, 6]
-ENABLED_COLUMNS["edit"]["others"] = [0, 1, 2, 4, 5, 6]
-ENABLED_COLUMNS["edit"]["state"] = [1, 2, 3, 4, 5]
-ENABLED_COLUMNS["edit"]["frame"] = [1, 2, 3, 4, 5]
-ENABLED_COLUMNS["edit"]["network"] = [1, 2, 4, 6]
+ENABLED_COLUMNS["edit"]["constant"] = [0, 1, 2, 3, 4, 5, 6,7]
+ENABLED_COLUMNS["edit"]["others"] = [0, 1, 2, 5, 6,7]
+ENABLED_COLUMNS["edit"]["state"] = [1, 2, 3, 4, 6,7]
+ENABLED_COLUMNS["edit"]["frame"] = [1, 2, 3,  7]
+ENABLED_COLUMNS["edit"]["network"] = [1, 2, 4, 7]
 
 ENABLED_COLUMNS["inter_connections"] = {}
-ENABLED_COLUMNS["inter_connections"]["constant"] = [0, 1, 2, 3, 4, 5, 6]
-ENABLED_COLUMNS["inter_connections"]["transposition"] = [0, 1, 2, 5, 6]
-ENABLED_COLUMNS["inter_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6]
-ENABLED_COLUMNS["inter_connections"]["state"] = [0, 1, 2, 3, 4, 5]
+ENABLED_COLUMNS["inter_connections"]["constant"] = [0, 1, 2, 3, 4, 5, 6, 7]
+ENABLED_COLUMNS["inter_connections"]["transposition"] = [0, 1, 2, 5, 6, 7]
+ENABLED_COLUMNS["inter_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6, 7]
+ENABLED_COLUMNS["inter_connections"]["state"] = [0, 1, 2, 3, 5, 6]
 
 ENABLED_COLUMNS["intra_connections"] = {}
-ENABLED_COLUMNS["intra_connections"]["constant"] = [0, 1, 2, 3, 4, 5, 6]
-ENABLED_COLUMNS["intra_connections"]["transposition"] = [0, 1, 2, 5, 6]
-ENABLED_COLUMNS["intra_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6]
-ENABLED_COLUMNS["intra_connections"]["state"] = [0, 1, 2, 3, 4, 5]
+ENABLED_COLUMNS["intra_connections"]["constant"] = [0, 1, 2, 3, 4, 5, 6,7]
+ENABLED_COLUMNS["intra_connections"]["transposition"] = [0, 1, 2, 5, 6,7]
+ENABLED_COLUMNS["intra_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6,7]
+ENABLED_COLUMNS["intra_connections"]["state"] = [0, 1, 2, 3, 4, 5,6]
 
 # code generation in abstract syntax
 
@@ -161,7 +165,7 @@ UNITARY_NO_UNITS = ["exp", "log", "ln", "sqrt", "sin", "cos", "tan", "asin", "ac
 UNITARY_RETAIN_UNITS = ["abs", "neg", "diffSpace", "left", "right"]
 UNITARY_INVERSE_UNITS = ["inv"]
 UNITARY_LOOSE_UNITS = ["sign"]
-NAMED_FUNCTIONS = ["blockProd", "Root", "MixedStack"]
+NAMED_FUNCTIONS = ["blockProd", "Root", "MixedStack", "Stack"]
 
 LIST_FUNCTIONS_SINGLE_ARGUMENT = UNITARY_NO_UNITS + UNITARY_RETAIN_UNITS + UNITARY_INVERSE_UNITS + UNITARY_LOOSE_UNITS
 
@@ -278,6 +282,11 @@ CODE[language]["blockProd"] = CODE[language]["function"]["blockProd"] + \
                               CODE[language]["delimiter"][")"]
 
 CODE[language]["Root"] = CODE[language]["function"]["Root"] + CODE[language]["combi"]["tuple"]
+
+CODE[language]["Stack"] = CODE[language]["function"]["Stack"] + \
+                               CODE[language]["delimiter"]["("] + \
+                               "%s" + \
+                               CODE[language]["delimiter"][")"]
 CODE[language]["MixedStack"] = CODE[language]["function"]["MixedStack"] + \
                                CODE[language]["delimiter"]["("] + \
                                "%s" + \
@@ -327,6 +336,7 @@ for f in LIST_FUNCTIONS_SINGLE_ARGUMENT:  # UNITARY_NO_UNITS + UNITARY_RETAIN_UN
 
 CODE[language]["Root"] = "Root(%s,%s)"
 CODE[language]["MixedStack"] = "MixedStack(%s)"
+CODE[language]["Stack"] = "Stack(%s)"
 
 CODE[language]["blockProd"] = "blockProd({}, {}, {})"  # exception from the above
 
@@ -378,6 +388,7 @@ CODE[language]["right"] = "right(%s)"
 CODE[language]["blockProd"] = "blockProd({}, {}, {})"
 CODE[language]["Root"] = "Root(%s,%s)"
 CODE[language]["MixedStack"] = "MixedStack(%s)"
+CODE[language]["Stack"] = "Stack(%s)"
 
 CODE[language]["variable"] = "%s"  # label of the variable
 
@@ -450,6 +461,7 @@ CODE[language]["sign"] = "np.sign(%s)"
 CODE[language]["blockProd"] = "blockProduct({}, {}, {})"
 CODE[language]["Root"] = "Root(%s, %s)"
 CODE[language]["MixedStack"] = "MixedStack(%s)"
+CODE[language]["Stack"] = "Stack(%s)"
 CODE[language]["obj"] = "self.{}"
 
 CODE[language]["variable"] = "%s"  # label of the variable
@@ -500,6 +512,7 @@ CODE[language]["sign"] = "np.sign(%s)"
 CODE[language]["blockProd"] = "blockProduct(%s, %s, %s)"
 CODE[language]["Root"] = "Root(%s, %s)"
 CODE[language]["MixedStack"] = "MixedStack(%s)"
+CODE[language]["Stack"] = "Stack(%s)"
 
 CODE[language]["()"] = "%s"  # "(%s)"   # TODO: remove corresponding bracketing in temp variables
 
@@ -549,6 +562,7 @@ CODE[language]["sign"] = r"\text{sign} \left( %s \right)"
 CODE[language]["blockProd"] = r"\displaystyle \prod_{{ {1} \in {2} }} {0}"
 CODE[language]["Root"] = r"Root\left( %s, %s \right)"
 CODE[language]["MixedStack"] = r"MixedStack\left( %s \right)"
+CODE[language]["Stack"] = r"Stack\left( %s \right)"
 
 CODE[language]["diffSpace"] = "diffSpace(%s)"
 CODE[language]["left"] = "%s^{-\epsilon}"

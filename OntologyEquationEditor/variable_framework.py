@@ -1154,7 +1154,7 @@ class Operator(PhysicalVariable):
     token = index["token"]
     if token:
       c = sorted(a_set|b_set)                           # RULE: for tokens to reduce define A,B :: tokens
-      if (token in a.tokens) and (token in b.tokens):   # RULE:  A,B red(B) A,B --> A
+      if (token in a.tokens) or (token in b.tokens):   # RULE:  A,B red(B) A,B --> A
         c.remove(token)
       else:
         c_set = a_set.symmetric_difference(b_set)       # RULE: A red(A) A,B -- B

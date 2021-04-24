@@ -312,7 +312,10 @@ class UiOntologyDesign(QMainWindow):
     self.__hideTable()
     self.current_network = str(choice)
     self.state = "inter_connections"
-    self.__setupEdit("interface")
+    if self.ui.radioVariablesAliases.isChecked():
+      self.on_radioVariablesAliases_pressed()
+    else:
+      self.__setupEdit("interface")
 
   @QtCore.pyqtSlot(str)  # combo_IntraConnectionNetwork
   def on_combo_IntraConnectionNetwork_activated(self, choice):

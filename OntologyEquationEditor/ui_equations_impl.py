@@ -317,19 +317,25 @@ class UI_Equations(QtWidgets.QWidget):
 
         if self.variables.inv_incidence_dictionary[self.selected_variable_ID] == []:
           pass  # all OK
-        elif self.checked_var.units == var.units:
+        # elif self.checked_var.units == var.units:
+        if self.checked_var.units == var.units:
           if self.checked_var.index_structures == var.index_structures:
-            msg = "variable has \n" \
-                  "- index structures : %s\n" \
-                  "- units            : %s\n" \
-                  "- tokens           : %s\n"    % (pretty_var_indices, pretty_var_units, var.tokens)
-            self.MSG(msg)
+            if self.checked_var.tokens == var.tokens:
+              msg = "variable has \n" \
+                    "- index structures : %s\n" \
+                    "- units            : %s\n" \
+                    "- tokens           : %s\n"    % (pretty_var_indices, pretty_var_units, var.tokens)
+              self.MSG(msg)
+            else:
+              msg = "missmatch of tokens \n" \
+                  " - variable has   : %s\n" \
+                  " - expression has : %s\n" \
+                  % (self.checked_var.tokens, var.tokens)
           else:
             msg = "missmatch of index structures \n" \
                   " - variable has   : %s\n" \
                   " - expression has : %s\n" \
-                  " - tokens         : %s " \
-                  % (pretty_var_indices, pretty_check_var_indices,var.tokens)
+                  % (pretty_var_indices, pretty_check_var_indices)
             self.MSG(msg)
             return False
         else:

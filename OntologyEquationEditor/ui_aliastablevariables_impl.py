@@ -48,6 +48,7 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
     self.setup()
     self.setWindowTitle("variable aliases")
     self.ui.tableWidget.itemChanged.connect(self.rename)
+    self.show()
 
     roundButton(self.ui.pushFinished, "back", tooltip="go back")
     roundButton(self.ui.pushInfo, "info", tooltip="information")
@@ -56,8 +57,9 @@ class UI_AliasTableVariables(QtWidgets.QWidget):
 
     aliases = {}
     self.keep_IDs = {}
-    for i in range(len(self.variables_ID_list)):
-      ID = self.variables_ID_list[i]
+    # for i in range(len(self.variables_ID_list)):
+    #   ID = self.variables_ID_list[i]
+    for ID in self.variables_ID_list:
       aliases[ID] = self.variables[ID].aliases
     a = self.ui.tableWidget
     a.clear()

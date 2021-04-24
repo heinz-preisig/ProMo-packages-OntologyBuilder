@@ -1154,7 +1154,7 @@ class Operator(PhysicalVariable):
     token = index["tokens"]
     if token:
       c = sorted(a_set|b_set)                           # RULE: for tokens to reduce define A,B :: tokens
-      if (token in a.tokens) or (token in b.tokens):   # RULE:  A,B red(B) A,B --> A
+      if (token in a.tokens) and (token in b.tokens):   # RULE:  A,B red(B) A,B --> A
         c.remove(token)
       else:
         c_set = a_set.symmetric_difference(b_set)       # RULE: A red(A) A,B -- B
@@ -2140,8 +2140,8 @@ class Expression(VerboseParser):
 
   START/e -> Expression/e
   ;
-  Expression/e -> 'Instantiate' '\(' Identifier/i ( '\)'/v | ','
-                   Identifier/v  '\)' )                                   $e=Instantiate(i, v, self.space)
+  Expression/e -> 'Instantiate' '\(' Expression/i ( '\)'/v | ','
+                   Expression/v  '\)' )                                   $e=Instantiate(i, v, self.space)
       | Term/e( sum/op Term/t                                             $e=Add(op,e,t,self.space)
       )*
   ;

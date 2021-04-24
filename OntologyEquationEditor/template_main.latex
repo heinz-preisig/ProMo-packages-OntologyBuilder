@@ -84,7 +84,7 @@
 \newcolumntype{P}[1]{>{$}p{#1}<{$}}
 
 
-\newenvironment{eq}{\begin{minipage}{10cm}$}{$\end{minipage} }
+%\newenvironment{eq}{\begin{minipage}{10cm}$}{$\end{minipage} }
 %\newenvironment{lay}{\catcode`\_=12}{\catcode`\_=8}
 
 

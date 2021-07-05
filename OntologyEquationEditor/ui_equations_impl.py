@@ -481,7 +481,9 @@ class UI_Equations(QtWidgets.QWidget):
       e["rhs"] = NEW_EQ
       self.ui.lineExpression.setText(e["rhs"])
       self.current_equation_name = e["name"]
-      self.ui.lineDocumentation.setText(e["doc"])
+      eq_IDs = sorted(self.variables[self.selected_variable_ID].equations.keys())
+      doc = self.variables[self.selected_variable_ID].equations[eq_IDs[0]]["doc"] # copy doc from the first equation
+      self.ui.lineDocumentation.setText(doc)
 
     self.ui.lineNewVariable.setText(self.variables[self.selected_variable_ID].label)
     self.ui.groupEquationEditor.show()

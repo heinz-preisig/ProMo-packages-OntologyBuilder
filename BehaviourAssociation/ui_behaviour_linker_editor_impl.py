@@ -4,6 +4,7 @@ from os.path import join, abspath, dirname
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5.Qt import QStandardItemModel, QStandardItem
 
 from jinja2 import Environment  # sudo apt-get install python-jinja2
 from jinja2 import FileSystemLoader
@@ -24,7 +25,7 @@ from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resources_icons import roundButton
 from Common.ui_string_dialog_impl import UI_String
-from OntologyBuilder.BehaviourEditor.ui_behaviour_linker_editor import Ui_MainWindow
+from OntologyBuilder.BehaviourAssociation.ui_behaviour_linker_editor import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
 from OntologyBuilder.OntologyEquationEditor.resources import isVariableInExpression
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
@@ -226,6 +227,18 @@ class VariantSelector(Selector):
 
     return extended_variant_list, variant_map, variant_inverse_map
 
+  class StandardItem(QStandardItem):
+    def __init__(self, txt='', font_size=12, set_bold=False, color=QtGui.QColor(0, 0, 0), identifier=""):
+      super().__init__()
+
+      fnt = QtGui.QFont('Open Sans', font_size)
+      fnt.setBold(set_bold)
+
+      self.setEditable(False)
+      self.setForeground(color)
+      self.setFont(fnt)
+      self.setText(txt)
+      self.setData("gugus")
 
 class MainWindowImpl(QtWidgets.QMainWindow):
   def __init__(self, icon_f):
@@ -261,13 +274,30 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     # instantiate entity behaviours
     networks = self.ontology_container.list_inter_branches
     entities_list = self.reduced_network_node_list
-    self.entity_behaviours = EntityBehaviour(networks, entities_list)
 
 
-    arc_objects = self.ontology_container.list_arc_objects_on_networks
-    node_objects = self.ontology_container.list_node_objects_on_networks_with_tokens
-    self.node_arc_associations = NodeArcAssociations(networks, node_objects, arc_objects)
+    self.arc_objects = self.ontology_container.list_arc_objects_on_networks
+    self.node_objects = self.ontology_container.list_inter_node_objects_tokens #list_node_objects_on_networks_with_tokens
+    entities_list = []
+    for nw in self.node_objects:
+      for o in self.node_objects[nw]:
+        obj = TEMPLATE_ENTITY_OBJECT%(nw, "node", o, "base")
+        entities_list.append(obj)
+    for nw in self.arc_objects:
+      for o in self.arc_objects[nw]:
+        obj = TEMPLATE_ENTITY_OBJECT%(nw, "arc", o, "base") # RULE: "base" is used for the base bipartite graph
+        entities_list.append(obj)
+
+    self.entity_behaviours = EntityBehaviour(entities_list)
+
+    self.node_arc_associations = NodeArcAssociations(networks, self.node_objects, self.arc_objects)
     # self.entity_behaviour_graphs = EntityBehaviourGraphs(networks, entities_list)
+
+    equations_label_list, \
+    self.equation_information, \
+    self.equation_inverse_index = self.__makeEquationAndIndexLists()
+    self.variable_equation_list = self.__makeEquationList_per_variable_type(networks)
+
 
     # get existing data
     self.__readVariableAssignmentToEntity()
@@ -276,18 +306,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.layout_InterNetworks = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
     self.ui.scrollAreaWidgetContentsInterNetworks.setLayout(self.layout_InterNetworks)
 
-    self.layout_Entities = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
-    self.ui.scrollAreaWidgetContentsEntities.setLayout(self.layout_Entities)
-
-    self.layout_Variants = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
-    self.ui.scrollAreaWidgetContentsVariants.setLayout(self.layout_Variants)
-
-    self.layout_Left = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
-    self.ui.scrollAreaWidgetContentsLeft.setLayout(self.layout_Left)
-
-    self.layout_Right = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
-    self.ui.scrollAreaWidgetContentsRight.setLayout(self.layout_Right)
-
     # initialisations
     # network selector
     self.radio_InterNetworks = Selector("InterNetworks",
@@ -295,41 +313,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                                         networks,
                                         self.layout_InterNetworks)
 
-    # entity selector
-    entity_set = set()
-    for nw in networks:
-      for entity in self.reduced_network_node_list[nw]:
-        entity_set.add(entity)
-    entity_list = sorted(entity_set)
-
-    self.radio_Entities = Selector("Entities",
-                                   self.radioReceiverState,
-                                   entity_list,
-                                   self.layout_Entities)
-    self.radio_Entities.showList([])
-
-    variant_list = self.entity_behaviours.getAllVariants()
-    self.radio_Variants = VariantSelector("Variants",
-                                          self.radioReceiverState,
-                                          variant_list,
-                                          self.layout_Variants)
-    self.radio_Variants.showIt()
-
-    equations_label_list, \
-    self.equation_information, \
-    self.equation_inverse_index = self.__makeEquationAndIndexLists()
-
-    self.radio_Left = Selector("Left",
-                               self.radioReceiverLeftEquations,
-                               equations_label_list,
-                               self.layout_Left)
-    self.radio_Left.showList([])
-
-    self.radio_Right = Selector("Right",
-                                self.radioReceiverRightEquations,
-                                equations_label_list,
-                                self.layout_Right)
-    self.radio_Right.showList([])
 
     self.selected_InterNetwork_ID = None
     self.selected_Entity_ID = None
@@ -337,13 +320,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.selected_variant_str_ID = "base"
     self.radio_index = None
     self.selected_base_variable = None
-    self.blocked = []
-    self.blocked_radio_ID = []
-    self.left_show_list = self.radio_Left.show_list
-    self.right_show_list = self.radio_Right.show_list
+    self.rightListEquationIDs = []
+    self.rightListEquationIDs_radio_ID = []
 
     self.match_equations_label_list = []
     self.match_equation_ID = {}
+    self.node_arc = "nodes"
 
     # controls
     self.actions = ["show", "duplicates", "new_variant", "edit_variant", "instantiate_variant"]
@@ -359,6 +341,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.variant_layout_clean = True
     self.equation_left_clean = True
     self.equation_right_clean = True
+    self.selected_variant = None
     self.state = "start"
 
   def __readVariableAssignmentToEntity(self):
@@ -413,223 +396,310 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     if self.isCompleteSpecificationState():
       self.ui.groupBoxControls.show()
 
+  def __makeObjectList(self):
+
+    if self.node_arc == "nodes":
+      ui = self.ui.listNodeObjects
+      n = sorted(self.node_objects[self.selected_InterNetwork_strID])
+    else:
+      ui = self.ui.listArcObjects
+      n = sorted(self.node_objects[self.selected_InterNetwork_strID])
+    ui.clear()
+    ui.addItems(n)
+
+
+  def on_tabWidgetNodesArcs_currentChanged(self, index):
+    print("debugging tab", index)
+    if index == 0:
+      self.node_arc = "nodes"
+    else:
+      self.node_arc = "arcs"
+    self.__makeObjectList()
+
+  def on_listNodeObjects_itemClicked(self, v):
+    print('item clicked', v.text())
+    if self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"] :
+      self.selected_object = v.text()
+      self.__makeBase()
+    else:
+      print("load")
+
+  def on_listArcObjects_itemClicked(self, v):
+    print('item clicked', v.text())
+    if self.node_arc_associations[self.selected_InterNetwork_strID]["arcs"] :
+      self.selected_object = v.text()
+      self.__makeBase()
+    else:
+      print("load")
+
+  def on_listLeft_itemClicked(self, v):
+    row = self.ui.listLeft.row(v)
+    print('item clicked', v.text(), row)
+    var_strID, equ_strID = self.leftIndex[row]
+    equation_label = v.text()
+    if self.state == "make_base":
+      self.current_base_var_ID = int(var_strID)
+      self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
+    else: # self.state == "duplicates":
+      var_ID, eq_ID = self.leftIndex[row]
+      self.leftListEquationIDs.remove(eq_ID)
+      self.rightListEquationIDs.append(eq_ID)
+      # print("debugging -- duplicates", self.leftListEquationIDs)
+      # print("debugging -- blocked", self.rightListEquationIDs)
+      self.leftIndex = self.__makeLeftRightList(self.leftListEquationIDs, self.ui.listLeft)
+      self.rightIndex = self.__makeLeftRightList(self.rightListEquationIDs, self.ui.listRight)
+      self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+      print("debugging")
+
+  def on_listRight_itemClicked(self, v):
+    row = self.ui.listRight.row(v)
+    print("right item clicked", v.text(), row)
+    # if self.state == "duplicates":
+    var_ID, eq_ID = self.rightIndex[row]
+    self.leftListEquationIDs.append(eq_ID)
+    self.rightListEquationIDs.remove(eq_ID)
+    # print("debugging -- duplicates", self.leftListEquationIDs)
+    # print("debugging -- blocked", self.rightListEquationIDs)
+    self.leftIndex = self.__makeLeftRightList(self.leftListEquationIDs, self.ui.listLeft)
+    self.rightIndex = self.__makeLeftRightList(self.rightListEquationIDs, self.ui.listRight)
+
+
+
+
+  def showVariant(self):
+    self.state = "show"
+
+
+
+
+
+
   def radioReceiverState(self, radio_class, ID):
     print("debugging -- receiver state %s" % radio_class, ID)
-    self.superviseControls()
+    # self.superviseControls()
 
     if radio_class == "InterNetworks":
       self.selected_InterNetwork_ID = ID
-      nw_label_current = self.radio_InterNetworks.label_indices[ID]
-
-      current_entities = self.reduced_network_node_list[nw_label_current]
-      show_list = []
-      for i in current_entities:
-        show_list.append(self.radio_Entities.label_indices_inverse[i])
-      self.radio_Entities.showList(show_list)
+      self.selected_InterNetwork_strID= self.radio_InterNetworks.getStrID()
+      self.__makeObjectList()
 
       #
       # updating interface
-      self.radio_Variants.reset()
-      self.radio_Left.reset()
-      self.radio_Right.reset()
+      # self.radio_Variants.reset()
+      # self.radio_Left.reset()
+      # self.radio_Right.reset()
       self.ui.pushButtonLeft.hide()
       self.ui.pushButtonRight.hide()
 
-    elif radio_class == "Entities":
-      # print("debugging -- receiver Entities", radio_class, ID)
-      # print("debugging -- state %s"%self.state)
-      # print("debugging -- is state %s"%self.isCompleteState())
-
-      self.selected_Entity_ID = ID
-
-      nw_str_ID = self.radio_InterNetworks.getStrID()
-      entity_label_ID = self.radio_Entities.getStrID()
-      base_variant_str_ID = functionMakeObjectStringID(nw_str_ID, entity_label_ID, "base")
-
-      if not self.entity_behaviours[base_variant_str_ID]:
-        self.radio_Variants.showList([])
-        self.__makeBase()
-
-      else:
-        # print("debugging -- getting variant ")
-        # if self.radio_Variants.getStrID() != None:  # handle first pass
-        #   self.__makeAndDisplayEquationListLeftAndRight()
-        #   self.superviseControls()
-        # else:
-        #   self.radio_Variants.reset()
-        #   self.radio_Left.reset()
-        #   self.radio_Right.reset()
-        #   self.ui.pushButtonLeft.hide()
-        #   self.ui.pushButtonRight.hide()
-
-        self.radio_Variants.reset()
-        self.radio_Left.reset()
-        self.radio_Right.reset()
-        self.ui.pushButtonLeft.hide()
-        self.ui.pushButtonRight.hide()
-        variant_IDs = self.__makeVariantRadioIDList()
-        self.radio_Variants.showList(variant_IDs)
 
 
-    elif radio_class == "Variants":
-      print("debugging -- ReceiverVariants")
-      self.ui.radioButtonShowVariant.setChecked(True)
-      self.superviseControls()
-      nw = self.radio_InterNetworks.getStrID()
-      entity = self.radio_Entities.getStrID()
-      entity_str_ID = TEMPLATE_ENTITY_OBJECT % (
-              nw, entity, "base")  #
-      if not self.entity_behaviours[entity_str_ID]:
-        self.ui.groupBoxControls.hide()
-      self.__makeAndDisplayEquationListLeftAndRight()
+    # elif radio_class == "Entities":
+    #   # print("debugging -- receiver Entities", radio_class, ID)
+    #   # print("debugging -- state %s"%self.state)
+    #   # print("debugging -- is state %s"%self.isCompleteState())
+    #
+    #   self.selected_Entity_ID = ID
+    #
+    #   nw_str_ID = self.radio_InterNetworks.getStrID()
+    #   entity_label_ID = self.radio_Entities.getStrID()
+    #   base_variant_str_ID = functionMakeObjectStringID(nw_str_ID, entity_label_ID, "base")
+    #
+    #   if not self.entity_behaviours[base_variant_str_ID]:
+    #     self.radio_Variants.showList([])
+    #     self.__makeBase()
+    #
+    #   else:
+    #     # print("debugging -- getting variant ")
+    #     # if self.radio_Variants.getStrID() != None:  # handle first pass
+    #     #   self.__makeAndDisplayEquationListLeftAndRight()
+    #     #   self.superviseControls()
+    #     # else:
+    #     #   self.radio_Variants.reset()
+    #     #   self.radio_Left.reset()
+    #     #   self.radio_Right.reset()
+    #     #   self.ui.pushButtonLeft.hide()
+    #     #   self.ui.pushButtonRight.hide()
+    #
+    #     self.radio_Variants.reset()
+    #     self.radio_Left.reset()
+    #     self.radio_Right.reset()
+    #     self.ui.pushButtonLeft.hide()
+    #     self.ui.pushButtonRight.hide()
+    #     variant_IDs = self.__makeVariantRadioIDList()
+    #     self.radio_Variants.showList(variant_IDs)
+    #
+    #
+    # elif radio_class == "Variants":
+    #   print("debugging -- ReceiverVariants")
+    #   self.ui.radioButtonShowVariant.setChecked(True)
+    #   self.superviseControls()
+    #   nw = self.radio_InterNetworks.getStrID()
+    #   entity = self.radio_Entities.getStrID()
+    #   entity_str_ID = TEMPLATE_ENTITY_OBJECT % (
+    #           nw, entity, "base")  #
+    #   if not self.entity_behaviours[entity_str_ID]:
+    #     self.ui.groupBoxControls.hide()
+    #   self.__makeAndDisplayEquationListLeftAndRight()
+    #
+    # else:
+    #   print("error in state %s does not fit any case" % radio_class)
 
-    else:
-      print("error in state %s does not fit any case" % radio_class)
-
-  def radioReceiverLeftEquations(self, text, eq_radio_ID):
-    eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
-    print("debugging -- left clicked", eq_radio_ID)
-    print("debugging -- left clicked", eq_ID, var_ID, var_type, nw_eq, equation_label)
-
-    if self.state == "make_base":
-      self.current_base_var_ID = var_ID
-      if pixel_or_text == "pixelled":
-        self.__makeEquationPixelButton(equation_label, self.ui.pushButtonLeft, "click to accept")
-      elif pixel_or_text == "text":
-        self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
-      self.current_base_var_ID = var_ID
-
-    elif self.state in ["duplicates", "new_variant", "edit_variant"]:
-      print("debugging -- executing state", self.state)
-      self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
-      # eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
-      self.blocked.append(eq_ID)
-      self.blocked_radio_ID.append(eq_radio_ID)
-      self.radio_Left.show_list.remove(eq_radio_ID)
-      self.radio_Right.show_list.append(eq_radio_ID)
-      self.radio_Left.showIt()
-      entity_object_str = self.__makeEntityObjectStrID()
-      nw, entity, variant = entity_object_str.split(".")
-      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(entity, var_ID, self.blocked)
-      graph_file = var_equ_tree_graph.render()
-      self.status_report("generated graph for %s " % (self.selected_Entity_ID))
-      #
-      if self.state == "duplicates":
-        duplicate_variant = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % variant
-        self.entity_behaviours.addVariant(nw, entity, duplicate_variant, entity_assignments)
-
-
-    self.radio_Left.showIt()
-    self.radio_Right.showIt()
-
-  def radioReceiverRightEquations(self, text, eq_radio_ID):
-
-    print("debugging -- clicked right equation")
-    if self.state == "make_base":
-      return
-
-    elif self.state in ["duplicates", "new_variant","edit_variant"]:
-      print("debugging -- duplicates to be processed")
-      if self.state != "show":
-        self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
-        eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
-        self.blocked.remove(eq_ID)
-        # self.blocked_radio_ID.remove(eq_radio_ID)
-        self.radio_Left.show_list.append(eq_radio_ID)
-        self.radio_Right.show_list.remove(eq_radio_ID)
-
-    self.radio_Left.showIt()
-    self.radio_Right.showIt()
+  # def radioReceiverLeftEquations(self, text, eq_radio_ID):
+  #   eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+  #   print("debugging -- left clicked", eq_radio_ID)
+  #   print("debugging -- left clicked", eq_ID, var_ID, var_type, nw_eq, equation_label)
+  #
+  #   if self.state == "make_base":
+  #     self.current_base_var_ID = var_ID
+  #     if pixel_or_text == "pixelled":
+  #       self.__makeEquationPixelButton(equation_label, self.ui.pushButtonLeft, "click to accept")
+  #     elif pixel_or_text == "text":
+  #       self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
+  #     self.current_base_var_ID = var_ID
+  #
+  #   elif self.state in ["duplicates", "new_variant", "edit_variant"]:
+  #     print("debugging -- executing state", self.state)
+  #     self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+  #     # eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+  #     self.rightListEquationIDs.append(eq_ID)
+  #     self.rightListEquationIDs_radio_ID.append(eq_radio_ID)
+  #     self.radio_Left.show_list.remove(eq_radio_ID)
+  #     self.radio_Right.show_list.append(eq_radio_ID)
+  #     self.radio_Left.showIt()
+  #     obj_str = self.__makeCurrentObjectString()
+  #     name = obj_str.replace(", ","-").replace("|","_")      #
+  #     if self.state == "duplicates":
+  #       name = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % name
+  #     var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(name, var_ID, self.rightListEquationIDs)
+  #     graph_file = var_equ_tree_graph.render()
+  #     self.status_report("generated graph for %s " %(name)) #self.selected_Entity_ID))
+  #     self.entity_behaviours.addVariant(name, entity_assignments)
+  #
+  #   self.radio_Left.showIt()
+  #   self.radio_Right.showIt()
+  #
+  # def radioReceiverRightEquations(self, text, eq_radio_ID):
+  #
+  #   print("debugging -- clicked right equation")
+  #   if self.state == "make_base":
+  #     return
+  #
+  #   elif self.state in ["duplicates", "new_variant","edit_variant"]:
+  #     print("debugging -- duplicates to be processed")
+  #     if self.state != "show":
+  #       self.__makeEquationTextButton("accept", self.ui.pushButtonLeft, "click to accept")
+  #       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+  #       self.rightListEquationIDs.remove(eq_ID)
+  #       # self.rightListEquationIDs_radio_ID.remove(eq_radio_ID)
+  #       self.radio_Left.show_list.append(eq_radio_ID)
+  #       self.radio_Right.show_list.remove(eq_radio_ID)
+  #
+  #   self.radio_Left.showIt()
+  #   self.radio_Right.showIt()
 
   def on_pushButtonLeft_pressed(self):
-    if self.ui.radioButtonShowVariant.isChecked():
-      self.state = "show"
+    # if self.ui.radioButtonShowVariant.isChecked():
+    #   self.state = "show"
 
     print("debugging -- push left button state:", self.state)
 
-    nw_str_ID = self.radio_InterNetworks.getStrID()
-    entity_label_ID = self.radio_Entities.getStrID()
+    # nw_str_ID = self.radio_InterNetworks.getStrID()
+    # entity_label_ID = self.radio_Entities.getStrID()
+    entity_label_ID = self.selected_object
 
     if self.state == "make_base":
       variant = "base"
       var_ID = self.current_base_var_ID
-      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(entity_label_ID, var_ID, [])
-      self.status_report("generated graph for %s" % (entity_label_ID))
-      self.entity_behaviours.addVariant(nw_str_ID, entity_label_ID, variant, entity_assignments)
+      obj_str = self.__makeCurrentObjectString()
+      # name = obj_str.replace(", ","-")#.replace("|","_")
+      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, [])
+      self.status_report("generated graph for %s" % (obj_str))
+      component= self.node_arc.strip("s")
+      self.selected_variant_str_ID = "base"
+      obj = self.__makeCurrentObjectString()
+      self.entity_behaviours.addVariant(obj, entity_assignments)
+      self.__makeVariantList(True)
 
       graph_file = var_equ_tree_graph.render()
-      # self.entity_behaviour_graphs.addVariant(nw, entity, variant, var_equ_tree_graph)
       self.selected_variant_str_ID = variant
       self.ui.pushButtonLeft.hide()
-
-      variant_IDs = self.__makeVariantRadioIDList()
-      self.radio_Variants.showList(variant_IDs)
-      self.radio_Left.showList([])
+      self.ui.groupBoxControls.show()
+      self.ui.listLeft.clear()
 
     elif self.state in ["duplicates", "new_variant", "edit_variant"]:  # accepting
       print("debugging -- accepting >>> %s <<< reduced entity object" % self.state)
+
       var_ID = self.selected_base_variable
-      entity_object_str = self.__makeEntityObjectStrID()
-      nw, entity, variant = entity_object_str.split(".")
-      var_equ_tree_graph, _entity_assignments = self.analyseBiPartiteGraph(entity, var_ID, self.blocked)
-      graph_file = var_equ_tree_graph.render()
+      obj_str = self.__makeCurrentObjectString()
+      # name = obj_str.replace(", ","-")#.replace("|","_")      #
 
-      if self.state in ["duplicates"]:
-        duplicate_variant = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % variant
-        entity_assignments = _entity_assignments
-      elif self.state in ["new_variant"]:
-        limiting_list = self.__makeVariantStringList()
-        duplicate_variant = self.__askForNewVariantName(limiting_list)
-        print("debugging -- new variant", duplicate_variant)
-        if not duplicate_variant:
-          return
-        entity_assignments = deepcopy(_entity_assignments)
+      self.variant_list = self.__makeVariantStringList()
       if self.state in ["duplicates", "new_variant"]:
-        self.entity_behaviours.addVariant(nw, entity, duplicate_variant, entity_assignments)
-        self.__makeLatexDoc(var_equ_tree_graph, entity_assignments)
-        self.ui.pushButtonLeft.hide()
-      elif self.state in ["edit_variant"]:
-        self.entity_behaviours[entity_object_str] = _entity_assignments
-        self.__makeLatexDoc(var_equ_tree_graph, _entity_assignments)
-        duplicate_variant = entity_object_str
+        self.selected_variant_str_ID = self.__askForNewVariantName(self.variant_list)
+        if self.state == "duplicates":
+        # name = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % name
+        # self.selected_variant_str_ID = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % self.selected_variant_str_ID
+          selectedListEquationIDs = self.entity_behaviours.getEquationIDList(obj_str)
+          # this is tricky: the right list may include already blocked ones.
+          for e in self.rightListEquationIDs:
+            if e in selectedListEquationIDs:
+              selectedListEquationIDs.remove(e)
+            # [ selectedListEquationIDs.remove(i) for i in self.rightListEquationIDs]
+          self.leftListEquationIDs = selectedListEquationIDs
+      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, self.rightListEquationIDs)
+      graph_file = var_equ_tree_graph.render()
+      self.status_report("generated graph for %s " %(obj_str))
 
-      variants = self.entity_behaviours.getVariantList(nw,entity)
-      self.radio_Variants.updateVariants(variants)
-
-      self.status_report("generated graph for %s " % (duplicate_variant))
-
-      self.radio_Left.reset()
-      self.radio_Right.reset()
-      self.radio_Variants.showIt()
-
+      obj = self.__makeCurrentObjectString() # TEMPLATE_ENTITY_OBJECT % (self.selected_InterNetwork_strID, component, self.selected_object, "base")
+      self.entity_behaviours.addVariant(obj, entity_assignments)
+      self.__makeVariantList(True)
+      self.ui.radioButtonShowVariant.setChecked(True)
 
     elif self.state == "show":
       print("debugging -- show don't do anything")
+
+  def __makeVariantList(self, set):
+    """
+    gets the current variant list and builds the gui list
+    """
+    self.variant_list = self.__makeVariantStringList()
+    self.ui.listVariants.clear()
+    self.ui.listVariants.addItems(self.variant_list)
+    if set:
+      row = self.variant_list.index(self.selected_variant_str_ID)
+      self.ui.listVariants.setCurrentRow(row)
+      return True
+    else:
+      self.selected_variant_str_ID = "base"
+      return False
 
   # push buttons
   def on_pushButtonRight_pressed(self):
     # print("debugging -- push right button")
     pass
 
-  def on_pushButtonDelete_pressed(self):
-    nw_str_ID = self.radio_InterNetworks.getStrID()
-    entity_label_ID = self.radio_Entities.getStrID()
-    variant = self.radio_Variants.getStrID()
-    print("debugging -- delete variant:", variant)
-    self.entity_behaviours.removeVariant(nw_str_ID, entity_label_ID, variant)
-    variant_IDs = self.__makeVariantRadioIDList()
-    if variant == "base":
-      self.radio_Variants.reset()
+  def on_listVariants_currentRowChanged(self, row):
+    if self.variant_list:
+      self.selected_variant_str_ID = self.variant_list[row]
+      self.ui.radioButtonShowVariant.setChecked(True)
+      self.__makeAndDisplayEquationListLeftAndRight()
     else:
-      self.radio_Variants.showList(variant_IDs)
-    self.radio_Left.showList(variant_IDs)
+      self.ui.listLeft.clear()
+      self.ui.listRight.clear()
+    print("debugg -- current variant", self.selected_variant_str_ID)
+
+
+  def on_pushButtonDelete_pressed(self):
+    obj = self.__makeCurrentObjectString()
+    self.entity_behaviours.removeVariant(obj) #nw_str_ID, entity_label_ID, variant)
+    deleted_base = self.__makeVariantList(False)
+    self.ui.listLeft.clear()
+    self.ui.radioButtonShowVariant.setChecked(True)
+    if deleted_base:
+      self.current_base_var_ID="base"
+      self.on_radioButtonShowVariant_pressed()
     self.ui.pushButtonLeft.hide()
-    self.radio_Entities.showIt()
-    self.radio_Left.reset()
-    if variant == "base":
-      self.radio_Variants.reset()
-      self.state =  "make_base"
-    self.radio_Entities.showIt()
+
 
 
   def on_pushButtonSave_pressed(self):
@@ -649,33 +719,50 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def on_pushButtonInformation_pressed(self):
     print("todo: not yet implemented")
 
-  def on_radioButtonShowVariant_pressed(self):
+  def on_radioButtonShowVariant_toggled(self, position):
     # print("debugging -- show variant")
-    self.state = "show"
-    self.__makeAndDisplayEquationListLeftAndRight()
+    if not self.variant_list:
+      return
+
+    if position:
+      self.state = "show"
+      self.__makeAndDisplayEquationListLeftAndRight()
 
   def on_radioButtonDuplicates_pressed(self):
     print("debugging -- duplicates")
-    self.state = "duplicates"
-    self.blocked = []
+    if not self.variant_list:
+      return
 
-    entity_object_str = self.__makeEntityObjectStrID()
+    self.state = "duplicates"
+
+    entity_object_str = self.__makeCurrentObjectString()
     self.selected_base_variable = self.entity_behaviours[entity_object_str]["root_variable"]  # var_ID : int
-    show = self.__makeDuplicateShows()
-    radio_show_list = self.__makeRadioShowList(show)
-    self.radio_Left.showList(radio_show_list)
+    self.leftListEquationIDs = self.__makeDuplicateShows()
+    # radio_show_list = self.__makeRadioShowList(show)
+    self.leftIndex = self.__makeLeftRightList(self.leftListEquationIDs, self.ui.listLeft)
     self.ui.pushButtonLeft.hide()
 
   def on_radioButtonNewVariant_pressed(self):
+    if not self.variant_list:
+      return
+
     self.state = "new_variant"
     self.__makeAndDisplayEquationListLeftAndRight()  # self.selected_variant_str_ID)
 
   def on_radioButtonEditVariant_pressed(self):
+
+    if not self.variant_list:
+      return
+
     print("debugging -- edit variant")
     self.state = "edit_variant"
     self.__makeAndDisplayEquationListLeftAndRight()
 
   def on_radioButtonInstantiateVariant_pressed(self):
+
+    if not self.variant_list:
+      return
+
     print("debugging -- instantiate variant")
 
     entity_object_str = self.__makeEntityObjectStrID()
@@ -784,7 +871,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   # =============================
 
   def analyseBiPartiteGraph(self, entity, var_ID, blocked):
-    obj = entity.replace("|", "_")
+    obj = entity #entity.replace("|", "_")
     var_equ_tree_graph, assignments = AnalyseBiPartiteGraph(var_ID,
                                                             self.ontology_container,
                                                             self.ontology_name,
@@ -838,12 +925,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     del dialoge
     return variant
 
+  def __makeCurrentObjectString(self):
+    component = self.node_arc.strip("s")
+    return TEMPLATE_ENTITY_OBJECT%(self.selected_InterNetwork_strID,component, self.selected_object, self.selected_variant_str_ID)
+
+
   def __makeAndDisplayEquationListLeftAndRight(self):
-    # print("debugging -- making and displaying left list")
-    network = self.radio_InterNetworks.getStrID()
-    entity = self.radio_Entities.getStrID()
-    variant = self.radio_Variants.getStrID()
-    entity_str_ID = functionMakeObjectStringID(network, entity, variant)
+    entity_str_ID = self.__makeCurrentObjectString()
 
     if self.state == "new_variant":
       print("debugging -- new variant, entity string", entity_str_ID)
@@ -856,19 +944,44 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     blocked = deepcopy(blocked_)
     root_equation = equation_ID_list.pop(0)
 
-    eq_radio_ID = self.equation_inverse_index[root_equation]
-    eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+    root_eq_ID = self.equation_inverse_index[root_equation]  # RULE: single equation
+    eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[root_eq_ID]
 
     self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
 
-    # print("debugging -- left list showing ", equation_ID_list[0:5])
-    show_left = self.__makeRadioShowList(equation_ID_list)
-    show_right = self.__makeRadioShowList((blocked))
-    self.blocked = deepcopy(blocked)
+    print("debugging -- left list showing ", equation_ID_list[0:5])
 
-    # print("debugging -- left list showing ", show_left[0:5])
-    self.radio_Left.showList(show_left)
-    self.radio_Right.showList(show_right)
+    equation_ID_set = set()
+    [ equation_ID_set.add(e) for e in equation_ID_list]
+    block_set = set()
+    [ block_set.add(e) for e in blocked]
+    left_eqs = list(equation_ID_set - block_set)
+
+    self.leftIndex = self.__makeLeftRightList(left_eqs, self.ui.listLeft)
+    self.rightIndex =self.__makeLeftRightList(blocked, self.ui.listRight)
+
+    self.rightListEquationIDs = deepcopy(blocked)
+
+  def __makeLeftRightList(self, eq_list, ui):
+    label_list = []
+    index = {}
+    count = 0
+    for id in eq_list:
+      e_ID = self.equation_inverse_index[id]
+      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e_ID]
+      # label = "%s>%s>   %s" % (var_ID, eq_ID, equation_label)
+      index[count] = (var_ID, eq_ID)
+      count += 1
+      label_list.append(equation_label)
+    ui.clear()
+    ui.addItems(label_list)
+    return index
+
+  # def __makeEquationLists(self):
+  #   component=self.node_arc.strip("s")
+  #   object = TEMPLATE_ENTITY_OBJECT%(self.selected_InterNetwork_strID,component, self.selected_object, self.selected_variant_str_ID) #network, node|arc, object, variant
+  #   entity_data = self.entity_behaviours[object]
+  #   print("debugging")
 
   def __makeEntityObjectStrID(self):
     nw_str_ID = self.radio_InterNetworks.label_indices[self.selected_InterNetwork_ID]
@@ -888,7 +1001,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     return radio_show_list
 
   def __makeRightSelector(self):
-    show = self.blocked
+    show = self.rightListEquationIDs
     equation_list, index = self.__makeRadioSelectorLists(show)
     self.radio_Right.makeSelector(pixel_or_text, equation_list, self.layout_Right)
     self.equation_right_clean = False
@@ -912,7 +1025,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     # nw = self.selected_InterNetwork_ID
     # entity = self.selected_Entity_ID
     # variant = self.selected_variant_ID
-    entity_object_str = self.__makeEntityObjectStrID()
+    entity_object_str = self.__makeCurrentObjectString()
 
     nodes = self.entity_behaviours[entity_object_str]["nodes"]
     blocked = self.entity_behaviours[entity_object_str]["blocked"]
@@ -984,81 +1097,67 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.ui.groupBoxControls.hide()
 
     self.state = "make_base"
-    selected_state_equation_list, selected_state_radio_entries = self.__makeStateEquationSelector()
-
-    self.radio_Left.showList(selected_state_radio_entries)
+    left_equations = self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc]
+    self.leftIndex = self.__makeLeftRightList(left_equations, self.ui.listLeft)
     self.status_report("making base for %s" % self.selected_Entity_ID)
-    self.superviseControls()
+    self.selected_variant = None
+    # self.superviseControls()
 
-  def __makeStateEquationSelector(self):
+  def __makeEquationList_per_variable_type(self, networks):
 
-    nw = self.selected_InterNetwork_ID
-    nw_str_ID = self.radio_InterNetworks.getStrID()
+    variable_equation_list = {}
+    for nw in networks:
+      variable_equation_list[nw] = {}
+      for component in rules:
+        variable_equation_list[nw][component] = []
 
-    selected_state_equation_list = []
-    selected_state_radio_entries = []
-    selected_var_type = None
+    for nw in networks:
+      for e in self.equation_information:
+        eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e]
 
-    label_index = self.radio_Left.label_indices
+        # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
 
-    for eq_radio_ID in label_index:
+        if nw in self.ontology_container.networks:
+          nws = list(self.ontology_container.ontology_tree[nw]["parents"])
+          nws.append(nw)
+          for component in rules:
+            selected_var_type = None
+            for p_nw in nws:
+              if p_nw in rules[component]:
+                selected_var_type = rules[component][p_nw]
+            for p_nw in nws:
+              if p_nw == nw_eq and var_type == selected_var_type:
+                # label = "%s>%s>   %s"%(var_ID, eq_ID, equation_label)
+                variable_equation_list[nw][component].append(eq_ID) #(var_ID, eq_ID, equation_label))
 
-      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[eq_radio_ID]
+    return variable_equation_list
 
-      # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
-
-      if nw_str_ID in self.ontology_container.networks:
-        nws = list(self.ontology_container.ontology_tree[nw_str_ID]["parents"])
-        nws.append(nw_str_ID)
-        for p_nw in nws:
-          if p_nw in rules["nodes"]:
-            selected_var_type = rules["nodes"][p_nw]
-        for p_nw in nws:
-          if p_nw == nw_eq:  # in self.rendered_equation_dictionary:
-            if var_type == selected_var_type:
-              selected_state_equation_list.append(eq_ID)
-              selected_state_radio_entries.append(eq_radio_ID)
-
-    return selected_state_equation_list, selected_state_radio_entries
 
   def __makeVariantStringList(self):
 
-    nw_str_ID = self.radio_InterNetworks.getStrID()
-
+    nw_str_ID = self.selected_InterNetwork_strID
+    current_component = self.node_arc.strip("s")
+    object = self.selected_object
     entity_str_IDs = sorted(self.entity_behaviours)
-    variants_radio_IDs = set()
     variants = set()
     for o in entity_str_IDs:
-      network, entity, variant = functionGetObjectsFromObjectStringID(o)
-      if network == nw_str_ID:
-        variant_radio_ID = self.radio_Variants.label_indices_inverse[variant]
-        variants_radio_IDs.add(variant_radio_ID)
-        variants.add(variant)
-
-    return list(variants_radio_IDs), list(variants)
+      network, component, entity, variant = functionGetObjectsFromObjectStringID(o)
+      if network == nw_str_ID and current_component == component and entity == object:
+        if self.entity_behaviours[o]:
+          variants.add(variant)
+    #
+    # self.ui.listVariants.clear()
+    # self.ui.listVariants.addItems(list(variants))
+    return  sorted(variants)
 
   def __makeVariantRadioIDList(self):
 
-    nw_str_ID = self.radio_InterNetworks.getStrID()
-    entity_str_ID = self.radio_Entities.getStrID()
 
-    variant_list = self.entity_behaviours.getVariantList(nw_str_ID, entity_str_ID)
-    variants_radio_IDs = set()
-    for item in variant_list:
-      variant_radio_ID = self.radio_Variants.label_indices_inverse[item]
-      variants_radio_IDs.add(variant_radio_ID)
-    # entity_str_IDs = sorted(self.entity_behaviours)
-    # variants_radio_IDs = set()
-    # for o in entity_str_IDs:
-    #   if self.entity_behaviours[o]:
-    #     network, entity, variant = functionGetObjectsFromObjectStringID(o)
-    #     if network == nw_str_ID:
-    #       if entity == entity_str_ID:
-    #         variant_radio_ID = self.radio_Variants.label_indices_inverse[variant]
-    #         variants_radio_IDs.add(variant_radio_ID)
-    # return list(variants_radio_IDs)
+    variant_list = self.entity_behaviours.getVariantList(self.selected_InterNetwork_strID, self.selected_object)
+    self.ui.listVariants.clear()
+    self.ui.listVariants.addItems(variant_list)
 
-    return sorted(variants_radio_IDs)
+    return
 
 
   def __makeRadioSelectorLists(self, selector_list):

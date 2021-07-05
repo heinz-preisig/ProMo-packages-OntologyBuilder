@@ -190,6 +190,14 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
 
     self.__makeOntology()
 
+    # setup rules for index generation
+    if  "network_enable_adding_indices" not in self.ontology["rules"]:
+      self.ontology["rules"]["network_enable_adding_indices"] = {}
+    for nw in sorted(self.ontology_tree.keys()):
+      if nw not in self.ontology["rules"]["network_enable_adding_indices"]:
+        self.ontology["rules"]["network_enable_adding_indices"][nw] = False
+
+
     self.ontology_name = ontology_name
 
     # lock_file = FILES["lock_file"] % ontology_name  # TODO: one could do without the lock file -- check
@@ -304,7 +312,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             "start"                            : [  #
                     ui.groupBoxFile,
@@ -312,7 +320,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.tabWidget,
                     ui.groupBoxNetwork,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             "new_variable_file"                : [
                     # ui.groupBoxFile,
@@ -338,7 +346,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    # ui.radioButtonIsEnableAddingIndex,
                     ],
             "network_selected_no_tokens"       : [  #
                     ui.listViewStructure,
@@ -357,7 +365,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
             "add_child_selected"               : [  #
                     ui.groupBoxNetwork,
                     ui.tabWidget,
-                    # ui.radioButtonHasPortVariables,
+                    ui.radioButtonHasPortVariables,
                     ],
             "block_delete"                     : [  #
                     ui.pushRemoveChild,
@@ -389,7 +397,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             "behaviour_selected"               : [  #
                     # ui.groupBoxFile,
@@ -414,7 +422,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     # ui.pushDeleteBehaviourElement,
                     # ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             "structure_node_selected"          : [  #
                     # ui.groupBoxFile,
@@ -693,7 +701,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             "behaviour_prop_selected"          : [  #
                     # ui.groupBoxFile,
@@ -720,7 +728,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     # ui.pushDeleteBehaviourElement,
                     ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             "behaviour_prop_selected_node"     : [  #
                     # ui.groupBoxFile,
@@ -771,7 +779,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
                     # ui.pushDeleteBehaviourElement,
                     # ui.widgetToken,
                     ui.radioButtonHasPortVariables,
-                    ui.radioButtonIsState,
+                    ui.radioButtonIsEnableAddingIndex,
                     ],
             }
     self.actions = actions
@@ -1030,7 +1038,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       r.setChecked(False)
 
   def __ui_status(self, status):
-
+    print("debugging -- status:", status)
     for i in self.actions["0"]:
       if i in self.actions[status]:
         i.hide()
@@ -1074,6 +1082,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
   def on_treeWidget_clicked(self, index):  # state network_selected
     self.current_network = self.ui.treeWidget.currentItem().name
     print("debugging -- current network selected: ", self.current_network)
+
 
     self.__on_network_selected()
 
@@ -1193,6 +1202,11 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     else:
       self.ui.radioButtonIntra.setChecked(True)
 
+    # is adding indices enabled?
+    if self.current_network  not in self.ontology["rules"]["network_enable_adding_indices"]:
+      self.ontology["rules"]["network_enable_adding_indices"][self.current_network] = False
+    self.ui.radioButtonIsEnableAddingIndex.setChecked(self.ontology["rules"]["network_enable_adding_indices"][self.current_network])
+
   def on_radioButtonInter_toggled(self, position):
     what = "intra"
     if position:
@@ -1259,15 +1273,18 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     self.ontology["rules"]["variable_classes_having_port_variables"] = sorted(
             variable_classes_having_port_variables)
 
-  def on_radioButtonIsState_toggled(self, position):
-    # print("debugging -- radio button position: ", position)
-    variable_classes_being_state_variables = set(self.ontology["rules"]["variable_classes_being_state_variables"])
-    if position:
-      variable_classes_being_state_variables.add(self.current_behaviour_variable)
-    else:
-      variable_classes_being_state_variables.difference_update()
-    self.ontology["rules"]["variable_classes_being_state_variables"] = sorted(
-            variable_classes_being_state_variables)
+  def on_radioButtonIsEnableAddingIndex_toggled(self, position):
+    print("debugging -- radio button position: ", position)
+    self.ontology["rules"]["network_enable_adding_indices"][self.current_network] = position
+
+
+    # variable_classes_being_state_variables = set(self.ontology["rules"]["variable_classes_being_state_variables"])
+    # if position:
+    #   variable_classes_being_state_variables.add(self.current_behaviour_variable)
+    # else:
+    #   variable_classes_being_state_variables.difference_update()
+    # self.ontology["rules"]["variable_classes_being_state_variables"] = sorted(
+    #         variable_classes_being_state_variables)
 
   def on_radioButtonBehaviourNode_toggled(self, position):
     self.radio["behaviour_node"] = position
@@ -1375,9 +1392,9 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
         self.ui.radioButtonHasPortVariables.setChecked(False)
 
       if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_being_state_variables"]:
-        self.ui.radioButtonIsState.setChecked(True)
+        self.ui.radioButtonIsEnableAddingIndex.setChecked(True)
       else:
-        self.ui.radioButtonIsState.setChecked(False)
+        self.ui.radioButtonIsEnableAddingIndex.setChecked(False)
 
     else:
       self.__ui_status("behaviour_prop_selected")

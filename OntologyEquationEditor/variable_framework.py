@@ -1873,7 +1873,7 @@ class UnitaryFunction(Operator):
     else:
       raise VarError('there is no unitary function : %s' % fct)
 
-    if fct == "diffSpace":  # RULE: differential spaces
+    if fct == "diffSpace":  # RULE: differential
       label = TEMPLATES["differential_space"] % arg.label
       indices = self.space.variables.ontology_container.indices
       inc_labels = []
@@ -1914,6 +1914,35 @@ class UnitaryFunction(Operator):
     except:
       print("debugging -- argument:%s  language:%s" % (self.args, language))
     return CODE[language][self.fct] % (self.args)
+
+# class MakeIndex():
+#
+#   def __init__(self, index_name, space):
+#     from Common.record_definitions import RecordIndex
+#     self.space = space
+#
+#     indices = self.space.variables.ontology_container.indices
+#     inc_labels = []
+#     for inc_ID in indices:
+#       inc_labels.append(indices[inc_ID]["label"])
+#     if index_name not in inc_labels:
+#       index = RecordIndex()
+#       index["label"] = index_name
+#       definition_network = self.space.variable_definition_network
+#       index["network"] = self.space.variables.ontology_container.heirs_network_dictionary[definition_network]
+#       index_counter = len(indices) + 1
+#       indices[index_counter] = index
+#       for language in LANGUAGES["aliasing"]:
+#         indices[index_counter]["aliases"][language] = index_name
+#
+#       language = LANGUAGES["global_ID"]
+#       s = CODE[language]["index"] % index_counter
+#       a = s  # .strip(" ")              # TODO: when we "compile" we have to add a space again. See reduceProduct.
+#       indices[index_counter]["aliases"][language] = a
+#       _index = index_counter
+#       self.index_structures = []
+#       self.units = Units()
+#       self.tokens = []
 
 
 class Instantiate(Operator):
@@ -2118,6 +2147,22 @@ class MixedStack(Operator):
     s = CODE[language]["MixedStack"] % s_list
     return s
 
+class IncidenceMatrix(Operator):
+  def __init__(self, N, A, space):
+
+    Operator.__init__(self, space)
+    self.units = Units()  # RULE: MixedStacks have no units
+    self.index_structures = []  # RULE: MixedStacks have no index structures
+    self.tokens = []
+    self.indices = self.space.indices
+
+  def __str__(self):
+    print("debugging -- Incidence matrix")
+    return "gotit"
+
+
+
+
 
 # Note: that functions are defined in different places for the time being including resource
 #        one could consider writing the documentation/definition part of the parser using a template.
@@ -2142,6 +2187,7 @@ class Expression(VerboseParser):
   ;
   Expression/e -> 'Instantiate' '\(' Expression/i ( '\)'/v | ','
                    Expression/v  '\)' )                                   $e=Instantiate(i, v, self.space)
+      | 'IncidenceMatrix' '\(' Variable/i ',' Variable/j '\)'             $e=IncidenceMatrix(i, j, self.space)
       | Term/e( sum/op Term/t                                             $e=Add(op,e,t,self.space)
       )*
   ;

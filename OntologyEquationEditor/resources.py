@@ -23,7 +23,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from Common.common_resources import getData
-from Common.common_resources import invertDict
+from Common.common_resources import invertDict, CONNECTION_NETWORK_SEPARATOR
 from Common.record_definitions_equation_linking import VariantRecord
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
@@ -159,6 +159,7 @@ LIST_OPERATORS = ["+",  # ................ ordinary plus
                   "max",  # .............. maximum
                   "min",  # .............. minimum
                   "in",  # ............... membership    TODO: behaves more like a delimiter...
+                  "MakeIndex", # ......... make a new index
                   ]
 
 UNITARY_NO_UNITS = ["exp", "log", "ln", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan"]
@@ -601,7 +602,8 @@ Special_TEMPLATE = {
                                                          upper='u'),
         "BlockReduce": [],
         "Product"    : CODE[internal]["Product"].format(argument="a",
-                                                        index="I")
+                                                        index="I"),
+        "MixedStack" : CODE[internal]["MixedStack"]%("a,b, ..")
         }
 
 # TODO: not nice needs fixing
@@ -708,19 +710,23 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
   return s
 
 
-def make_variable_equation_pngs(variables, compiled_variables, changes, ontology_name):
-  # global lhs, rhs, reader, line, number, network, error
+def make_variable_equation_pngs(ontology_name):
+  """
+  generates pictures of the equations extracting the latex code from the latex equation file
+  """
 
-  # rhs = {}
+
   eqs = {}
+  vars = {}
   latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
   latex_translations = getData(latex_file)
   for eq_ID_str in latex_translations:
     eq_ID = int(eq_ID_str)
     e = latex_translations[eq_ID_str]
-    # var_ID = e["variable_ID"]
+    var_ID = e["variable_ID"]
     lhs = e["lhs"]
     rhs = e["rhs"]
+    vars[var_ID] = lhs
     eqs[eq_ID] = r"%s = %s" % (lhs, rhs)
 
   f_name = FILES["pnglatex"]
@@ -745,7 +751,6 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
   header_file.close()
 
   for eq_ID in eqs:
-    if eq_ID in changes["equations"]["changed"]:
       out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
       args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
               ontology_location]
@@ -764,12 +769,10 @@ def make_variable_equation_pngs(variables, compiled_variables, changes, ontology
         pass
 
   # print("debugging")
-  for var_ID in compiled_variables:  # variables: #lhs:
-    if var_ID in changes["variables"]["changed"]:
-
+  for var_ID in vars:
       out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
 
-      var_latex = compiled_variables[var_ID]["latex"]
+      var_latex = vars[var_ID]
       # if var_ID == 92:
       #   print("debugging variable 92: ", var_latex)
       args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
@@ -1014,14 +1017,22 @@ def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocke
                                            file_name=file_name)
 
   print("debugging -- dotgrap done")
+  # finding the buddies -- currently the buddies are connected via the interfaces
+  # the first variable defines the network and any variable that is in a interface is connected to a buddy
+  # TODO: reconsider the definition and handling of the interfaces
   buddies = set()
+  the_network = ontology_container.variables[variable_ID]["network"]
+
   for id in var_equ_tree.tree["IDs"]:
     o, str_ID = id.split("_")
     ID = int(str_ID)
     if o == "variable":
       network = ontology_container.variables[ID]['network']
-      if network in ontology_container.list_leave_networks:
-        buddies.add((ID, network))
+      if CONNECTION_NETWORK_SEPARATOR in network:
+          buddies.add((ID, network))
+
+      # if network in ontology_container.list_leave_networks:
+      #   buddies.add((ID, network))
 
   assignments = VariantRecord(tree=var_equ_tree.tree["tree"],
                               nodes=var_equ_tree.tree["nodes"],

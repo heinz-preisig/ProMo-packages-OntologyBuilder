@@ -27,21 +27,27 @@ import pydotplus.graphviz as GV  # python3 -m pip install pydotplus
 from jinja2 import Environment  # sudo apt-get install python-jinja2
 from jinja2 import FileSystemLoader
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QProgressDialog, QSizePolicy
 
+from Common.ui_text_browser_popup_impl import Ui_TextBrowserPopUp
+from Common.ui_wait_impl import wait
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import getOntologyName
 from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import saveBackupFile
 from Common.ontology_container import OntologyContainer
+from Common.common_resources import UI_String
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resources_icons import getIcon
 from Common.resources_icons import roundButton
+
+from Common.record_definitions import RecordIndex
+
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
-from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
+from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES, CODE
 from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.tpg import LexicalError
@@ -116,7 +122,7 @@ class UiOntologyDesign(QMainWindow):
     self.radio = [
             self.ui.radioVariables,
             self.ui.radioVariablesAliases,
-            self.ui.radioIndicesAliases
+            self.ui.radioIndicesAliases,
             ]
     [i.hide() for i in self.radio]
 
@@ -170,6 +176,8 @@ class UiOntologyDesign(QMainWindow):
 
     # setup for next GUI-phase
     [i.show() for i in self.radio]
+    self.ui.pushAddIndex.hide()
+
     makeTreeView(self.ui.treeWidget, self.ontology_container.ontology_tree)
     self.ui.combo_InterConnectionNetwork.clear()
     self.ui.combo_IntraConnectionNetwork.clear()
@@ -231,6 +239,42 @@ class UiOntologyDesign(QMainWindow):
     self.__setupIndicesAliasTable()
     # self.ontology_container.indices = self.indices #(self.indices, ["index", "block_index"])
 
+  def on_pushAddIndex_pressed(self):
+    print("debugging __ adding index")
+    indices = self.ontology_container.indices
+
+    exist_list = []
+    for i in indices:
+        exist_list.append(indices[i]["label"])
+
+    print("debugging -- labels:", exist_list)
+
+    new_index = None
+    while not (new_index):
+      ui_ask = UI_String("give new model name or type exit ", "model name or exit", limiting_list=exist_list)
+      ui_ask.exec_()
+      new_index = ui_ask.getText()
+      print("new model name defined", new_index)
+      if not new_index:
+        return
+
+    # adding index
+      index = RecordIndex()
+      index["label"] = new_index
+      index["network"] = self.variables.ontology_container.heirs_network_dictionary[self.current_network]
+      index_counter = len(indices) + 1
+      indices[index_counter] = index
+      for language in LANGUAGES["aliasing"]:
+        indices[index_counter]["aliases"][language] = new_index
+
+      language = LANGUAGES["global_ID"]
+      s = CODE[language]["index"] % index_counter
+      a = s  # .strip(" ")              # TODO: when we "compile" we have to add a space again. See reduceProduct.
+      indices[index_counter]["aliases"][language] = a
+
+      print("debugging -- new index defined:", new_index)
+
+
   def on_pushCompile_pressed(self):
     # self.__checkRadios("compile")
     # self.compile_only = True
@@ -267,6 +311,9 @@ class UiOntologyDesign(QMainWindow):
     if not self.compiled_variable_labels:
       self.__writeMessage("compile first")
       self.on_pushCompile_pressed()
+
+
+    self.__writeMessage("wait for completion of compilation")
 
     self.__makeVariableEquationPictures("latex")
 
@@ -306,6 +353,12 @@ class UiOntologyDesign(QMainWindow):
       self.ui.groupEdit.show()
       self.ui.combo_EditVariableTypes.show()
       self.on_radioVariables_pressed()
+      if self.ontology_container.rules["network_enable_adding_indices"][self.current_network]:
+        print("debugging -- show add index")
+        self.ui.pushAddIndex.show()
+      else:
+        self.ui.pushAddIndex.hide()
+
 
   @QtCore.pyqtSlot(str)
   def on_combo_InterConnectionNetwork_activated(self, choice):
@@ -631,13 +684,37 @@ class UiOntologyDesign(QMainWindow):
     # self.__makeDotGraphs()
     # self.__makeVariableEquationPictures(language)
 
+  def progress_dialog(self, message):
+    "https://www.programcreek.com/python/example/108099/PyQt5.QtWidgets.QProgressDialog"
+    prgr_dialog = QProgressDialog()
+    prgr_dialog.setFixedSize(300, 50)
+    prgr_dialog.setAutoFillBackground(True)
+    prgr_dialog.setWindowModality(QtCore.Qt.WindowModal)
+    prgr_dialog.setWindowTitle('Please wait')
+    prgr_dialog.setLabelText(message)
+    prgr_dialog.setSizeGripEnabled(False)
+    prgr_dialog.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    prgr_dialog.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint, False)
+    prgr_dialog.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)
+    prgr_dialog.setModal(True)
+    prgr_dialog.setCancelButton(None)
+    prgr_dialog.setRange(0, 0)
+    prgr_dialog.setMinimumDuration(50)
+    prgr_dialog.setMaximum(1000)
+    prgr_dialog.setAutoClose(False)
+    return prgr_dialog
+
   def __makeVariableEquationPictures(self, language):
 
     # make_it.wait()
     # Note: make the png variable and equation files
-    make_variable_equation_pngs(self.ontology_container.variables, self.compiled_variable_labels,
-                                self.variables.changes, self.ontology_name)
-    self.__writeMessage("Wrote {} output".format(language), append=True)
+
+    # msg_box = wait()
+    # msg_box.exec()
+    self.progress_dialog("compiling")
+    make_variable_equation_pngs(self.ontology_name)
+    # self.__writeMessage("Wrote {} output".format(language), append=True)
+    self.__writeMessage("compilation completed")
 
   def __getAllEquationsPerType(self, language):
     eqs = {}
@@ -849,7 +926,6 @@ class UiOntologyDesign(QMainWindow):
       OK = True
     else:
       self.__writeMessage(" no variables in this network %s" % self.current_network)
-      # self.table_aliases_v.hide()
       OK = False
     return OK
 
@@ -864,8 +940,8 @@ class UiOntologyDesign(QMainWindow):
     if not append:
       self.ui.msgWindow.clear()
     self.ui.msgWindow.setText(message)
-    self.show()
-    self.ui.msgWindow.show()
+    # self.show()
+    # self.ui.msgWindow.show()
     self.ui.msgWindow.update()
 
   def __updateAliases_Variables(self):

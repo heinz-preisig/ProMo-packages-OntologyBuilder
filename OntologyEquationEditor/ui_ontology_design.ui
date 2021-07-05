@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>426</width>
+    <width>498</width>
     <height>956</height>
    </rect>
   </property>
@@ -17,9 +17,9 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>340</y>
+     <y>220</y>
      <width>381</width>
-     <height>511</height>
+     <height>631</height>
     </rect>
    </property>
    <property name="title">
@@ -30,8 +30,8 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>351</width>
-      <height>411</height>
+      <width>341</width>
+      <height>521</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -46,7 +46,7 @@
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>311</width>
+        <width>321</width>
         <height>261</height>
        </rect>
       </property>
@@ -63,9 +63,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>290</y>
-        <width>311</width>
-        <height>81</height>
+        <y>360</y>
+        <width>321</width>
+        <height>121</height>
        </rect>
       </property>
       <property name="title">
@@ -74,8 +74,8 @@
       <widget class="QGroupBox" name="groupBoxComponents">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>20</y>
+         <x>20</x>
+         <y>40</y>
          <width>281</width>
          <height>61</height>
         </rect>
@@ -133,6 +133,19 @@
        </widget>
       </widget>
      </widget>
+     <widget class="QPushButton" name="pushAddIndex">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>310</y>
+        <width>89</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>add index</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_intranets">
      <attribute name="title">
@@ -168,9 +181,9 @@
    <widget class="QComboBox" name="combo_EditVariableTypes">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>470</y>
-      <width>301</width>
+      <x>20</x>
+      <y>580</y>
+      <width>321</width>
       <height>27</height>
      </rect>
     </property>
@@ -507,25 +520,25 @@
   <widget class="QGroupBox" name="groupFiles">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>210</y>
-     <width>301</width>
-     <height>111</height>
+     <x>400</x>
+     <y>10</y>
+     <width>91</width>
+     <height>191</height>
     </rect>
    </property>
    <property name="title">
     <string>Files</string>
    </property>
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>20</y>
-      <width>160</width>
-      <height>80</height>
+      <x>10</x>
+      <y>30</y>
+      <width>71</width>
+      <height>161</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QPushButton" name="pushWrite">
        <property name="toolTip">

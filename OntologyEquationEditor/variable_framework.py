@@ -1257,6 +1257,8 @@ class Operator(PhysicalVariable):
   def diffFraction_indexing(self, x, y):
     # this one is tricky
     # cases:
+    #   N . -     --> N
+    #   - . N     --> N
     #   N . N     --> N           --> simplest case
     #   N,x . N,y --> N,x,y
     #   ... any two are the same  --> expand product case
@@ -1268,6 +1270,11 @@ class Operator(PhysicalVariable):
     # 2: N,x,y   : NS,x,z    --> NS,x,y,z
     # 3: N,x,y   : NS,AS,x,z --> NS,AS,x,y,z
     # 4: A,x,y   : NS,AS,x,z --> NS,AS,x,y,z
+
+    if x.index_structures == []:
+      return sorted(y.index_structures)
+    if y.index_structures == []:
+      return sorted(x.index_structures)
 
     if x.index_structures == y.index_structures:
       index_structures = sorted(x.index_structures)

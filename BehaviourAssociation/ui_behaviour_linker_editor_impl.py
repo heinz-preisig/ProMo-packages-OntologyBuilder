@@ -403,7 +403,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       n = sorted(self.node_objects[self.selected_InterNetwork_strID])
     else:
       ui = self.ui.listArcObjects
-      n = sorted(self.node_objects[self.selected_InterNetwork_strID])
+      n = sorted(self.arc_objects[self.selected_InterNetwork_strID])
     ui.clear()
     ui.addItems(n)
 

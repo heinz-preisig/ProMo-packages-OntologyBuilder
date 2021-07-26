@@ -1959,7 +1959,9 @@ class Instantiate(Operator):
     Symbolically instantiate a variable
     @param var: variable
     @param space: compile space
+    The first variable defines the units, indexing and token, while the second variable defines it as a numbrical value.
     """
+    # TODO: think about if indeed the second parameter <<value>> is needeed
     Operator.__init__(self, space, equation_type="instantiate")
     self.arg = var
     if value == ')':

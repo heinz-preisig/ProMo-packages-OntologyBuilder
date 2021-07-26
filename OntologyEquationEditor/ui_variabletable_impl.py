@@ -101,13 +101,16 @@ class UI_VariableTableDialog(VariableTable):
             "back": self.ui.pushFinished,
             "info": self.ui.pushInfo,
             "new" : self.ui.pushNew,
-            "port": self.ui.pushPort
+            "port": self.ui.pushPort,
+            "LaTex" : self.ui.pushLaTex,
+            "dot" : self.ui.pushDot
             }
 
     roundButton(buttons["back"], "back", tooltip="go back")
     roundButton(buttons["info"], "info", tooltip="information")
     roundButton(buttons["new"], "dependent_variable", tooltip="new dependent variable")
     roundButton(buttons["port"], "port", tooltip="new port variable")
+
     for b in hidden:
       buttons[b].hide()
 

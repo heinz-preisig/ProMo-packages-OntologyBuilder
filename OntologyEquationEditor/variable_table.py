@@ -146,6 +146,7 @@ class VariableTable(QtWidgets.QDialog):
           self.__addQtTableItem(tab, str(_l), rowCount, 6)
           self.__addQtTableItem(tab, 'x', rowCount, 7)
           self.__addQtTableItem(tab, v.network, rowCount, 8)
+          self.__addQtTableItem(tab, str(ID), rowCount, 9)
           rowCount += 1
 
     self.variables_in_table = list(variable_ID_list)

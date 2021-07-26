@@ -56,6 +56,7 @@ TOOLTIPS["edit"]["variable"] = "no action"
 TOOLTIPS["edit"]["del"] = "delete"
 TOOLTIPS["edit"]["network"] = "network where variable is defined"
 TOOLTIPS["edit"]["token"] = "tokens for this variable"
+TOOLTIPS["edit"]["ID"] = "assigned ID"
 
 TOOLTIPS["pick"] = {}
 s = "click copy variable symbol into expression editor"
@@ -69,6 +70,7 @@ TOOLTIPS["pick"]["variable"] = s
 TOOLTIPS["pick"]["del"] = s
 TOOLTIPS["pick"]["network"] = s
 TOOLTIPS["pick"]["token"] = s
+TOOLTIPS["pick"]["ID"] = "assigned ID"
 
 TOOLTIPS["show"] = {}
 s = "sorting is enabled & click to see equation"
@@ -82,6 +84,7 @@ TOOLTIPS["show"]["variable"] = s
 TOOLTIPS["show"]["del"] = s
 TOOLTIPS["show"]["network"] = s
 TOOLTIPS["show"]["token"] = s
+TOOLTIPS["show"]["ID"] = s
 
 # ------------
 TEMPLATES = {}

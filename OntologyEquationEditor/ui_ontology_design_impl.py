@@ -290,7 +290,7 @@ class UiOntologyDesign(QMainWindow):
     self.__makeRenderedOutput()
 
   def on_pushShowVariables_pressed(self):
-    print("debugging -- make variable table")
+    # print("debugging -- make variable table")
     enabled_var_types = self.variable_types_on_networks[self.current_network]
     variable_table = UI_VariableTableShow("All defined variables",
                                           self.variables,
@@ -301,7 +301,7 @@ class UiOntologyDesign(QMainWindow):
                                           [],
                                           [],
                                           None,
-                                          ["info", "new", "port"]
+                                          ["info", "new", "port", "LaTex", "dot"]
                                           )
     variable_table.exec_()
 
@@ -879,7 +879,7 @@ class UiOntologyDesign(QMainWindow):
       hide = ["port"]
     else:
       hide = []
-
+    hide.extend(["LaTex", "dot"])
     self.table_variables = UI_VariableTableDialog("create & edit variables",
                                                   self.variables,
                                                   self.indices,

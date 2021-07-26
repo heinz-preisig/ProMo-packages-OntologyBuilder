@@ -31,11 +31,11 @@ class UI_VariableTableShow(VariableTable):
   emits a signal on completion
   """
 
-  completed = QtCore.pyqtSignal(str)
-  picked = QtCore.pyqtSignal(str)
-  new_variable = QtCore.pyqtSignal(str)
-  new_equation = QtCore.pyqtSignal(str, str)
-  deleted_symbol = QtCore.pyqtSignal(str)
+  # completed = QtCore.pyqtSignal(str)
+  # picked = QtCore.pyqtSignal(str)
+  # new_variable = QtCore.pyqtSignal(str)
+  # new_equation = QtCore.pyqtSignal(str, str)
+  # deleted_symbol = QtCore.pyqtSignal(str)
 
   def __init__(self,
                title,
@@ -83,11 +83,17 @@ class UI_VariableTableShow(VariableTable):
     buttons["info"] = self.ui.pushInfo
     buttons["new"] = self.ui.pushNew
     buttons["port"] = self.ui.pushPort
+    buttons["LaTex"] = self.ui.pushLaTex
+    buttons["dot"] = self.ui.pushDot
+    self.buttons = buttons
 
     roundButton(buttons["back"], "back", tooltip="go back")
     roundButton(buttons["info"], "info", tooltip="information")
     roundButton(buttons["new"], "new", tooltip="new variable")
     roundButton(buttons["port"], "port", tooltip="new port variable")
+    roundButton(buttons["LaTex"], "LaTex", tooltip="make equation list")
+    roundButton(buttons["dot"], "dot_graph", tooltip="make dot graph variable/expression")
+
     for b in hidden:
       buttons[b].hide()
     self.variable_list = []
@@ -97,23 +103,29 @@ class UI_VariableTableShow(VariableTable):
     self.ui.tableVariable.setToolTip("click on row to copy variable to expression")
     self.ui.tableVariable.setSortingEnabled(True)
 
-    # ontology_location = self.ontology_name  #NOTE: did ot work
-    # eq_ID = 83
-    # eqfile = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
-    #
-    # lbl = QtGui.QIcon(QtGui.QPixmap(eqfile))
-    # item = QtWidgets.QTableWidgetItem()
-    # item.setIcon(lbl)
-    # self.ui.tableVariable.setItem(1,2, item)
-
 
   def on_tableVariable_itemClicked(self, item):
-    r = int(item.row())
+
+    column_count = self.ui.tableVariable.columnCount()
+    row = item.row()
     item = self.ui.tableVariable.item
-    self.selected_variable_symbol = str(item(r, 1).text())
-    print("debugging -- show equations ")
+    data = {}
+    for c in range(column_count):
+      data[c] = item(row,c).text()
+      # print("debugging -- chose:", c, str(data[c]))
+    self.selected_variable_symbol = data[1]
+    self.selected_variable_ID = int(data[9])
+    print("debugging -- selected ID:", self.selected_variable_ID, self.selected_variable_symbol)
+
+    self.buttons["LaTex"].show()
+    self.buttons["dot"].show()
     return
 
+  def on_pushLaTex_pressed(self):
+    print("debugging -- generate latex table",self.selected_variable_symbol)
+
+  def on_pushDot_pressed(self):
+    print("debugging -- generate graph")
 
   @staticmethod
   def __addQtTableItem(tab, s, row, col):
@@ -122,7 +134,15 @@ class UI_VariableTableShow(VariableTable):
     tab.setItem(row, col, item)
 
   def on_tableVariable_itemDoubleClicked(self, item):
-    print("debugging -- double click on item", item.row(), item.column())
+    column_count = self.ui.tableVariable.columnCount()
+    row = item.row()
+    item = self.ui.tableVariable.item
+    data = {}
+    for c in range(column_count):
+      data[c] = item(row,c).text()
+      # print("debugging -- chose:", c, str(data[c]))
+    self.selected_variable_ID = int(data[9])
+    print("debugging -- selected ID:", self.selected_variable_ID)
 
   def on_pushFinished_pressed(self):
     self.close()

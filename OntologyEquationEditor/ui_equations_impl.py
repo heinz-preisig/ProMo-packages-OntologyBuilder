@@ -24,6 +24,7 @@ from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.record_definitions import makeCompletEquationRecord
 from Common.record_definitions import makeCompleteVariableRecord
 from Common.resources_icons import roundButton
+from Common.ui_match_pairs_impl import UI_MatchPairs
 # from Common.common_resources import globalEquationID
 # from Common.common_resources import globalVariableID
 from Common.record_definitions import RecordEquation
@@ -384,6 +385,9 @@ class UI_Equations(QtWidgets.QWidget):
     self.update_space_information.emit()
     self.close()
 
+  def dummy(self, selected_list):
+    pass
+
   def on_pushAccept_pressed(self):
     symbol = str(self.ui.lineNewVariable.text())
     documentation = str(self.ui.lineDocumentation.text())
@@ -409,11 +413,28 @@ class UI_Equations(QtWidgets.QWidget):
 
     if (not self.status_edit_expr) or (self.status_new_equation):  # TODO: think about
       old_equ_ID = None
-      # equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)
+      # equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
     else:
       old_equ_ID = self.current_eq_ID
     if self.status_new_variable:
-      var_ID = self.variables.newProMoVariableIRI()  # globalVariableID(update=True)
+      var_ID = self.variables.newProMoVariableIRI()  # globalVariableID(update=True)  # RULE: for global ID
+      if CONNECTION_NETWORK_SEPARATOR in self.network_for_variable:
+        left_nw, right_nw = self.network_for_variable.split(CONNECTION_NETWORK_SEPARATOR)
+        tokens_on_nw = self.compile_space.variables.ontology_container.tokens_on_networks
+        if tokens_on_nw[left_nw] == tokens_on_nw[right_nw]:
+          # RULE: for interfaces, the new variable inherits token if the token exists on both sides
+          tokens = self.checked_var.tokens
+        else:
+          # RULE: for interfaces between networks with different tokens, a token conversion is to be defined
+          token_selector = SingleListSelector(tokens_on_nw[right_nw])
+          if self.checked_var.tokens:
+            token_selector.setWindowTitle(self.checked_var.tokens[0])
+          else:
+            # Rule: also when there is no token on the left side
+            token_selector.setWindowTitle("---")
+          token_index = token_selector.exec_()
+          tokens = [tokens_on_nw[right_nw][token_index]]
+          print("debugging -- tokens:", tokens)
       variable_record = makeCompleteVariableRecord(var_ID,
                                                    label=symbol,
                                                    type=self.selected_variable_type,
@@ -426,23 +447,13 @@ class UI_Equations(QtWidgets.QWidget):
                                                            },
                                                    aliases={},
                                                    port_variable=False,
-                                                   tokens=self.checked_var.tokens,
+                                                   tokens=tokens,
                                                    )
 
       self.variables.addNewVariable(ID=var_ID, **variable_record)
     else:
       self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, equ_ID, documentation, equation_record)
 
-      # variable_record = self.variables[self.selected_variable_ID]
-      # variable_record.doc = documentation
-      # variable_record.index_structures = self.checked_var.index_structures
-      # variable_record.units = self.checked_var.units
-      # # delete old equation first
-      # if old_equ_ID:
-      #   del variable_record.equations[old_equ_ID]
-      # variable_record.equations.update({
-      #         equ_ID: equation_record
-      #         })
 
     self.variables.indexVariables()
     self.update_space_information.emit()
@@ -482,7 +493,10 @@ class UI_Equations(QtWidgets.QWidget):
       self.ui.lineExpression.setText(e["rhs"])
       self.current_equation_name = e["name"]
       eq_IDs = sorted(self.variables[self.selected_variable_ID].equations.keys())
-      doc = self.variables[self.selected_variable_ID].equations[eq_IDs[0]]["doc"] # copy doc from the first equation
+      if eq_IDs:
+        doc = self.variables[self.selected_variable_ID].equations[eq_IDs[0]]["doc"] # copy doc from the first equation
+      else:
+        doc = self.variables[self.selected_variable_ID].doc
       self.ui.lineDocumentation.setText(doc)
 
     self.ui.lineNewVariable.setText(self.variables[self.selected_variable_ID].label)

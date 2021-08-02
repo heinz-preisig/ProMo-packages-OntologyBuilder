@@ -132,7 +132,7 @@ class UI_VariableTableShow(VariableTable):
                                                             self.ontology_container,
                                                             self.ontology_name,
                                                             [],
-                                                            self.selected_variable_symbol)
+                                                            "%s_graph"%self.selected_variable_symbol)
     var_equ_tree_graph.render()
     dot_graph_file = var_equ_tree_graph.outputFile + ".pdf"
     file_name = self.selected_variable_symbol
@@ -140,10 +140,8 @@ class UI_VariableTableShow(VariableTable):
 
   def on_pushDot_pressed(self):
     assignments, dot_graph_file, file_name = self.__makeDotGraph()
-
     showPDF(file_name, self.ontology_name)
-
-    print("debugging -- generate graph")
+    # print("debugging -- generate graph")
 
   @staticmethod
   def __addQtTableItem(tab, s, row, col):

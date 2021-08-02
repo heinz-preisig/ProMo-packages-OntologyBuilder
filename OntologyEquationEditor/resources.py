@@ -1143,7 +1143,7 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
 def showPDF(file_name, ontology_name):
   # shell_name = FILES["latex_shell_ontology_view_exec"]%
   file = os.path.join(DIRECTORIES["graph_locations"]%ontology_name, file_name)
-  args = ["okular", "%s.pdf"%file]
+  args = ["okular", "%s_graph.pdf"%file]
 
 
   # shell_name = FILES["latex_shell_ontology_view_exec"]%ontology_name

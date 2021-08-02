@@ -89,6 +89,14 @@
 {%- endfor -%}
 
 \end{longtable}
+\newpage
+{#
+% this is not according to the manual. Latex does not want to have a blank after the extension
+% so the { {{ dot }} } which is manual conform gives an error message
+% the {{{ dot }}} gives a jina error from the parser, but the one below works for the time being
+#}
+\begin{figure}\includegraphics{ {{ dot }}}
+\end{figure}
 
 \end{document}
 % ================================== end =========================================

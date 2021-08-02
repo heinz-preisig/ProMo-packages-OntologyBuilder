@@ -15,13 +15,12 @@ __author__ = 'Preisig, Heinz A'
 
 MAX_HEIGHT = 800
 
-import os
-
-from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5 import QtGui
 
 from Common.resources_icons import roundButton
+from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
+from OntologyBuilder.OntologyEquationEditor.resources import makeLatexDoc
+from OntologyBuilder.OntologyEquationEditor.resources import showPDF
 from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
 
 
@@ -39,10 +38,11 @@ class UI_VariableTableShow(VariableTable):
 
   def __init__(self,
                title,
+               ontology_container,  #
                variables,
-               indices,
+               # indices,
                network,
-               ontology_name,
+               # ontology_name,
                enabled_types=['ALL'],
                hide_vars=[],
                hide_columns=[],
@@ -65,12 +65,14 @@ class UI_VariableTableShow(VariableTable):
     - completed : button finished has been pressed
     -
     """
-    self.ontology_name = ontology_name
+    self.ontology_name = ontology_container.ontology_name
+    self.ontology_container = ontology_container
+
     VariableTable.__init__(self,
                            title,
                            "variable_picking",
                            variables,
-                           indices,
+                           ontology_container.indices,
                            network,
                            # variables.index_accessible_variables_on_networks,
                            enabled_types,
@@ -91,8 +93,8 @@ class UI_VariableTableShow(VariableTable):
     roundButton(buttons["info"], "info", tooltip="information")
     roundButton(buttons["new"], "new", tooltip="new variable")
     roundButton(buttons["port"], "port", tooltip="new port variable")
-    roundButton(buttons["LaTex"], "LaTex", tooltip="make equation list")
-    roundButton(buttons["dot"], "dot_graph", tooltip="make dot graph variable/expression")
+    roundButton(buttons["LaTex"], "LaTex", tooltip="make equation list and dot graph")
+    roundButton(buttons["dot"], "dot_graph", tooltip="show dot graph variable/expression")
 
     for b in hidden:
       buttons[b].hide()
@@ -103,7 +105,6 @@ class UI_VariableTableShow(VariableTable):
     self.ui.tableVariable.setToolTip("click on row to copy variable to expression")
     self.ui.tableVariable.setSortingEnabled(True)
 
-
   def on_tableVariable_itemClicked(self, item):
 
     column_count = self.ui.tableVariable.columnCount()
@@ -111,20 +112,37 @@ class UI_VariableTableShow(VariableTable):
     item = self.ui.tableVariable.item
     data = {}
     for c in range(column_count):
-      data[c] = item(row,c).text()
+      data[c] = item(row, c).text()
       # print("debugging -- chose:", c, str(data[c]))
     self.selected_variable_symbol = data[1]
     self.selected_variable_ID = int(data[9])
     print("debugging -- selected ID:", self.selected_variable_ID, self.selected_variable_symbol)
 
     self.buttons["LaTex"].show()
-    self.buttons["dot"].show()
     return
 
   def on_pushLaTex_pressed(self):
-    print("debugging -- generate latex table",self.selected_variable_symbol)
+    # print("debugging -- generate latex table", self.selected_variable_symbol)
+    assignments, dot_graph_file, file_name = self.__makeDotGraph()
+    makeLatexDoc(file_name, assignments, self.ontology_container, dot_graph_file)
+    self.buttons["dot"].show()
+
+  def __makeDotGraph(self):
+    var_equ_tree_graph, assignments = AnalyseBiPartiteGraph(self.selected_variable_ID,
+                                                            self.ontology_container,
+                                                            self.ontology_name,
+                                                            [],
+                                                            self.selected_variable_symbol)
+    var_equ_tree_graph.render()
+    dot_graph_file = var_equ_tree_graph.outputFile + ".pdf"
+    file_name = self.selected_variable_symbol
+    return assignments, dot_graph_file, file_name
 
   def on_pushDot_pressed(self):
+    assignments, dot_graph_file, file_name = self.__makeDotGraph()
+
+    showPDF(file_name, self.ontology_name)
+
     print("debugging -- generate graph")
 
   @staticmethod
@@ -139,7 +157,7 @@ class UI_VariableTableShow(VariableTable):
     item = self.ui.tableVariable.item
     data = {}
     for c in range(column_count):
-      data[c] = item(row,c).text()
+      data[c] = item(row, c).text()
       # print("debugging -- chose:", c, str(data[c]))
     self.selected_variable_ID = int(data[9])
     print("debugging -- selected ID:", self.selected_variable_ID)

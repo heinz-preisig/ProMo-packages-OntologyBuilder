@@ -293,10 +293,11 @@ class UiOntologyDesign(QMainWindow):
     # print("debugging -- make variable table")
     enabled_var_types = self.variable_types_on_networks[self.current_network]
     variable_table = UI_VariableTableShow("All defined variables",
+                                          self.ontology_container,
                                           self.variables,
-                                          self.indices,
+                                          # self.indices,
                                           self.current_network,
-                                          self.ontology_name,
+                                          # self.ontology_name,
                                           enabled_var_types,
                                           [],
                                           [],
@@ -712,7 +713,7 @@ class UiOntologyDesign(QMainWindow):
     # msg_box = wait()
     # msg_box.exec()
     self.progress_dialog("compiling")
-    make_variable_equation_pngs(self.ontology_name)
+    make_variable_equation_pngs(self.ontology_container)
     # self.__writeMessage("Wrote {} output".format(language), append=True)
     self.__writeMessage("compilation completed")
 

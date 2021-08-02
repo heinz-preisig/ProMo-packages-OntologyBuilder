@@ -16,13 +16,19 @@ __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
 import os
+from os.path import join, abspath, dirname
 import subprocess
+
+from jinja2 import Environment  # sudo apt-get install python-jinja2
+from jinja2 import FileSystemLoader
 
 from graphviz import Digraph
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from Common.common_resources import getData
+from Common.common_resources import walkBreathFirstFnc
+from Common.common_resources import walkDepthFirstFnc
 from Common.common_resources import invertDict, CONNECTION_NETWORK_SEPARATOR
 from Common.record_definitions_equation_linking import VariantRecord
 from Common.resource_initialisation import DIRECTORIES
@@ -713,11 +719,13 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
   return s
 
 
-def make_variable_equation_pngs(ontology_name):
+def make_variable_equation_pngs(ontology_container):
   """
   generates pictures of the equations extracting the latex code from the latex equation file
   """
 
+  ontology_name = ontology_container.ontology_name
+  variables = ontology_container.variables
 
   eqs = {}
   vars = {}
@@ -731,6 +739,8 @@ def make_variable_equation_pngs(ontology_name):
     rhs = e["rhs"]
     vars[var_ID] = lhs
     eqs[eq_ID] = r"%s = %s" % (lhs, rhs)
+
+
 
   f_name = FILES["pnglatex"]
   ontology_location = DIRECTORIES["ontology_location"] % ontology_name
@@ -771,11 +781,13 @@ def make_variable_equation_pngs(ontology_name):
         print("equation generation failed")
         pass
 
-  # print("debugging")
-  for var_ID in vars:
+  print("debugging")
+  for var_ID in variables:
+      if var_ID == 19:
+        print("debugging >>>> found 19")
       out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
 
-      var_latex = vars[var_ID]
+      var_latex = variables[var_ID]["aliases"]["latex"]
       # if var_ID == 92:
       #   print("debugging variable 92: ", var_latex)
       args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
@@ -794,11 +806,11 @@ def make_variable_equation_pngs(ontology_name):
         pass
 
 
-def makeVariables(variables):
-  lhs = {}
-  for var_ID in variables:
-    lhs[var_ID] = variables[var_ID]["aliases"]["latex"]
-  return lhs
+# def makeVariables(variables):
+#   lhs = {}
+#   for var_ID in variables:
+#     lhs[var_ID] = variables[var_ID]["aliases"]["latex"]
+#   return lhs
 
 
 # def parseLine(line):
@@ -1020,22 +1032,7 @@ def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocke
                                            file_name=file_name)
 
   print("debugging -- dotgrap done")
-  # finding the buddies -- currently the buddies are connected via the interfaces
-  # the first variable defines the network and any variable that is in a interface is connected to a buddy
-  # TODO: reconsider the definition and handling of the interfaces
-  buddies = set()
-  the_network = ontology_container.variables[variable_ID]["network"]
-
-  for id in var_equ_tree.tree["IDs"]:
-    o, str_ID = id.split("_")
-    ID = int(str_ID)
-    if o == "variable":
-      network = ontology_container.variables[ID]['network']
-      if CONNECTION_NETWORK_SEPARATOR in network:
-          buddies.add((ID, network))
-
-      # if network in ontology_container.list_leave_networks:
-      #   buddies.add((ID, network))
+  buddies = getListOfBuddies(ontology_container, var_equ_tree, variable_ID)
 
   assignments = VariantRecord(tree=var_equ_tree.tree["tree"],
                               nodes=var_equ_tree.tree["nodes"],
@@ -1046,3 +1043,110 @@ def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocke
                               )
 
   return var_equ_tree, assignments
+
+
+def getListOfBuddies(ontology_container, var_equ_tree, variable_ID):
+
+  # finding the buddies -- currently the buddies are connected via the interfaces
+  # the first variable defines the network and any variable that is in a interface is connected to a buddy
+  # TODO: reconsider the definition and handling of the interfaces
+  buddies = set()
+  the_network = ontology_container.variables[variable_ID]["network"]
+  for id in var_equ_tree.tree["IDs"]:
+    o, str_ID = id.split("_")
+    ID = int(str_ID)
+    if o == "variable":
+      network = ontology_container.variables[ID]['network']
+      if CONNECTION_NETWORK_SEPARATOR in network:
+        buddies.add((ID, network))
+
+      # if network in ontology_container.list_leave_networks:
+      #   buddies.add((ID, network))
+  return buddies
+
+def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
+
+    ontology_location = ontology_container.ontology_location
+    ontology_name = ontology_container.ontology_name
+    latex_equation_file = FILES["coded_equations"] %(ontology_location, "latex")
+    latex_equations = getData(latex_equation_file)
+    variables = ontology_container.variables
+    var_ID = assignments["root_variable"]
+    # tree = VarEqTree(variables,var_ID,[])
+    print("debugging")
+    tree_var_ID = assignments["nodes"][0]
+    walked_nodes = walkDepthFirstFnc(assignments["tree"], 0)
+    nodes = []
+    for n in walked_nodes:
+      nodes.append(assignments["nodes"][n])
+      print(assignments["nodes"][n])
+    nodes = assignments["nodes"]
+    latex_var_equ = []
+    count = 0
+
+    for a in nodes:
+      if "equation" in nodes[a]:
+        print("debugging -- found equation:", nodes[a])
+        e,eq_str_ID = nodes[a].split("_")
+        var_ID = latex_equations[eq_str_ID]["variable_ID"]
+        eq = "%s := %s"%(latex_equations[eq_str_ID]["lhs"] , latex_equations[eq_str_ID]["rhs"])
+        s = [count, str(var_ID), eq_str_ID, eq, str(variables[var_ID]["tokens"])]
+        latex_var_equ.append(s)
+        count += 1
+
+    for a in nodes:
+      if "variable" in nodes[a]:
+        print("debugging -- found variable:", nodes[a])
+        v, var_str_ID = nodes[a].split("_")
+        var_ID = int(var_str_ID)
+        eqs = variables[var_ID]["equations"]
+        if not eqs:
+          eq = "%s :: %s" % (variables[var_ID]["label"], "\\text{port variable}")
+          s = [count, var_str_ID, "-", eq, str(variables[var_ID]["tokens"])]
+          latex_var_equ.append(s)
+          count += 1
+
+    print("debugging -- got here")
+
+    # get variable in LaTex form
+    root_var = nodes[0]
+    v, var_str_ID = root_var.split("_")
+    var_ID = int(var_str_ID)
+    lhs = variables[var_ID]["aliases"]["latex"]
+
+    latex_var_equ = reversed(latex_var_equ)
+    THIS_DIR = dirname(abspath(__file__))
+    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+    template = FILES["latex_template_equation_list"]
+    body = j2_env.get_template(template).render(variable=lhs, equations=latex_var_equ, dot=dot_graph_file)
+    f_name = FILES["latex_equation_list"] %( ontology_name, file_name)
+    f = open(f_name, 'w')
+    f.write(body)
+    f.close()
+
+
+    shell_name = FILES["latex_shell_var_equ_list_command"] % ontology_name
+    latex_location = DIRECTORIES["latex_location"] % ontology_name
+    args = ['bash', shell_name, latex_location, file_name]  # ontology_location + '/']
+    print('ARGS: ', args)
+
+    try:  # reports an error after completing the last one -- no idea
+      make_it = subprocess.Popen(
+              args,
+              start_new_session=True
+              )
+      out, error = make_it.communicate()
+    except:
+      print("equation generation failed")
+      pass
+
+def showPDF(file_name, ontology_name):
+  # shell_name = FILES["latex_shell_ontology_view_exec"]%
+  file = os.path.join(DIRECTORIES["graph_locations"]%ontology_name, file_name)
+  args = ["okular", "%s.pdf"%file]
+
+
+  # shell_name = FILES["latex_shell_ontology_view_exec"]%ontology_name
+  # args = ["bash", shell_name, ]
+  view_it = subprocess.Popen(args, start_new_session=True)
+  out, error = view_it.communicate()

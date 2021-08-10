@@ -17,17 +17,22 @@ __version__ = "6.00"
 __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
+import os
+import subprocess
+
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
+from Common.common_resources import getData
 from Common.record_definitions import makeCompletEquationRecord
 from Common.record_definitions import makeCompleteVariableRecord
-from Common.resources_icons import roundButton
-from Common.ui_match_pairs_impl import UI_MatchPairs
 # from Common.common_resources import globalEquationID
 # from Common.common_resources import globalVariableID
 from Common.record_definitions import RecordEquation
+from Common.resource_initialisation import DIRECTORIES
+from Common.resource_initialisation import FILES
+from Common.resources_icons import roundButton
 from Common.single_list_selector_impl import SingleListSelector
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_EQ
 from OntologyBuilder.OntologyEquationEditor.resources import NEW_VAR
@@ -78,11 +83,12 @@ class UI_Equations(QtWidgets.QWidget):
     self.ui = Ui_Form()
     self.ui.setupUi(self)
 
-    roundButton(self.ui.pushAccept, "accept") #, tooltip="accept")
+    roundButton(self.ui.pushAccept, "accept")  # , tooltip="accept")
     roundButton(self.ui.pushDeleteEquation, "delete", tooltip="delete")
     roundButton(self.ui.pushCancel, "reject", tooltip="cancel")
     # roundButton(self.ui.pushResetInterface, "reset", tooltip="reset")
 
+    self.ontology_container = variables.ontology_container
     self.hide()
     self.what = what
     self.variables = variables
@@ -325,13 +331,13 @@ class UI_Equations(QtWidgets.QWidget):
               msg = "variable has \n" \
                     "- index structures : %s\n" \
                     "- units            : %s\n" \
-                    "- tokens           : %s\n"    % (pretty_var_indices, pretty_var_units, var.tokens)
+                    "- tokens           : %s\n" % (pretty_var_indices, pretty_var_units, var.tokens)
               self.MSG(msg)
             else:
               msg = "missmatch of tokens \n" \
-                  " - variable has   : %s\n" \
-                  " - expression has : %s\n" \
-                  % (self.checked_var.tokens, var.tokens)
+                    " - variable has   : %s\n" \
+                    " - expression has : %s\n" \
+                    % (self.checked_var.tokens, var.tokens)
           else:
             msg = "missmatch of index structures \n" \
                   " - variable has   : %s\n" \
@@ -435,6 +441,8 @@ class UI_Equations(QtWidgets.QWidget):
           token_index = token_selector.exec_()
           tokens = [tokens_on_nw[right_nw][token_index]]
           print("debugging -- tokens:", tokens)
+      else:
+        tokens = self.checked_var.tokens
       variable_record = makeCompleteVariableRecord(var_ID,
                                                    label=symbol,
                                                    type=self.selected_variable_type,
@@ -451,9 +459,11 @@ class UI_Equations(QtWidgets.QWidget):
                                                    )
 
       self.variables.addNewVariable(ID=var_ID, **variable_record)
+      # make_variable_pngs(self.ontology_container, source=self.variables, ID=var_ID)
+
     else:
       self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, equ_ID, documentation, equation_record)
-
+      # make_equation_pngs(self.ontology_container, ID=equ_ID)
 
     self.variables.indexVariables()
     self.update_space_information.emit()
@@ -494,7 +504,7 @@ class UI_Equations(QtWidgets.QWidget):
       self.current_equation_name = e["name"]
       eq_IDs = sorted(self.variables[self.selected_variable_ID].equations.keys())
       if eq_IDs:
-        doc = self.variables[self.selected_variable_ID].equations[eq_IDs[0]]["doc"] # copy doc from the first equation
+        doc = self.variables[self.selected_variable_ID].equations[eq_IDs[0]]["doc"]  # copy doc from the first equation
       else:
         doc = self.variables[self.selected_variable_ID].doc
       self.ui.lineDocumentation.setText(doc)
@@ -562,6 +572,7 @@ class UI_Equations(QtWidgets.QWidget):
 
   def on_pushPickIndices_pressed(self):
     self.ui_indices.show()
+
   #
   # def on_pushResetInterface_pressed(self):
   #   self.resetEquationInterface()
@@ -569,3 +580,4 @@ class UI_Equations(QtWidgets.QWidget):
   def on_pushCancel_pressed(self):
     self.resetEquationInterface()
     self.close()
+

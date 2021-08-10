@@ -110,7 +110,36 @@
 %\subsection{Instantiations}   { \input{equations_instantiate}}
 %\newpage
 
+\pagestyle{empty}
+\def\dotgrapha#1{\newpage
+	\includegraphics[scale=0.6,angle=0, trim=0 0cm 0cm 0cm]{#1}}
 
+\def\dotgraphb#1{\newpage
+	\includegraphics[width=\textwidth,
+	                 height=\textheight,
+	                 trim=0 0cm 0cm 0cm]{#1}}
+\def\dotgraphc#1{\newpage
+	             	\includegraphics[%width=\textwidth,
+	             	%height=\textheight,
+	             	trim=0 0cm 0cm 0cm]{#1}}
+% trim l b r t
+
+\newpage
+\section{Graphs}
+
+{% endraw%}
+
+{% for o in ontology -%}
+    \IfFileExists{../ontology_graphs/graph__{{ o }}.ps}{
+    \subsection{ {{ o }} }
+    \dotgrapha{../ontology_graphs/graph__{{ o }}.ps}
+    }
+    {}
+{% endfor -%}
+
+
+
+{% raw %}
 \end{document}
 % ================================== end =========================================
 {% endraw%}

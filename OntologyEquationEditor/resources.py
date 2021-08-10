@@ -16,20 +16,20 @@ __email__ = "heinz.preisig@chemeng.ntnu.no"
 __status__ = "beta"
 
 import os
-from os.path import join, abspath, dirname
 import subprocess
-
-from jinja2 import Environment  # sudo apt-get install python-jinja2
-from jinja2 import FileSystemLoader
+from os.path import abspath
+from os.path import dirname
 
 from graphviz import Digraph
+from jinja2 import Environment  # sudo apt-get install python-jinja2
+from jinja2 import FileSystemLoader
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
+from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import getData
-from Common.common_resources import walkBreathFirstFnc
+from Common.common_resources import invertDict
 from Common.common_resources import walkDepthFirstFnc
-from Common.common_resources import invertDict, CONNECTION_NETWORK_SEPARATOR
 from Common.record_definitions_equation_linking import VariantRecord
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
@@ -125,16 +125,16 @@ TEMPLATES["differential_space"] = "d%s"
 ENABLED_COLUMNS = {}  # TODO: remove hard wiring
 ENABLED_COLUMNS["initialise"] = {}
 ENABLED_COLUMNS["initialise"]["constant"] = [0, 1, 2, 3, 4, 5, 6]
-ENABLED_COLUMNS["initialise"]["state"] = [1, 2, 3, 4 ]
-ENABLED_COLUMNS["initialise"]["frame"] = [1, 2, 3, 4 ]
+ENABLED_COLUMNS["initialise"]["state"] = [1, 2, 3, 4]
+ENABLED_COLUMNS["initialise"]["frame"] = [1, 2, 3, 4]
 ENABLED_COLUMNS["initialise"]["network"] = [1, 2, 5]
 ENABLED_COLUMNS["initialise"]["others"] = []
 
 ENABLED_COLUMNS["edit"] = {}
-ENABLED_COLUMNS["edit"]["constant"] = [0, 1, 2, 3, 4, 5, 6,7]
-ENABLED_COLUMNS["edit"]["others"] = [0, 1, 2, 5, 6,7]
-ENABLED_COLUMNS["edit"]["state"] = [1, 2, 3, 4, 6,7]
-ENABLED_COLUMNS["edit"]["frame"] = [1, 2, 3,  7]
+ENABLED_COLUMNS["edit"]["constant"] = [0, 1, 2, 3, 4, 5, 6, 7]
+ENABLED_COLUMNS["edit"]["others"] = [0, 1, 2, 5, 6, 7]
+ENABLED_COLUMNS["edit"]["state"] = [1, 2, 3, 4, 6, 7]
+ENABLED_COLUMNS["edit"]["frame"] = [1, 2, 3, 7]
 ENABLED_COLUMNS["edit"]["network"] = [1, 2, 4, 7]
 
 ENABLED_COLUMNS["inter_connections"] = {}
@@ -144,10 +144,10 @@ ENABLED_COLUMNS["inter_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6, 7]
 ENABLED_COLUMNS["inter_connections"]["state"] = [0, 1, 2, 3, 5, 6]
 
 ENABLED_COLUMNS["intra_connections"] = {}
-ENABLED_COLUMNS["intra_connections"]["constant"] = [0, 1, 2, 3, 4, 5, 6,7]
-ENABLED_COLUMNS["intra_connections"]["transposition"] = [0, 1, 2, 5, 6,7]
-ENABLED_COLUMNS["intra_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6,7]
-ENABLED_COLUMNS["intra_connections"]["state"] = [0, 1, 2, 3, 4, 5,6]
+ENABLED_COLUMNS["intra_connections"]["constant"] = [0, 1, 2, 3, 4, 5, 6, 7]
+ENABLED_COLUMNS["intra_connections"]["transposition"] = [0, 1, 2, 5, 6, 7]
+ENABLED_COLUMNS["intra_connections"]["others"] = [0, 1, 2, 3, 4, 5, 6, 7]
+ENABLED_COLUMNS["intra_connections"]["state"] = [0, 1, 2, 3, 4, 5, 6]
 
 # code generation in abstract syntax
 
@@ -168,7 +168,7 @@ LIST_OPERATORS = ["+",  # ................ ordinary plus
                   "max",  # .............. maximum
                   "min",  # .............. minimum
                   "in",  # ............... membership    TODO: behaves more like a delimiter...
-                  "MakeIndex", # ......... make a new index
+                  "MakeIndex",  # ......... make a new index
                   ]
 
 UNITARY_NO_UNITS = ["exp", "log", "ln", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan"]
@@ -294,9 +294,9 @@ CODE[language]["blockProd"] = CODE[language]["function"]["blockProd"] + \
 CODE[language]["Root"] = CODE[language]["function"]["Root"] + CODE[language]["combi"]["tuple"]
 
 CODE[language]["Stack"] = CODE[language]["function"]["Stack"] + \
-                               CODE[language]["delimiter"]["("] + \
-                               "%s" + \
-                               CODE[language]["delimiter"][")"]
+                          CODE[language]["delimiter"]["("] + \
+                          "%s" + \
+                          CODE[language]["delimiter"][")"]
 CODE[language]["MixedStack"] = CODE[language]["function"]["MixedStack"] + \
                                CODE[language]["delimiter"]["("] + \
                                "%s" + \
@@ -612,7 +612,7 @@ Special_TEMPLATE = {
         "BlockReduce": [],
         "Product"    : CODE[internal]["Product"].format(argument="a",
                                                         index="I"),
-        "MixedStack" : CODE[internal]["MixedStack"]%("a,b, ..")
+        "MixedStack" : CODE[internal]["MixedStack"] % ("a,b, ..")
         }
 
 # TODO: not nice needs fixing
@@ -652,11 +652,12 @@ def isVariableInExpression(expression, variable_ID):
   for w in items:
     if len(w) > 0:
       if w[0] == "V":
-        lbl,strID = w.split("_")
-        v_ID = int(strID) # w.replace("V_", "").strip())
+        lbl, strID = w.split("_")
+        v_ID = int(strID)  # w.replace("V_", "").strip())
         if v_ID == variable_ID:
           return True
   return False
+
 
 def renderExpressionFromGlobalIDToInternal(expression, variables, indices):
   """
@@ -718,93 +719,120 @@ def renderIndexListFromGlobalIDToInternal(indexList, indices):
 
   return s
 
-
-def make_variable_equation_pngs(ontology_container):
-  """
-  generates pictures of the equations extracting the latex code from the latex equation file
-  """
-
-  ontology_name = ontology_container.ontology_name
-  variables = ontology_container.variables
-
-  eqs = {}
-  vars = {}
-  latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
-  latex_translations = getData(latex_file)
-  for eq_ID_str in latex_translations:
-    eq_ID = int(eq_ID_str)
-    e = latex_translations[eq_ID_str]
-    var_ID = e["variable_ID"]
-    lhs = e["lhs"]
-    rhs = e["rhs"]
-    vars[var_ID] = lhs
-    eqs[eq_ID] = r"%s = %s" % (lhs, rhs)
-
-
-
-  f_name = FILES["pnglatex"]
-  ontology_location = DIRECTORIES["ontology_location"] % ontology_name
-
-  header = os.path.join(ontology_location, "LaTeX", "resources", "header.tex")
-
-  header_file = open(header, 'w')
-
-  # RULE: make header for equation and variable latex compilations.
-  # math packages
-  # \usepackage{amsmath}
-  # \usepackage{amssymb}
-  # \usepackage{calligra}
-  # \usepackage{array}
-  # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
-  header_file.write(r"\usepackage{amsmath}")
-  header_file.write(r"\usepackage{amssymb}")
-  header_file.write(r"\usepackage{calligra}")
-  header_file.write(r"\usepackage{array}")
-  header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
-  header_file.close()
-
-  for eq_ID in eqs:
-      out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
-      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
-              ontology_location]
-
-      try:  # reports an error after completing the last one -- no idea
-        make_it = subprocess.Popen(
-                args,
-                start_new_session=True,
-                # restore_signals=False,
-                # stdout=subprocess.PIPE,
-                # stderr=subprocess.PIPE
-                )
-        out, error = make_it.communicate()
-      except:
-        print("equation generation failed")
-        pass
-
-  print("debugging")
-  for var_ID in variables:
-      if var_ID == 19:
-        print("debugging >>>> found 19")
-      out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
-
-      var_latex = variables[var_ID]["aliases"]["latex"]
-      # if var_ID == 92:
-      #   print("debugging variable 92: ", var_latex)
-      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
-              ontology_location]
-
-      try:  # reports an error after completing the last one -- no idea
-        make_it = subprocess.Popen(
-                args,
-                start_new_session=True,
-                restore_signals=False,
-                # stdout=subprocess.PIPE,
-                # stderr=subprocess.PIPE
-                )
-        out, error = make_it.communicate()
-      except:
-        pass
-
+#
+# def make_variable_equation_pngs(variables, ontology_container):
+#   """
+#   generates pictures of the equations extracting the latex code from the latex equation file
+#   """
+#   make_equation_pngs(ontology_container)
+#   make_variable_pngs(variables, ontology_container)
+#
+#
+# def make_equation_pngs(ontology_container, source=None, ID=None):
+#   """
+#   undefined source takes the data from the compiled file, thus the equations_latex.json file
+#   otherwise it is taken from the variables dictionary being physical variables
+#   """
+#   ontology_name = ontology_container.ontology_name
+#   ontology_location = DIRECTORIES["ontology_location"] % ontology_name
+#   f_name = FILES["pnglatex"]
+#   header = __makeHeader(ontology_name)
+#
+#   if not source:
+#     eqs = {}
+#     latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
+#     latex_translations = getData(latex_file)
+#     for eq_ID_str in latex_translations:
+#       eq_ID = int(eq_ID_str)
+#       if ID:
+#         e = latex_translations[ID]
+#         eqs[ID] = r"%s = %s" % (e["lhs"], e["rhs"])
+#         break
+#       else:
+#         e = latex_translations[eq_ID_str]
+#         eqs[eq_ID] = r"%s = %s" % (e["lhs"], e["rhs"])
+#
+#
+#   for eq_ID in eqs:
+#     out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+#     args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
+#             ontology_location]
+#
+#     try:  # reports an error after completing the last one -- no idea
+#       make_it = subprocess.Popen(
+#               args,
+#               start_new_session=True,
+#               # restore_signals=False,
+#               # stdout=subprocess.PIPE,
+#               # stderr=subprocess.PIPE
+#               )
+#       out, error = make_it.communicate()
+#     except:
+#       print("equation generation failed")
+#       pass
+#
+#
+# def make_variable_pngs(ontology_container, source=None, ID=None):
+#   ontology_name = ontology_container.ontology_name
+#   if not source:
+#     variables = ontology_container.variables
+#   else:
+#     variables = source
+#
+#   f_name = FILES["pnglatex"]
+#   ontology_location = DIRECTORIES["ontology_location"] % ontology_name
+#   header = __makeHeader(ontology_name)
+#   for var_ID in variables:
+#
+#     out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
+#
+#     if source:
+#       var_latex = variables[var_ID].aliases["latex"]
+#     else:
+#       var_latex = variables[var_ID]["aliases"]["latex"]
+#     print("debugging -->>>>>>>", var_ID, ID)
+#     if var_ID == 117:
+#       print("debugging -->>>>>>>")
+#
+#     if (not ID) or (var_ID == ID) :
+#       print("debugging -->>>>>>>")
+#       args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
+#               ontology_location]
+#
+#       try:  # reports an error after completing the last one -- no idea
+#         make_it = subprocess.Popen(
+#                 args,
+#                 start_new_session=True,
+#                 restore_signals=False,
+#                 # stdout=subprocess.PIPE,
+#                 # stderr=subprocess.PIPE
+#                 )
+#         out, error = make_it.communicate()
+#         print("debugging -- made:", var_ID)
+#       except:
+#         print("debugging -- failed to make:", var_ID)
+#         pass
+#
+#
+# def __makeHeader(ontology_name):
+#   header = FILES["latex_png_header_file"] % ontology_name
+#   if not os.path.exists(header):
+#     header_file = open(header, 'w')
+#     # RULE: make header for equation and variable latex compilations.
+#     # math packages
+#     # \usepackage{amsmath}
+#     # \usepackage{amssymb}
+#     # \usepackage{calligra}
+#     # \usepackage{array}
+#     # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
+#     header_file.write(r"\usepackage{amsmath}")
+#     header_file.write(r"\usepackage{amssymb}")
+#     header_file.write(r"\usepackage{calligra}")
+#     header_file.write(r"\usepackage{array}")
+#     header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
+#     header_file.close()
+#   return header
+#
 
 # def makeVariables(variables):
 #   lhs = {}
@@ -947,7 +975,7 @@ class DotGraphVariableEquations(VarEqTree):
     os.remove(self.file)
 
   def render(self):
-    self.simple_graph.render(self.outputFile,cleanup=True)
+    self.simple_graph.render(self.outputFile, cleanup=True)
     return self.outputFile
 
   def initObjects(self):
@@ -1046,7 +1074,6 @@ def AnalyseBiPartiteGraph(variable_ID, ontology_container, ontology_name, blocke
 
 
 def getListOfBuddies(ontology_container, var_equ_tree, variable_ID):
-
   # finding the buddies -- currently the buddies are connected via the interfaces
   # the first variable defines the network and any variable that is in a interface is connected to a buddy
   # TODO: reconsider the definition and handling of the interfaces
@@ -1064,87 +1091,86 @@ def getListOfBuddies(ontology_container, var_equ_tree, variable_ID):
       #   buddies.add((ID, network))
   return buddies
 
+
 def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
+  ontology_location = ontology_container.ontology_location
+  ontology_name = ontology_container.ontology_name
+  latex_equation_file = FILES["coded_equations"] % (ontology_location, "latex")
+  latex_equations = getData(latex_equation_file)
+  variables = ontology_container.variables
+  var_ID = assignments["root_variable"]
+  # tree = VarEqTree(variables,var_ID,[])
+  print("debugging")
+  tree_var_ID = assignments["nodes"][0]
+  walked_nodes = walkDepthFirstFnc(assignments["tree"], 0)
+  nodes = []
+  for n in walked_nodes:
+    nodes.append(assignments["nodes"][n])
+    print(assignments["nodes"][n])
+  nodes = assignments["nodes"]
+  latex_var_equ = []
+  count = 0
 
-    ontology_location = ontology_container.ontology_location
-    ontology_name = ontology_container.ontology_name
-    latex_equation_file = FILES["coded_equations"] %(ontology_location, "latex")
-    latex_equations = getData(latex_equation_file)
-    variables = ontology_container.variables
-    var_ID = assignments["root_variable"]
-    # tree = VarEqTree(variables,var_ID,[])
-    print("debugging")
-    tree_var_ID = assignments["nodes"][0]
-    walked_nodes = walkDepthFirstFnc(assignments["tree"], 0)
-    nodes = []
-    for n in walked_nodes:
-      nodes.append(assignments["nodes"][n])
-      print(assignments["nodes"][n])
-    nodes = assignments["nodes"]
-    latex_var_equ = []
-    count = 0
+  for a in nodes:
+    if "equation" in nodes[a]:
+      print("debugging -- found equation:", nodes[a])
+      e, eq_str_ID = nodes[a].split("_")
+      var_ID = latex_equations[eq_str_ID]["variable_ID"]
+      eq = "%s := %s" % (latex_equations[eq_str_ID]["lhs"], latex_equations[eq_str_ID]["rhs"])
+      s = [count, str(var_ID), eq_str_ID, eq, str(variables[var_ID]["tokens"])]
+      latex_var_equ.append(s)
+      count += 1
 
-    for a in nodes:
-      if "equation" in nodes[a]:
-        print("debugging -- found equation:", nodes[a])
-        e,eq_str_ID = nodes[a].split("_")
-        var_ID = latex_equations[eq_str_ID]["variable_ID"]
-        eq = "%s := %s"%(latex_equations[eq_str_ID]["lhs"] , latex_equations[eq_str_ID]["rhs"])
-        s = [count, str(var_ID), eq_str_ID, eq, str(variables[var_ID]["tokens"])]
+  for a in nodes:
+    if "variable" in nodes[a]:
+      print("debugging -- found variable:", nodes[a])
+      v, var_str_ID = nodes[a].split("_")
+      var_ID = int(var_str_ID)
+      eqs = variables[var_ID]["equations"]
+      if not eqs:
+        eq = "%s :: %s" % (variables[var_ID]["label"], "\\text{port variable}")
+        s = [count, var_str_ID, "-", eq, str(variables[var_ID]["tokens"])]
         latex_var_equ.append(s)
         count += 1
 
-    for a in nodes:
-      if "variable" in nodes[a]:
-        print("debugging -- found variable:", nodes[a])
-        v, var_str_ID = nodes[a].split("_")
-        var_ID = int(var_str_ID)
-        eqs = variables[var_ID]["equations"]
-        if not eqs:
-          eq = "%s :: %s" % (variables[var_ID]["label"], "\\text{port variable}")
-          s = [count, var_str_ID, "-", eq, str(variables[var_ID]["tokens"])]
-          latex_var_equ.append(s)
-          count += 1
+  print("debugging -- got here")
 
-    print("debugging -- got here")
+  # get variable in LaTex form
+  root_var = nodes[0]
+  v, var_str_ID = root_var.split("_")
+  var_ID = int(var_str_ID)
+  lhs = variables[var_ID]["aliases"]["latex"]
 
-    # get variable in LaTex form
-    root_var = nodes[0]
-    v, var_str_ID = root_var.split("_")
-    var_ID = int(var_str_ID)
-    lhs = variables[var_ID]["aliases"]["latex"]
+  latex_var_equ = reversed(latex_var_equ)
+  THIS_DIR = dirname(abspath(__file__))
+  j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+  template = FILES["latex_template_equation_list"]
+  body = j2_env.get_template(template).render(variable=lhs, equations=latex_var_equ, dot=dot_graph_file)
+  f_name = FILES["latex_equation_list"] % (ontology_name, file_name)
+  f = open(f_name, 'w')
+  f.write(body)
+  f.close()
 
-    latex_var_equ = reversed(latex_var_equ)
-    THIS_DIR = dirname(abspath(__file__))
-    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
-    template = FILES["latex_template_equation_list"]
-    body = j2_env.get_template(template).render(variable=lhs, equations=latex_var_equ, dot=dot_graph_file)
-    f_name = FILES["latex_equation_list"] %( ontology_name, file_name)
-    f = open(f_name, 'w')
-    f.write(body)
-    f.close()
+  shell_name = FILES["latex_shell_var_equ_list_command"] % ontology_name
+  latex_location = DIRECTORIES["latex_location"] % ontology_name
+  args = ['bash', shell_name, latex_location, file_name]  # ontology_location + '/']
+  print('ARGS: ', args)
 
+  try:  # reports an error after completing the last one -- no idea
+    make_it = subprocess.Popen(
+            args,
+            start_new_session=True
+            )
+    out, error = make_it.communicate()
+  except:
+    print("equation generation failed")
+    pass
 
-    shell_name = FILES["latex_shell_var_equ_list_command"] % ontology_name
-    latex_location = DIRECTORIES["latex_location"] % ontology_name
-    args = ['bash', shell_name, latex_location, file_name]  # ontology_location + '/']
-    print('ARGS: ', args)
-
-    try:  # reports an error after completing the last one -- no idea
-      make_it = subprocess.Popen(
-              args,
-              start_new_session=True
-              )
-      out, error = make_it.communicate()
-    except:
-      print("equation generation failed")
-      pass
 
 def showPDF(file_name, ontology_name):
   # shell_name = FILES["latex_shell_ontology_view_exec"]%
-  file = os.path.join(DIRECTORIES["graph_locations"]%ontology_name, file_name)
-  args = ["okular", "%s_graph.pdf"%file]
-
+  file = os.path.join(DIRECTORIES["graph_locations"] % ontology_name, file_name)
+  args = ["okular", "%s_graph.pdf" % file]
 
   # shell_name = FILES["latex_shell_ontology_view_exec"]%ontology_name
   # args = ["bash", shell_name, ]

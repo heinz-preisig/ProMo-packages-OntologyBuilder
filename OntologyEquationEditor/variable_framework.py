@@ -1471,9 +1471,11 @@ class ReduceProduct(BinaryOperator):
       msg += "\n first argument indices : %s" % pretty_a_indices
       msg += "\n second argument indices: %s" % pretty_b_indices
       raise IndexStructureError(msg)
-    self.index_structures = sorted(s_index_a.symmetric_difference(s_index_b))
+    # self.index_structures = sorted(s_index_a.symmetric_difference(s_index_b))
+    self.index_structures = sorted((s_index_a | s_index_b) - set([self.index]))
 
     red_index = list(s_index_a & s_index_b)[0]
+
     self.tokens = self.reduceTokens(a, b, red_index)
     # print("debugging")
 

@@ -33,7 +33,7 @@ from Common.ui_text_browser_popup_impl import Ui_TextBrowserPopUp
 from Common.ui_wait_impl import wait
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
 from Common.common_resources import getOntologyName
-from Common.common_resources import makeTreeView
+from Common.common_resources import makeTreeView, getData
 from Common.common_resources import putData
 from Common.common_resources import saveBackupFile
 from Common.ontology_container import OntologyContainer
@@ -48,7 +48,7 @@ from Common.record_definitions import RecordIndex
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
 from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES, CODE
-from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
+# from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.tpg import LexicalError
 from OntologyBuilder.OntologyEquationEditor.tpg import SemanticError
@@ -713,7 +713,7 @@ class UiOntologyDesign(QMainWindow):
     # msg_box = wait()
     # msg_box.exec()
     self.progress_dialog("compiling")
-    make_variable_equation_pngs(self.ontology_container)
+    self.make_variable_equation_pngs(self.variables, self.ontology_container)
     # self.__writeMessage("Wrote {} output".format(language), append=True)
     self.__writeMessage("compilation completed")
 
@@ -839,6 +839,119 @@ class UiOntologyDesign(QMainWindow):
       self.ui_eq.close()
     except:
       pass
+
+
+
+  def make_variable_equation_pngs(self, variables, ontology_container):
+    """
+    generates pictures of the equations extracting the latex code from the latex equation file
+    """
+    self.make_equation_pngs()
+    self.make_variable_pngs()
+
+
+  def make_equation_pngs(self, source=None, ID=None):
+    """
+    undefined source takes the data from the compiled file, thus the equations_latex.json file
+    otherwise it is taken from the variables dictionary being physical variables
+    """
+    ontology_name = self.ontology_container.ontology_name
+    ontology_location = DIRECTORIES["ontology_location"] % ontology_name
+    f_name = FILES["pnglatex"]
+    header = self.__makeHeader(ontology_name)
+
+    if not source:
+      eqs = {}
+      latex_file = os.path.join(DIRECTORIES["ontology_location"] % ontology_name, "equations_latex.json")
+      latex_translations = getData(latex_file)
+      for eq_ID_str in latex_translations:
+        eq_ID = int(eq_ID_str)
+        if ID:
+          e = latex_translations[ID]
+          eqs[ID] = r"%s = %s" % (e["lhs"], e["rhs"])
+          break
+        else:
+          e = latex_translations[eq_ID_str]
+          eqs[eq_ID] = r"%s = %s" % (e["lhs"], e["rhs"])
+
+    for eq_ID in eqs:
+      out = os.path.join(ontology_location, "LaTeX", "equation_%s.png" % eq_ID)
+      args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", eqs[eq_ID],
+              ontology_location]
+
+      try:  # reports an error after completing the last one -- no idea
+        make_it = subprocess.Popen(
+                args,
+                start_new_session=True,
+                # restore_signals=False,
+                # stdout=subprocess.PIPE,
+                # stderr=subprocess.PIPE
+                )
+        out, error = make_it.communicate()
+      except:
+        print("equation generation failed")
+        pass
+
+
+  def make_variable_pngs(self, source=None, ID=None):
+    ontology_name = self.ontology_container.ontology_name
+    variables = self.ontology_container.variables
+
+    f_name = FILES["pnglatex"]
+    ontology_location = DIRECTORIES["ontology_location"] % ontology_name
+    header = self.__makeHeader(ontology_name)
+    for var_ID in variables:
+
+      out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
+
+      if source:
+        var_latex = variables[var_ID].aliases["latex"]
+      else:
+        var_latex = variables[var_ID]["aliases"]["latex"]
+
+      # print("debugging -->>>>>>>", var_ID, ID)
+      # if var_ID == 117:
+      #   print("debugging -->>>>>>>")
+
+      if (not ID) or (var_ID == ID):
+        # print("debugging -->>>>>>>")
+        args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
+                ontology_location]
+
+        try:  # reports an error after completing the last one -- no idea
+          make_it = subprocess.Popen(
+                  args,
+                  start_new_session=True,
+                  restore_signals=False,
+                  # stdout=subprocess.PIPE,
+                  # stderr=subprocess.PIPE
+                  )
+          out, error = make_it.communicate()
+          # print("debugging -- made:", var_ID)
+        except:
+          print("debugging -- failed to make:", var_ID)
+          pass
+
+
+  def __makeHeader(self, ontology_name):
+    header = FILES["latex_png_header_file"] % ontology_name
+    if not os.path.exists(header):
+      header_file = open(header, 'w')
+      # RULE: make header for equation and variable latex compilations.
+      # math packages
+      # \usepackage{amsmath}
+      # \usepackage{amssymb}
+      # \usepackage{calligra}
+      # \usepackage{array}
+      # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
+      header_file.write(r"\usepackage{amsmath}")
+      header_file.write(r"\usepackage{amssymb}")
+      header_file.write(r"\usepackage{calligra}")
+      header_file.write(r"\usepackage{array}")
+      header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
+      header_file.close()
+    return header
+
 
   def closeEvent(self, event):
     self.close_children(event)

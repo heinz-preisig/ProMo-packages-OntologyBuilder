@@ -204,7 +204,7 @@ class UiOntologyDesign(QMainWindow):
     return
 
   def on_pushInfo_pressed(self):
-    msg_popup = UI_FileDisplayWindow(FILES["info_ontology_design_editor"])
+    msg_popup = UI_FileDisplayWindow(FILES["info_ontology_equation_editor"])
     msg_popup.exec_()
 
   def on_radioVariables_pressed(self):

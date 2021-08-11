@@ -297,7 +297,7 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
     if self.var_equ_tree:
       self.var_equ_tree.view()
 
-  def on_pushInfo_pressed(selfself):
+  def on_pushInfo_pressed(self):
     print("debugging -- display info file")
 
   def on_tabWidget_currentChanged(self, index):

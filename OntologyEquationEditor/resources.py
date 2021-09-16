@@ -968,6 +968,8 @@ class DotGraphVariableEquations(VarEqTree):
     self.latex_directory = os.path.join(DIRECTORIES["ontology_repository"], "%s",
                                         DIRECTORIES["latex"]) % ontology_name
 
+    self.ontology_location = DIRECTORIES["ontology_location"] % ontology_name
+
     super().__init__(variables, var_ID, blocked=blocked)
 
   def view(self):
@@ -1015,9 +1017,12 @@ class DotGraphVariableEquations(VarEqTree):
     var_labels = {}
     equ_labels = {}
     port_variable = {}
+
+    v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
+    var_labels_raw= getData(v_name)
     for var_id in self.variables:
       ID = self.TEMPLATE_VARIABLE % var_id
-      var_labels[ID] = self.variables[var_id]["aliases"]["internal_code"]
+      var_labels[ID] = var_labels_raw[str(var_id)]["latex"] # self.variables[var_id]["aliases"]["internal_code"]
       for equ_ID in self.variables[var_id]["equations"]:
         ID = self.TEMPLATE_EQUATION % equ_ID
         equation = self.variables[var_id]["equations"][equ_ID]["rhs"]
@@ -1096,8 +1101,12 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
   ontology_location = ontology_container.ontology_location
   ontology_name = ontology_container.ontology_name
   latex_equation_file = FILES["coded_equations"] % (ontology_location, "latex")
+  latex_variable_file = FILES["coded_variables"] % (ontology_location, "latex")
   latex_equations = getData(latex_equation_file)
+  compiled_variable_labels = getData(latex_variable_file)
   variables = ontology_container.variables
+
+
   var_ID = assignments["root_variable"]
   # tree = VarEqTree(variables,var_ID,[])
   print("debugging")
@@ -1128,7 +1137,7 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
       var_ID = int(var_str_ID)
       eqs = variables[var_ID]["equations"]
       if not eqs:
-        eq = "%s :: %s" % (variables[var_ID]["label"], "\\text{port variable}")
+        eq = "%s :: %s" % (compiled_variable_labels[str(var_ID)]["latex"],"\\text{port variable}")# (variables[var_ID]["aliases"]["latex"], "\\text{port variable}")
         s = [count, var_str_ID, "-", eq, str(variables[var_ID]["tokens"])]
         latex_var_equ.append(s)
         count += 1

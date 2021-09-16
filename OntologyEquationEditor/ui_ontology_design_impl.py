@@ -597,6 +597,9 @@ class UiOntologyDesign(QMainWindow):
         self.compiled_variable_labels[var_ID] = {}
       self.compiled_variable_labels[var_ID][language] = compiled_label
 
+    v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
+    var_labels_raw= getData(v_name)
+
     if language == "latex":
       self.__makeLatexDocument()
 
@@ -904,17 +907,9 @@ class UiOntologyDesign(QMainWindow):
 
       out = os.path.join(ontology_location, "LaTeX", "variable_%s.png" % var_ID)
 
-      if source:
-        var_latex = variables[var_ID].aliases["latex"]
-      else:
-        var_latex = variables[var_ID]["aliases"]["latex"]
-
-      # print("debugging -->>>>>>>", var_ID, ID)
-      # if var_ID == 117:
-      #   print("debugging -->>>>>>>")
+      var_latex = self.compiled_variable_labels[var_ID]["latex"]
 
       if (not ID) or (var_ID == ID):
-        # print("debugging -->>>>>>>")
         args = ['bash', f_name, "-P5", "-H", header, "-o", out, "-f", var_latex,  # lhs[var_ID],
                 ontology_location]
 
@@ -935,21 +930,21 @@ class UiOntologyDesign(QMainWindow):
 
   def __makeHeader(self, ontology_name):
     header = FILES["latex_png_header_file"] % ontology_name
-    if not os.path.exists(header):
-      header_file = open(header, 'w')
-      # RULE: make header for equation and variable latex compilations.
-      # math packages
-      # \usepackage{amsmath}
-      # \usepackage{amssymb}
-      # \usepackage{calligra}
-      # \usepackage{array}
-      # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
-      header_file.write(r"\usepackage{amsmath}")
-      header_file.write(r"\usepackage{amssymb}")
-      header_file.write(r"\usepackage{calligra}")
-      header_file.write(r"\usepackage{array}")
-      header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
-      header_file.close()
+    # if not os.path.exists(header):                  # removed when copying an ontology tree --> generate
+    header_file = open(header, 'w')
+    # RULE: make header for equation and variable latex compilations.
+    # math packages
+    # \usepackage{amsmath}
+    # \usepackage{amssymb}
+    # \usepackage{calligra}
+    # \usepackage{array}
+    # \input{../../Ontology_Repository/HAP_playground_02_extend_ontology/LaTeX/resources/defs.tex}
+    header_file.write(r"\usepackage{amsmath}")
+    header_file.write(r"\usepackage{amssymb}")
+    header_file.write(r"\usepackage{calligra}")
+    header_file.write(r"\usepackage{array}")
+    header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
+    header_file.close()
     return header
 
 

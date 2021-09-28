@@ -23,31 +23,31 @@ import os
 import subprocess
 from collections import OrderedDict
 
-import pydotplus.graphviz as GV  # python3 -m pip install pydotplus
+from pydotplus.graphviz import Node, Dot, Cluster, Edge
 from jinja2 import Environment  # sudo apt-get install python-jinja2
 from jinja2 import FileSystemLoader
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMainWindow, QProgressDialog, QSizePolicy
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QProgressDialog
+from PyQt5.QtWidgets import QSizePolicy
 
-from Common.ui_text_browser_popup_impl import Ui_TextBrowserPopUp
-from Common.ui_wait_impl import wait
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
+from Common.common_resources import getData
 from Common.common_resources import getOntologyName
-from Common.common_resources import makeTreeView, getData
+from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import saveBackupFile
-from Common.ontology_container import OntologyContainer
 from Common.common_resources import UI_String
+from Common.ontology_container import OntologyContainer
+from Common.record_definitions import RecordIndex
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resources_icons import getIcon
 from Common.resources_icons import roundButton
-
-from Common.record_definitions import RecordIndex
-
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
+from OntologyBuilder.OntologyEquationEditor.resources import CODE
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
-from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES, CODE
+from OntologyBuilder.OntologyEquationEditor.resources import LANGUAGES
 # from OntologyBuilder.OntologyEquationEditor.resources import make_variable_equation_pngs
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.tpg import LexicalError
@@ -134,10 +134,10 @@ class UiOntologyDesign(QMainWindow):
     except:
       print("directory %s does not exist" % DIRECTORIES["ontology_repository"])
 
-    a = DIRECTORIES["ontology_repository"]
     self.ontology_name = getOntologyName(task="task_ontology_equations")
     if not self.ontology_name:
-      os._exit(-1)
+      exit(-1)
+
 
     ### set up editor =================================================
     self.current_network = None  # holds the current ontology space name
@@ -159,7 +159,7 @@ class UiOntologyDesign(QMainWindow):
     self.converting_tokens = self.ontology_container.converting_tokens
 
     self.rules = self.ontology_container.rules
-    self.ontology_hiearchy = self.ontology_container.ontology_hiearchy
+    self.ontology_hierarchy = self.ontology_container.ontology_hiearchy
     self.networks = self.ontology_container.networks
     self.interconnection_nws = self.ontology_container.interconnection_network_dictionary
     self.intraconnection_nws = self.ontology_container.intraconnection_network_dictionary
@@ -232,7 +232,7 @@ class UiOntologyDesign(QMainWindow):
       # self.ui.radioVariablesAliases.setDown(False)
 
   def on_radioIndicesAliases_pressed(self):
-    self.__checkRadios("indices_aliase")
+    self.__checkRadios("indices_aliases")
     self.__hideTable()
     self.__writeMessage("edit alias table")
     self.ui.groupVariables.hide()
@@ -245,7 +245,7 @@ class UiOntologyDesign(QMainWindow):
 
     exist_list = []
     for i in indices:
-        exist_list.append(indices[i]["label"])
+      exist_list.append(indices[i]["label"])
 
     print("debugging -- labels:", exist_list)
 
@@ -258,7 +258,7 @@ class UiOntologyDesign(QMainWindow):
       if not new_index:
         return
 
-    # adding index
+      # adding index
       index = RecordIndex()
       index["label"] = new_index
       index["network"] = self.variables.ontology_container.heirs_network_dictionary[self.current_network]
@@ -273,7 +273,6 @@ class UiOntologyDesign(QMainWindow):
       indices[index_counter]["aliases"][language] = a
 
       print("debugging -- new index defined:", new_index)
-
 
   def on_pushCompile_pressed(self):
     # self.__checkRadios("compile")
@@ -313,10 +312,9 @@ class UiOntologyDesign(QMainWindow):
       self.__writeMessage("compile first")
       self.on_pushCompile_pressed()
 
-
     self.__writeMessage("wait for completion of compilation")
 
-    self.__makeVariableEquationPictures("latex")
+    self.__makeVariableEquationPictures()
 
   def on_pushExit_pressed(self):
     self.close()
@@ -359,7 +357,6 @@ class UiOntologyDesign(QMainWindow):
         self.ui.pushAddIndex.show()
       else:
         self.ui.pushAddIndex.hide()
-
 
   @QtCore.pyqtSlot(str)
   def on_combo_InterConnectionNetwork_activated(self, choice):
@@ -413,7 +410,7 @@ class UiOntologyDesign(QMainWindow):
       #  both sides
       # network_variable_source = network_for_expression
       # vars_types_on_network_variable = self.ontology_container.variable_types_on_networks[network_for_variable]
-      # RULE: NOTE: the variable types are the same on the left, the right and the boudnary -- at least for the time
+      # RULE: NOTE: the variable types are the same on the left, the right and the boundary -- at least for the time
       # being
       vars_types_on_network_variable = sorted(_set)  # self.ontology_container.variable_types_on_networks[
       # network_for_expression]
@@ -542,20 +539,11 @@ class UiOntologyDesign(QMainWindow):
       lhs_var_ID, incidence_list = incidence_dictionary[equ_ID]
       expression_ID = self.variables[lhs_var_ID].equations[equ_ID]["rhs"]
       network = self.variables[lhs_var_ID].equations[equ_ID]["network"]
-      var_label = self.variables[lhs_var_ID].label
       self.variables[lhs_var_ID].setLanguage(language)
       compiled_label = str(self.variables[lhs_var_ID])
       expression = renderExpressionFromGlobalIDToInternal(expression_ID, self.variables, self.indices)
       compiler = makeCompiler(self.variables, self.indices, lhs_var_ID, equ_ID, language=language)
 
-      # if language == "latex":
-      #   print("debugging -- processing latex")
-      # for var_ID in self.variables:  # used in internally
-      #   self.variables[var_ID].setLanguage(language)
-      #   compiled_label = str(self.variables[var_ID])
-      #   if var_ID not in self.compiled_variable_labels:
-      #     self.compiled_variable_labels[var_ID] = {}
-      #   self.compiled_variable_labels[var_ID][language] = compiled_label
 
       try:
         # print("debugging --  expression being translated into language %s:"%language, expression)
@@ -584,7 +572,7 @@ class UiOntologyDesign(QMainWindow):
           res = compiler(expression)  # NOTE: for debugging
         except:
           pass
-          os._exit(-1)
+          exit(-1)
 
     putData(self.compiled_equations[language], e_name)
 
@@ -597,8 +585,8 @@ class UiOntologyDesign(QMainWindow):
         self.compiled_variable_labels[var_ID] = {}
       self.compiled_variable_labels[var_ID][language] = compiled_label
 
-    v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
-    var_labels_raw= getData(v_name)
+    # v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
+    # var_labels_raw = getData(v_name)
 
     if language == "latex":
       self.__makeLatexDocument()
@@ -607,12 +595,12 @@ class UiOntologyDesign(QMainWindow):
 
   def __makeOWLFile(self):
 
-    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+    this_dir = os.path.dirname(os.path.abspath(__file__))
 
     # OWL.tex
-    names_names = []
+    # names_names = []
 
-    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+    j2_env = Environment(loader=FileSystemLoader(this_dir), trim_blocks=True)
     body = j2_env.get_template(FILES["OWL_template"]).render(variables=self.variables, ProMo="ProMo",
                                                              ontology=self.ontology_name)  # self.networks)
     f_name = FILES["OWL_variables"] % self.ontology_name
@@ -625,15 +613,15 @@ class UiOntologyDesign(QMainWindow):
     # latex
     #
     print('=============================================== make latex ================================================')
-    language = "latex"
-    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+    # language = "latex"
+    this_dir = os.path.dirname(os.path.abspath(__file__))
 
     # main.tex
     names_names = []
     for nw in self.networks + self.interconnection_nws_list + self.intraconnection_nws_list:
       names_names.append(str(nw).replace(CONNECTION_NETWORK_SEPARATOR, '--'))
 
-    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+    j2_env = Environment(loader=FileSystemLoader(this_dir), trim_blocks=True)
     body = j2_env.get_template(FILES["latex_template_main"]).render(ontology=names_names)  # self.networks)
     f_name = FILES["latex_main"] % self.ontology_name
     f = open(f_name, 'w')
@@ -646,7 +634,7 @@ class UiOntologyDesign(QMainWindow):
       # for c in index_dictionary[nw]:
       #   contents += len(index_dictionary[nw][c])
       # if contents > 0:
-      j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+      j2_env = Environment(loader=FileSystemLoader(this_dir), trim_blocks=True)
       body = j2_env.get_template(FILES["latex_template_variables"]).render(variables=self.variables,
                                                                            compiled_labels=self.compiled_variable_labels,
                                                                            index=index_dictionary[nw])
@@ -660,12 +648,12 @@ class UiOntologyDesign(QMainWindow):
 
     # print("debugging tex rep")
     for e_type in self.variables.equation_type_list:
-      j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
-      ID = j2_env.get_template(FILES["latex_template_equations"]). \
+      j2_env = Environment(loader=FileSystemLoader(this_dir), trim_blocks=True)
+      completed_template = j2_env.get_template(FILES["latex_template_equations"]). \
         render(equations=eqs[e_type], sequence=sorted(eqs[e_type].keys()))
       f_name = FILES["latex_equations"] % (self.ontology_location, str(e_type))
       f = open(f_name, 'w')
-      f.write(ID)
+      f.write(completed_template)
       f.close()
 
     location = DIRECTORIES["latex_main_location"] % self.ontology_location
@@ -708,7 +696,7 @@ class UiOntologyDesign(QMainWindow):
     prgr_dialog.setAutoClose(False)
     return prgr_dialog
 
-  def __makeVariableEquationPictures(self, language):
+  def __makeVariableEquationPictures(self):
 
     # make_it.wait()
     # Note: make the png variable and equation files
@@ -716,7 +704,7 @@ class UiOntologyDesign(QMainWindow):
     # msg_box = wait()
     # msg_box.exec()
     self.progress_dialog("compiling")
-    self.make_variable_equation_pngs(self.variables, self.ontology_container)
+    self.make_variable_equation_pngs()#self.variables, self.ontology_container)
     # self.__writeMessage("Wrote {} output".format(language), append=True)
     self.__writeMessage("compilation completed")
 
@@ -763,43 +751,43 @@ class UiOntologyDesign(QMainWindow):
       vt_colours[var_types[i]] = vt_colour[i]
 
     for nw in self.networks:
-      dot_graph[nw] = GV.Dot(graph_name=nw, label=nw,
-                             # suppress_disconnected=True,
-                             rankdir='LR')
+      dot_graph[nw] = Dot(graph_name=nw, label=nw,
+                          # suppress_disconnected=True,
+                          rankdir='LR')
 
       vt_cluster = {}
       vt_count = 0
       for vt in self.ontology_container.variable_types_on_networks[nw]:
-        vt_cluster[vt] = GV.Cluster(graph_name=s_nw_vt % (nw, vt),
-                                    suppress_disconnected=False,
-                                    label=vt,
-                                    rankdir='LR')
+        vt_cluster[vt] = Cluster(graph_name=s_nw_vt % (nw, vt),
+                                 suppress_disconnected=False,
+                                 label=vt,
+                                 rankdir='LR')
         for v_ID in self.variables.getVariablesForTypeAndNetwork(vt, nw):
           v_name = str(v_ID)
-          v_node = GV.Node(name=v_name,
-                           style='filled',
-                           fillcolor=vt_colours[vt],
-                           penwidth=3,
-                           fontsize=12,
-                           label=self.variables[v_ID].label)
+          v_node = Node(name=v_name,
+                        style='filled',
+                        fillcolor=vt_colours[vt],
+                        penwidth=3,
+                        fontsize=12,
+                        label=self.variables[v_ID].label)
           vt_cluster[vt].add_node(v_node)
         for v_ID, e_ID in self.variables.index_equation_in_definition_network[nw]:
           if self.variables[v_ID].type == vt:
-            e_node = GV.Node(name=e_ID,
-                             shape='box',
-                             style='filled',
-                             fillcolor='pink',
-                             fontsize=12)
+            e_node = Node(name=e_ID,
+                          shape='box',
+                          style='filled',
+                          fillcolor='pink',
+                          fontsize=12)
             vt_cluster[vt].add_node(e_node)
             equation = self.variables[v_ID].equations[e_ID]["rhs"]
             for i_ID in makeIncidentList(equation):
-              edge = GV.Edge(src=e_ID, dst=i_ID,
-                             splines='ortho')
+              edge = Edge(src=e_ID, dst=i_ID,
+                          splines='ortho')
               dot_graph[nw].add_edge(edge)
-            v_name = self.variables[v_ID].label
-            e_name = str(self.variables[v_ID].equations[e_ID])
-            edge = GV.Edge(src=e_ID, dst=v_ID,
-                           splines='ortho')
+            # v_name = self.variables[v_ID].label
+            # e_name = str(self.variables[v_ID].equations[e_ID])
+            edge = Edge(src=e_ID, dst=v_ID,
+                        splines='ortho')
             vt_cluster[vt].add_edge(edge)
         vt_count += 1
         dot_graph[nw].add_subgraph(vt_cluster[vt])
@@ -843,15 +831,12 @@ class UiOntologyDesign(QMainWindow):
     except:
       pass
 
-
-
-  def make_variable_equation_pngs(self, variables, ontology_container):
+  def make_variable_equation_pngs(self): #, variables, ontology_container):
     """
     generates pictures of the equations extracting the latex code from the latex equation file
     """
     self.make_equation_pngs()
     self.make_variable_pngs()
-
 
   def make_equation_pngs(self, source=None, ID=None):
     """
@@ -895,7 +880,6 @@ class UiOntologyDesign(QMainWindow):
         print("equation generation failed")
         pass
 
-
   def make_variable_pngs(self, source=None, ID=None):
     ontology_name = self.ontology_container.ontology_name
     variables = self.ontology_container.variables
@@ -927,7 +911,6 @@ class UiOntologyDesign(QMainWindow):
           print("debugging -- failed to make:", var_ID)
           pass
 
-
   def __makeHeader(self, ontology_name):
     header = FILES["latex_png_header_file"] % ontology_name
     # if not os.path.exists(header):                  # removed when copying an ontology tree --> generate
@@ -946,7 +929,6 @@ class UiOntologyDesign(QMainWindow):
     header_file.write(r"\input{../../Ontology_Repository/%s/LaTeX/resources/defs.tex}" % ontology_name)
     header_file.close()
     return header
-
 
   def closeEvent(self, event):
     self.close_children(event)
@@ -1064,7 +1046,7 @@ class UiOntologyDesign(QMainWindow):
 
     radios_ui = [self.ui.radioVariables, self.ui.radioVariablesAliases,
                  self.ui.radioIndicesAliases]
-    radios = ["variables", "variable_aliases", "indices_aliase"]
+    radios = ["variables", "variable_aliases", "indices_aliases"]
     which = radios.index(active)
     for ui in radios_ui:
       ui.setChecked(False)

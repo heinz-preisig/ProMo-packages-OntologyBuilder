@@ -1018,11 +1018,11 @@ class DotGraphVariableEquations(VarEqTree):
     equ_labels = {}
     port_variable = {}
 
-    v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
-    var_labels_raw= getData(v_name)
+    # v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
+    # var_labels_raw= getData(v_name)
     for var_id in self.variables:
       ID = self.TEMPLATE_VARIABLE % var_id
-      var_labels[ID] = var_labels_raw[str(var_id)]["latex"] # self.variables[var_id]["aliases"]["internal_code"]
+      var_labels[ID] = self.variables[var_id]["aliases"]["internal_code"] # var_labels_raw[str(var_id)]["latex"] #
       for equ_ID in self.variables[var_id]["equations"]:
         ID = self.TEMPLATE_EQUATION % equ_ID
         equation = self.variables[var_id]["equations"][equ_ID]["rhs"]

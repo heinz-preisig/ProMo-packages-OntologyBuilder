@@ -355,7 +355,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       if loaded_entity_behaviours:
         for entity_str_ID in loaded_entity_behaviours:  # careful there may not be all entities at least during
           # developments
-          if not (loaded_entity_behaviours[entity_str_ID] == None):
+          if loaded_entity_behaviours[entity_str_ID]:
             dummy = VariantRecord()
             data = loaded_entity_behaviours[entity_str_ID]
             for atr in dummy:

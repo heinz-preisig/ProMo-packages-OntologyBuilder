@@ -408,11 +408,11 @@ class UI_Equations(QtWidgets.QWidget):
     # Note:   by adding a term with a variable that dependes on "later" information......!!! (H)
     # RULE: editing generates a new equation deleting the old one this retains the sequence which allows for
     # incremental expansions
-    # TODO: does not really cover aall issues - if one changes an equation, all equations that depend on the variable
-    #  would have to be re-irid recursively.
+    # TODO: does not really cover all issues - if one changes an equation, all equations that depend on the variable
+    #  would have to be re-done recursively.
     # TODO - so this implies that one can just as well do a graph analysis one one is done. Consequence is that the
     #  equation iri is not important at all in the context of ordering equations for maintaining the correct
-    #  compuations sequence
+    #  computations sequence
 
     equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)
     # old_equ_ID = self.current_eq_ID
@@ -424,25 +424,28 @@ class UI_Equations(QtWidgets.QWidget):
       old_equ_ID = self.current_eq_ID
     if self.status_new_variable:
       var_ID = self.variables.newProMoVariableIRI()  # globalVariableID(update=True)  # RULE: for global ID
-      if CONNECTION_NETWORK_SEPARATOR in self.network_for_variable:
-        left_nw, right_nw = self.network_for_variable.split(CONNECTION_NETWORK_SEPARATOR)
-        tokens_on_nw = self.compile_space.variables.ontology_container.tokens_on_networks
-        if tokens_on_nw[left_nw] == tokens_on_nw[right_nw]:
-          # RULE: for interfaces, the new variable inherits token if the token exists on both sides
-          tokens = self.checked_var.tokens
-        else:
-          # RULE: for interfaces between networks with different tokens, a token conversion is to be defined
-          token_selector = SingleListSelector(tokens_on_nw[right_nw])
-          if self.checked_var.tokens:
-            token_selector.setWindowTitle(self.checked_var.tokens[0])
-          else:
-            # Rule: also when there is no token on the left side
-            token_selector.setWindowTitle("---")
-          token_index = token_selector.exec_()
-          tokens = [tokens_on_nw[right_nw][token_index]]
-          print("debugging -- tokens:", tokens)
-      else:
-        tokens = self.checked_var.tokens
+      # version_change: this section is now inactive because we do not handle tokens in this version
+      # if CONNECTION_NETWORK_SEPARATOR in self.network_for_variable:
+      #   left_nw, right_nw = self.network_for_variable.split(CONNECTION_NETWORK_SEPARATOR)
+      #   tokens_on_nw = self.compile_space.variables.ontology_container.tokens_on_networks
+      #   if tokens_on_nw[left_nw] == tokens_on_nw[right_nw]:
+      #     # RULE: for interfaces, the new variable inherits token if the token exists on both sides
+      #     tokens = self.checked_var.tokens
+      #   else:
+      #     # RULE: for interfaces between networks with different tokens, a token conversion is to be defined
+      #     token_selector = SingleListSelector(tokens_on_nw[right_nw])
+      #     if self.checked_var.tokens:
+      #       token_selector.setWindowTitle(self.checked_var.tokens[0])
+      #     else:
+      #       # Rule: also when there is no token on the left side
+      #       token_selector.setWindowTitle("---")
+      #     token_index = token_selector.exec_()
+      #     tokens = [tokens_on_nw[right_nw][token_index]]
+      #     print("debugging -- tokens:", tokens)
+      # else:
+      #   tokens = self.checked_var.tokens
+      tokens = self.checked_var.tokens  # version_change: and this is the replacement
+
       variable_record = makeCompleteVariableRecord(var_ID,
                                                    label=symbol,
                                                    type=self.selected_variable_type,

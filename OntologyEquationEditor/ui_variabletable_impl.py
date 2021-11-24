@@ -114,6 +114,9 @@ class UI_VariableTableDialog(VariableTable):
     for b in hidden:
       buttons[b].hide()
 
+    # version_change : hide token column
+    self.hideColumn(3)
+
     self.network_expression = network_expression
     self.variable_list = []
     self.disabled_variables = disabled_variables
@@ -346,10 +349,24 @@ class UI_VariableTableDialog(VariableTable):
 
   def __changeIndexing(self, phys_var):  # TODO: when does this make sense ?
     self.phys_var = phys_var
+    # version_change: the rule for the oonnection interfaces is too constraint
     if CONNECTION_NETWORK_SEPARATOR in phys_var.network:
-      index_structures_labels = ["node", "arc"]  # RULE: connection networks have nodes and arcs
-      self.label_ID_dict = {self.indices[ind_ID]["label"] for ind_ID in self.indices if
-                            self.indices[ind_ID]["label"] in index_structures_labels}
+      [source,sink] =  phys_var.network.split(CONNECTION_NETWORK_SEPARATOR)
+      left_indices = set()
+      right_indices = set()
+      for id in self.indices:
+        if source in self.indices[id]["network"]:
+          left_indices.add(id)
+        if sink in self.indices[id]["network"]:
+          right_indices.add(id)
+      joint_index = left_indices | right_indices
+      index_structures_labels = []
+      for id in joint_index:
+        index_structures_labels.append(self.indices[id]["label"])
+
+      # index_structures_labels = ["node", "arc"]  # RULE: connection networks have nodes and arcs
+      # self.label_ID_dict = {self.indices[ind_ID]["label"] for ind_ID in self.indices if
+      #                       self.indices[ind_ID]["label"] in index_structures_labels}
     else:
       self.label_ID_dict = self.__getIndexListPerNetwork(self.network)
       index_structures_labels = [self.indices[ind_ID]["label"] for ind_ID in self.label_ID_dict.keys()]

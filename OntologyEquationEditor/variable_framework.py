@@ -2011,13 +2011,14 @@ class Integral(Operator):
 
     # if index label is also one of the indices in the variable being integrated, then that one is reduced over
     # RULE: if the integrant has a index that is the differential space of the integration variable then the integral
-    # is dealt with as an innere product
+    # is dealt with as an inner product
 
     index_structures = sorted(y.index_structures)
-    indices = self.space.indices
-    for i in y.index_structures:
-      if indices[i]["label"] == TEMPLATES["differential_space"] % x.label:
-        index_structures.remove(i)
+    # version_change: differential index has been simplified. It is a separate index and eliminated explicitly.
+    # indices = self.space.indices
+    # for i in y.index_structures:
+    #   if indices[i]["label"] == TEMPLATES["differential_space"] % x.label:
+    #     index_structures.remove(i)
     self.index_structures = index_structures
     xunits = Units.asList(x.units)
     yunits = Units.asList(y.units)

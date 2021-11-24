@@ -585,13 +585,18 @@ class UiOntologyDesign(QMainWindow):
         self.compiled_variable_labels[var_ID] = {}
       self.compiled_variable_labels[var_ID][language] = compiled_label
 
-    # v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
-    # var_labels_raw = getData(v_name)
 
     if language == "latex":
       self.__makeLatexDocument()
+      # put compiled variable labels into a separate file for convenience -- used in dot graph
+      compiled_latex_variable_labels = {}
+      for var_ID in self.variables:
+        compiled_latex_variable_labels[var_ID] = self.compiled_variable_labels[var_ID]["latex"]
+      v_name = FILES["coded_variables"] % (self.ontology_location, "latex")
+      putData(compiled_latex_variable_labels, v_name)
 
     self.__makeOWLFile()
+
 
   def __makeOWLFile(self):
 

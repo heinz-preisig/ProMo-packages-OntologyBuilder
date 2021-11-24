@@ -27,7 +27,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
-from Common.common_resources import getData
+from Common.common_resources import getData, getEnumeratedData
 from Common.common_resources import invertDict
 from Common.common_resources import walkDepthFirstFnc
 from Common.record_definitions_equation_linking import VariantRecord
@@ -1103,7 +1103,7 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
   latex_equation_file = FILES["coded_equations"] % (ontology_location, "latex")
   latex_variable_file = FILES["coded_variables"] % (ontology_location, "latex")
   latex_equations = getData(latex_equation_file)
-  compiled_variable_labels = getData(latex_variable_file)
+  compiled_variable_labels = getEnumeratedData(latex_variable_file)
   variables = ontology_container.variables
 
 
@@ -1137,7 +1137,7 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
       var_ID = int(var_str_ID)
       eqs = variables[var_ID]["equations"]
       if not eqs:
-        eq = "%s :: %s" % (compiled_variable_labels[str(var_ID)]["latex"],"\\text{port variable}")# (variables[var_ID]["aliases"]["latex"], "\\text{port variable}")
+        eq = "%s :: %s" % (compiled_variable_labels[var_ID],"\\text{port variable}")# (variables[var_ID]["aliases"]["latex"], "\\text{port variable}")
         s = [count, var_str_ID, "-", eq, str(variables[var_ID]["tokens"])]
         latex_var_equ.append(s)
         count += 1

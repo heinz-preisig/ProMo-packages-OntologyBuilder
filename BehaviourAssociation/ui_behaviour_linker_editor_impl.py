@@ -35,15 +35,15 @@ from Common.ui_match_pairs_impl import UI_MatchPairs
 
 rules = {
         "nodes": {
-                "physical": "state",
-                "control" : "state",
-                "intra"   : "state",
-                "inter"   : "transform",
+                "physical": ["state", "diffState"],
+                "control" : ["state", "diffState"],
+                "intra"   : ["state", "diffState"],
+                "inter"   : ["transform"],
                 },
         "arcs" : {
-                "physical": "transport",
-                "control" : "dataflow",
-                "inter"   : "transform"
+                "physical": ["transport"],
+                "control" : ["dataflow"],
+                "inter"   : ["transform"]
                 }
         }
 
@@ -1121,14 +1121,15 @@ class MainWindowImpl(QtWidgets.QMainWindow):
           nws = list(self.ontology_container.ontology_tree[nw]["parents"])
           nws.append(nw)
           for component in rules:
-            selected_var_type = None
+            selected_var_types = []
             for p_nw in nws:
               if p_nw in rules[component]:
-                selected_var_type = rules[component][p_nw]
+                selected_var_types = rules[component][p_nw]
             for p_nw in nws:
-              if p_nw == nw_eq and var_type == selected_var_type:
-                # label = "%s>%s>   %s"%(var_ID, eq_ID, equation_label)
-                variable_equation_list[nw][component].append(eq_ID) #(var_ID, eq_ID, equation_label))
+              for selected_var_type in selected_var_types:
+                if p_nw == nw_eq and  selected_var_type in var_type:
+                  # label = "%s>%s>   %s"%(var_ID, eq_ID, equation_label)
+                  variable_equation_list[nw][component].append(eq_ID) #(var_ID, eq_ID, equation_label))
 
     return variable_equation_list
 

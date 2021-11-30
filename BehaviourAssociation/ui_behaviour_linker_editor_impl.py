@@ -414,6 +414,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def on_tabWidgetNodesArcs_currentChanged(self, index):
     print("debugging tab", index)
+    if not self.selected_InterNetwork_ID:
+      return
+
     if index == 0:
       self.node_arc = "nodes"
     else:
@@ -422,15 +425,23 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def on_listNodeObjects_itemClicked(self, v):
     print('item clicked', v.text())
-    if self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"]:
-      self.selected_object = v.text()
+    # selected_InterNetwork_strID self.node_arc v.text()
+    # entity_behaviours
+    self.selected_object = v.text()
+    obj_str = self.__makeCurrentObjectString()
+    if not self.entity_behaviours[obj_str]: #self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"][v.text()]:
+      # self.selected_object = v.text()
       self.__makeBase()
     else:
       print("load")
+      self.__makeVariantList(True)
 
   def on_listArcObjects_itemClicked(self, v):
     print('item clicked', v.text())
-    if self.node_arc_associations[self.selected_InterNetwork_strID]["arcs"]:
+    self.selected_object = v.text()
+    obj_str = self.__makeCurrentObjectString()
+    if not self.entity_behaviours[obj_str]:
+    # if self.node_arc_associations[self.selected_InterNetwork_strID]["arcs"]:
       self.selected_object = v.text()
       self.__makeBase()
     else:
@@ -488,6 +499,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.ui.pushButtonRight.hide()
       self.ui.listLeft.clear()
       self.ui.listRight.clear()
+
 
     # elif radio_class == "Entities":
     #   # print("debugging -- receiver Entities", radio_class, ID)
@@ -679,10 +691,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.selected_variant_str_ID = self.variant_list[row]
       self.ui.radioButtonShowVariant.setChecked(True)
       self.__makeAndDisplayEquationListLeftAndRight()
+
+      self.ui.groupBoxControls.show()
     else:
       self.ui.listLeft.clear()
       self.ui.listRight.clear()
     print("debugg -- current variant", self.selected_variant_str_ID)
+
 
   def on_pushButtonDelete_pressed(self):
     obj = self.__makeCurrentObjectString()
@@ -946,6 +961,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     block_set = set()
     [block_set.add(e) for e in blocked]
     left_eqs = list(equation_ID_set - block_set)
+    self.leftListEquationIDs = left_eqs
 
     self.leftIndex = self.__makeLeftRightList(left_eqs, self.ui.listLeft)
     self.rightIndex = self.__makeLeftRightList(blocked, self.ui.listRight)

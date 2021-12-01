@@ -23,13 +23,13 @@ from Common.record_definitions_equation_linking import NodeArcAssociations
 from Common.record_definitions_equation_linking import VariantRecord
 from Common.record_definitions_equation_linking import functionGetObjectsFromObjectStringID
 from Common.record_definitions_equation_linking import functionMakeObjectStringID
-from Common.record_definitions_equation_linking import readVariableAssignmentToEntity
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resource_initialisation import checkAndFixResources
 from Common.resources_icons import roundButton
 from Common.ui_match_pairs_impl import UI_MatchPairs
 from Common.ui_string_dialog_impl import UI_String
+from Common.ui_two_list_selector_dialog_impl import UI_TwoListSelector
 from OntologyBuilder.BehaviourAssociation.ui_behaviour_linker_editor import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
 from OntologyBuilder.OntologyEquationEditor.resources import isVariableInExpression
@@ -192,57 +192,57 @@ class Selector(QtCore.QObject):
   #   print("debugging -- released radio button")
 
 
-class VariantSelector(Selector):
-  def __init__(self, radio_class, receiver, label_list_initial, layout, mode="text", autoexclusive=True):
-    label_list, self.variant_map, self.variant_indices_map = self.variantMapping(label_list_initial)
+# class VariantSelector(Selector):
+#   def __init__(self, radio_class, receiver, label_list_initial, layout, mode="text", autoexclusive=True):
+#     label_list, self.variant_map, self.variant_indices_map = self.variantMapping(label_list_initial)
+#
+#     super().__init__(radio_class, receiver, label_list, layout, mode=mode, autoexclusive=autoexclusive)
+#
+#   def updateVariants(self, label_list_initial):
+#     self.labels, self.variant_map, self.variant_indices_map = self.variantMapping(label_list_initial)
+#     self.label_indices, \
+#     self.label_indices_inverse = indexList(self.labels)
+#
+#   def variantMapping(self, variant_list):
+#     """
+#     maps the variants to the fixed IDs defined for the selector
+#     """
+#
+#     variant_map = {}
+#     extended_variant_list = []
+#     self.show_list = []
+#
+#     variant_indices = ["variant_%s" % i for i in range(0, MAX_NUMBER_OF_VARIANTS)]
+#
+#     for i in range(len(variant_indices)):
+#       variant_map[i] = variant_indices[i]
+#       extended_variant_list.append(variant_indices[i])
+#
+#     for i in range(len(variant_list)):
+#       variant_map[i] = variant_list[i]
+#       extended_variant_list[i] = variant_list[i]
+#       try:
+#         self.radios[i].setText(variant_list[i])
+#       except:
+#         pass
+#       self.show_list.append(i)
+#
+#     variant_inverse_map = invertDict(variant_map)
+#
+#     return extended_variant_list, variant_map, variant_inverse_map
 
-    super().__init__(radio_class, receiver, label_list, layout, mode=mode, autoexclusive=autoexclusive)
-
-  def updateVariants(self, label_list_initial):
-    self.labels, self.variant_map, self.variant_indices_map = self.variantMapping(label_list_initial)
-    self.label_indices, \
-    self.label_indices_inverse = indexList(self.labels)
-
-  def variantMapping(self, variant_list):
-    """
-    maps the variants to the fixed IDs defined for the selector
-    """
-
-    variant_map = {}
-    extended_variant_list = []
-    self.show_list = []
-
-    variant_indices = ["variant_%s" % i for i in range(0, MAX_NUMBER_OF_VARIANTS)]
-
-    for i in range(len(variant_indices)):
-      variant_map[i] = variant_indices[i]
-      extended_variant_list.append(variant_indices[i])
-
-    for i in range(len(variant_list)):
-      variant_map[i] = variant_list[i]
-      extended_variant_list[i] = variant_list[i]
-      try:
-        self.radios[i].setText(variant_list[i])
-      except:
-        pass
-      self.show_list.append(i)
-
-    variant_inverse_map = invertDict(variant_map)
-
-    return extended_variant_list, variant_map, variant_inverse_map
-
-  class StandardItem(QStandardItem):
-    def __init__(self, txt='', font_size=12, set_bold=False, color=QtGui.QColor(0, 0, 0), identifier=""):
-      super().__init__()
-
-      fnt = QtGui.QFont('Open Sans', font_size)
-      fnt.setBold(set_bold)
-
-      self.setEditable(False)
-      self.setForeground(color)
-      self.setFont(fnt)
-      self.setText(txt)
-      self.setData("gugus")
+  # class StandardItem(QStandardItem):
+  #   def __init__(self, txt='', font_size=12, set_bold=False, color=QtGui.QColor(0, 0, 0), identifier=""):
+  #     super().__init__()
+  #
+  #     fnt = QtGui.QFont('Open Sans', font_size)
+  #     fnt.setBold(set_bold)
+  #
+  #     self.setEditable(False)
+  #     self.setForeground(color)
+  #     self.setFont(fnt)
+  #     self.setText(txt)
+  #     self.setData("gugus")
 
 
 class MainWindowImpl(QtWidgets.QMainWindow):
@@ -300,7 +300,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     equations_label_list, \
     self.equation_information, \
     self.equation_inverse_index = self.__makeEquationAndIndexLists()
-    self.variable_equation_list = self.__makeEquationList_per_variable_type(networks)
+    # self.variable_equation_list = self.__makeEquationList_per_variable_type(networks)
+    self.rules = {}
 
     # get existing data
     self.__readVariableAssignmentToEntity()
@@ -1097,47 +1098,96 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def __makeBase(self):
     # self.ui.groupBoxControls.hide()
+
+
     print("debugging -- define base")
     self.ui.pushButtonLeft.setText('')
     self.ui.pushButtonLeft.hide()
     self.ui.groupBoxControls.hide()
 
     self.state = "make_base"
-    left_equations = self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc]
+    nw = self.selected_InterNetwork_strID
+    rules_selector = UI_TwoListSelector()
+    rules_selector.setWindowTitle("chose a list of variable classes")
+    rules_selector.setToolTip("we show only those variable types that have equations")
+    # Rule: this is being tightened now one can only choose variable types that have equations
+    self.rules[nw] = self.ontology_container.variable_types_on_networks[nw]
+    variable_equation_list, variable_types_having_equations = self.__makeEquationList_per_variable_type()
+
+    selection = []
+    while selection == []:
+      rules_selector.populateLists(variable_types_having_equations, []) #self.ontology_container.variable_types_on_networks[nw], [])
+      rules_selector.exec_()
+      selection = rules_selector.getSelected()
+    self.rules[nw] = rules_selector.getSelected()
+
+    self.variable_equation_list,variable_types_having_equations = self.__makeEquationList_per_variable_type()
+
+    left_equations = self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc] #  self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc]
     self.leftIndex = self.__makeLeftRightList(left_equations, self.ui.listLeft)
     self.status_report("making base for %s" % self.selected_Entity_ID)
     self.selected_variant = None
-    # self.superviseControls()
 
-  def __makeEquationList_per_variable_type(self, networks):
+
+    # self.superviseControls()
+  #
+  # def __makeEquationList_per_variable_type(self, networks):
+  #
+  #   variable_equation_list = {}
+  #   for nw in networks:
+  #     variable_equation_list[nw] = {}
+  #     for component in rules:
+  #       variable_equation_list[nw][component] = []
+  #
+  #   for nw in networks:
+  #     for e in self.equation_information:
+  #       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e]
+  #
+  #       # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
+  #
+  #       if nw in self.ontology_container.networks:
+  #         nws = list(self.ontology_container.ontology_tree[nw]["parents"])
+  #         nws.append(nw)
+  #         for component in rules:
+  #           selected_var_types = []
+  #           for p_nw in nws:
+  #             if p_nw in rules[component]:
+  #               selected_var_types = rules[component][p_nw]
+  #           for p_nw in nws:
+  #             for selected_var_type in selected_var_types:
+  #               if p_nw == nw_eq and selected_var_type in var_type:
+  #                 # label = "%s>%s>   %s"%(var_ID, eq_ID, equation_label)
+  #                 variable_equation_list[nw][component].append(eq_ID)  # (var_ID, eq_ID, equation_label))
+  #
+  #   return variable_equation_list
+
+
+  def __makeEquationList_per_variable_type(self):
 
     variable_equation_list = {}
-    for nw in networks:
-      variable_equation_list[nw] = {}
-      for component in rules:
-        variable_equation_list[nw][component] = []
+    nw = self.selected_InterNetwork_strID
+    variable_types_having_equations = set()
 
-    for nw in networks:
-      for e in self.equation_information:
-        eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e]
+    for e in self.equation_information:
+      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e]
 
-        # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
+      # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
 
-        if nw in self.ontology_container.networks:
-          nws = list(self.ontology_container.ontology_tree[nw]["parents"])
-          nws.append(nw)
-          for component in rules:
-            selected_var_types = []
-            for p_nw in nws:
-              if p_nw in rules[component]:
-                selected_var_types = rules[component][p_nw]
-            for p_nw in nws:
-              for selected_var_type in selected_var_types:
-                if p_nw == nw_eq and selected_var_type in var_type:
-                  # label = "%s>%s>   %s"%(var_ID, eq_ID, equation_label)
-                  variable_equation_list[nw][component].append(eq_ID)  # (var_ID, eq_ID, equation_label))
+      nws = list(self.ontology_container.ontology_tree[nw]["parents"])
+      nws.append(nw)
 
-    return variable_equation_list
+      for i_nw in nws:
+        if nw not in variable_equation_list:
+          variable_equation_list[nw] = {}
+          variable_equation_list[nw]["nodes"] = []
+          variable_equation_list[nw]["arcs"] = []
+
+        for i_var_type in self.rules[self.selected_InterNetwork_strID]:
+          if i_nw == nw_eq and i_var_type in var_type:
+            variable_equation_list[nw][self.node_arc].append(eq_ID)
+            variable_types_having_equations.add(var_type)
+
+    return variable_equation_list, variable_types_having_equations
 
   def __makeVariantStringList(self):
 

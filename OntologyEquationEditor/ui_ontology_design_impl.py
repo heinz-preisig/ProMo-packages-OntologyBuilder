@@ -963,6 +963,8 @@ class UiOntologyDesign(QMainWindow):
       network_variable = self.current_network  # self.interconnection_nws[self.current_network]["right"]
       network_expression = network_variable  # self.interconnection_nws[self.current_network]["left"]
     elif self.current_network in self.intraconnection_nws:
+      # network_variable = self.intraconnection_nws[self.current_network]["right"]
+      # network_expression = self.intraconnection_nws[self.current_network]["left"]
       network_variable = self.current_network  # self.intraconnection_nws[self.current_network]["right"]
       network_expression = self.current_network  # self.intraconnection_nws[self.current_network]["left"]
     else:

@@ -137,8 +137,7 @@ class UI_Equations(QtWidgets.QWidget):
               self.network_for_variable: self.variable_types_variable,
               source                   : self.variable_types_expression
               }
-    if self.what == "intraface":
-      pass
+    elif self.what == "intraface":
       enabled_var_types = {
               self.network_for_variable  : self.variable_types_variable,
               self.network_for_expression: self.variable_types_expression

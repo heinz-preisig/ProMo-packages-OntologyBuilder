@@ -776,22 +776,10 @@ class Variables(OrderedDict):
         if variable_class in acc[nw]:
           _set_source = set(acc[source][variable_class])
           _set_sink = set(acc[sink][variable_class])
-          acc[nw][variable_class] = sorted(_set_source | _set_sink)
+          _set_self = set(self.index_definition_networks_for_variable[nw])
+          acc[nw][variable_class] = sorted(_set_source | _set_sink | _set_self)
         else:
           acc[nw][variable_class] = acc[sink]
-
-    # print("debugging ")
-    # for nw_l_r in [source, sink]:
-
-    # for variable_class in self.ontology_container.variable_types_on_networks[nw_l_r]:
-    #   # print("debugging --")
-    #   for ID in self:
-    #     if self[ID].network == nw_l_r:
-    #       for variable_class in self.ontology_container.variable_types_on_intrafaces[nw]:
-    #         if self[ID].type == variable_class:
-    #           if variable_class not in acc[nw]:
-    #             acc[nw][variable_class] = []
-    #           acc[nw][variable_class].append(ID)
 
     for nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary:
       for i_nw in self.ontology_container.interface_networks_accessible_to_networks_dictionary[nw]:

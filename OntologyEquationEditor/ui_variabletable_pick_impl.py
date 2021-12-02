@@ -78,8 +78,10 @@ class UI_VariableTablePick(VariableTable):
     buttons["info"] = self.ui.pushInfo
     buttons["new"] = self.ui.pushNew
     buttons["port"] = self.ui.pushPort
+    buttons["dot"] = self.ui.pushDot
+    buttons["tex"] = self.ui.pushLaTex
 
-    hidden = ["new", "port", "info"]
+    hidden = ["new", "port", "info", "dot", "tex"]
 
     roundButton(buttons["back"], "back", tooltip="go back")
     # roundButton(buttons["info"], "info", tooltip="information")

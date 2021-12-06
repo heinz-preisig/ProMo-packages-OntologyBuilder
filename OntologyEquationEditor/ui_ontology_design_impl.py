@@ -294,12 +294,10 @@ class UiOntologyDesign(QMainWindow):
     variable_table = UI_VariableTableShow("All defined variables",
                                           self.ontology_container,
                                           self.variables,
-                                          # self.indices,
                                           self.current_network,
-                                          # self.ontology_name,
                                           enabled_var_types,
                                           [],
-                                          [],
+                                          [3],
                                           None,
                                           ["info", "new", "port", "LaTex", "dot"]
                                           )

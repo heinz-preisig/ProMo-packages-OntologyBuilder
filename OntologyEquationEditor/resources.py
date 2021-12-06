@@ -575,8 +575,8 @@ CODE[language]["MixedStack"] = r"MixedStack\left( %s \right)"
 CODE[language]["Stack"] = r"Stack\left( %s \right)"
 
 CODE[language]["diffSpace"] = "diffSpace(%s)"
-CODE[language]["left"] = "%s^{-\epsilon}"
-CODE[language]["right"] = "%s^{+\epsilon}"
+CODE[language]["left"] = r"\left({%s}\right)^{-\epsilon}"
+CODE[language]["right"] = r"\left({%s}\right)^{+\epsilon}"
 CODE[language]["equation"] = "%s = %s"
 CODE[language]["()"] = "%s"  # r"\left(%s \right)"
 #

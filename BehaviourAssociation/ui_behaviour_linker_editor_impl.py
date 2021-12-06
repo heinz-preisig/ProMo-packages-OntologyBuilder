@@ -662,7 +662,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       obj = self.__makeCurrentObjectString()  # TEMPLATE_ENTITY_OBJECT % (self.selected_InterNetwork_strID, component, self.selected_object, "base")
       self.entity_behaviours.addVariant(obj, entity_assignments)
       self.__makeVariantList(True)
-      self.ui.radioButtonShowVariant.setChecked(True)
+      # self.ui.radioButtonShowVariant.setChecked(True)
 
     elif self.state == "show":
       print("debugging -- show don't do anything")
@@ -690,7 +690,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def on_listVariants_currentRowChanged(self, row):
     if self.variant_list:
       self.selected_variant_str_ID = self.variant_list[row]
-      self.ui.radioButtonShowVariant.setChecked(True)
+      # self.ui.radioButtonShowVariant.setChecked(True)
       self.__makeAndDisplayEquationListLeftAndRight()
 
       self.ui.groupBoxControls.show()
@@ -705,10 +705,10 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.entity_behaviours.removeVariant(obj)  # nw_str_ID, entity_label_ID, variant)
     deleted_base = self.__makeVariantList(False)
     self.ui.listLeft.clear()
-    self.ui.radioButtonShowVariant.setChecked(True)
+    # self.ui.radioButtonShowVariant.setChecked(True)
     if deleted_base:
       self.current_base_var_ID = "base"
-      self.on_radioButtonShowVariant_pressed()
+      # self.on_radioButtonShowVariant_pressed()
     self.ui.pushButtonLeft.hide()
 
   def on_pushButtonSave_pressed(self):
@@ -728,14 +728,14 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def on_pushButtonInformation_pressed(self):
     print("todo: not yet implemented")
 
-  def on_radioButtonShowVariant_toggled(self, position):
-    # print("debugging -- show variant")
-    if not self.variant_list:
-      return
-
-    if position:
-      self.state = "show"
-      self.__makeAndDisplayEquationListLeftAndRight()
+  # def on_radioButtonShowVariant_toggled(self, position):
+  #   # print("debugging -- show variant")
+  #   if not self.variant_list:
+  #     return
+  #
+  #   if position:
+  #     self.state = "show"
+  #     self.__makeAndDisplayEquationListLeftAndRight()
 
   def on_radioButtonDuplicates_pressed(self):
     print("debugging -- duplicates")

@@ -45,7 +45,7 @@ class UI_VariableTableShow(VariableTable):
                # ontology_name,
                enabled_types=['ALL'],
                hide_vars=[],
-               hide_columns=[],
+               hide_columns=[3],
                info_file=None,
                hidden=[],
                ):

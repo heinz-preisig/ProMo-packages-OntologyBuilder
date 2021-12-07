@@ -174,7 +174,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
         reply = QtWidgets.QMessageBox.question(self, "choose",
                                                "There is a variable file \n -- do you want to delete it and restart "
                                                "the whole process?",
-                                               YES, NO, )
+                                               YES, NO )
         if reply == YES:
           self.lock_delete = False
           old, new, next = saveBackupFile(variable_file)
@@ -1238,6 +1238,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
 
       self.__clearLayout(self.ui.horizontalLayoutToken)
 
+      # Vinay: this is an example for putting a selector into a layout.
       self.radio_selectors_token = self.__makeAndAddSelector("tokens",
                                                              token_list,
                                                              self.radioReceiverArcToken, -1,

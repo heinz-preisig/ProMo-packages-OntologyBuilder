@@ -159,7 +159,7 @@ class UiOntologyDesign(QMainWindow):
     self.converting_tokens = self.ontology_container.converting_tokens
 
     self.rules = self.ontology_container.rules
-    self.ontology_hierarchy = self.ontology_container.ontology_hiearchy
+    self.ontology_hierarchy = self.ontology_container.ontology_hierarchy
     self.networks = self.ontology_container.networks
     self.interconnection_nws = self.ontology_container.interconnection_network_dictionary
     self.intraconnection_nws = self.ontology_container.intraconnection_network_dictionary

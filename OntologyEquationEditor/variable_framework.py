@@ -545,7 +545,7 @@ class Variables(OrderedDict):
     super()
     self.ontology_container = ontology_container
     self.networks = ontology_container.networks
-    self.ontology_hierarchy = ontology_container.ontology_hiearchy
+    self.ontology_hierarchy = ontology_container.ontology_hierarchy
     self.intraconnection_networks = list(ontology_container.intraconnection_network_dictionary.keys())
     self.interconnection_networks = ontology_container.list_inter_branches_pairs  # list(ontology_container
     # .interconnection_network_dictionary.keys())

@@ -275,7 +275,7 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

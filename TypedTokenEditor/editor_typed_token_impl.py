@@ -96,8 +96,9 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
     self.ui.setupUi(self)
 
 
-    roundButton(self.ui.pushSave, "save", tooltip="add typed token")
-    roundButton(self.ui.pushAddTypedToken, "plus", tooltip="save to file")
+    roundButton(self.ui.pushSave, "save", tooltip="save to file")
+    roundButton(self.ui.pushAddTypedToken, "plus", tooltip="add typed token")
+    roundButton(self.ui.pushSaveAndExit, "exit", tooltip="exit")
 
     # attach ontology
     ontology_name = getOntologyName(task="task_typed_tokens")
@@ -176,7 +177,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
   def __makeTokenWithTypedTokensCombo(self):
 
     self.ui.comboTokenWithTypedTokens.clear()
-    self.ui.comboTokenWithTypedTokens.addItem(M_None)
+    # self.ui.comboTokenWithTypedTokens.addItem(M_None)
     ### typed_tokens_class
     typed_tokens_class = sorted(
             self.DATA.keys())  # self.typed_token_classs_without_conversion | self.typed_token_classs_with_conversion
@@ -346,4 +347,7 @@ class Ui_TokenEditor(QtWidgets.QMainWindow):
       self.new = False
       self.DATA[self.selected_typed_token_class]["instances"] = selection
       self.redraw_conversion_radios()
+
+  def on_pushSaveAndExit_pressed(self):
+    self.close()
 

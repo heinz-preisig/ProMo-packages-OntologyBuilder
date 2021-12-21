@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>669</width>
+    <width>772</width>
     <height>795</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
      <rect>
       <x>30</x>
       <y>40</y>
-      <width>161</width>
+      <width>281</width>
       <height>171</height>
      </rect>
     </property>
@@ -31,7 +31,7 @@
       <rect>
        <x>40</x>
        <y>30</y>
-       <width>85</width>
+       <width>221</width>
        <height>27</height>
       </rect>
      </property>
@@ -53,8 +53,8 @@
    <widget class="QGroupBox" name="groupConversion">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>10</y>
+      <x>320</x>
+      <y>20</y>
       <width>431</width>
       <height>731</height>
      </rect>
@@ -174,13 +174,26 @@
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushSaveAndExit">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>310</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>669</width>
+     <width>772</width>
      <height>22</height>
     </rect>
    </property>

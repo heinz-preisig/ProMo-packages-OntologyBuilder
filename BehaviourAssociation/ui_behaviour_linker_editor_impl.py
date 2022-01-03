@@ -373,6 +373,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     # selected_InterNetwork_strID self.node_arc v.text()
     # entity_behaviours
     self.selected_object = v.text()
+    self.ui.pushButtonLeft.setText('')
+    self.ui.pushButtonLeft.hide()
+    self.ui.groupBoxControls.hide()
+    self.ui.listLeft.clear()
+    self.ui.listRight.clear()
+    self.ui.listVariants.clear()
     obj_str = self.__makeCurrentObjectString()
     if not self.entity_behaviours[obj_str]: #self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"][v.text()]:
       # self.selected_object = v.text()
@@ -540,7 +546,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     else:
       self.ui.listLeft.clear()
       self.ui.listRight.clear()
-      self.ui.radioButtonShowVariant.setChecked(Fals)
+      self.ui.radioButtonShowVariant.setChecked(False)
     print("debugg -- current variant", self.selected_variant_str_ID)
 
 
@@ -781,8 +787,11 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def __makeCurrentObjectString(self):
     component = self.node_arc.strip("s")
-    return TEMPLATE_ENTITY_OBJECT % (
+    object_string = TEMPLATE_ENTITY_OBJECT % (
     self.selected_InterNetwork_strID, component, self.selected_object, self.selected_variant_str_ID)
+    if object_string not in self.entity_behaviours:
+      self.entity_behaviours[object_string]= None
+    return object_string
 
   def __makeAndDisplayEquationListLeftAndRight(self):
     entity_str_ID = self.__makeCurrentObjectString()
@@ -793,6 +802,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         print("debugging -- found D-D", entity_str_ID)
 
     self.selected_base_variable = self.entity_behaviours.getRootVariableID(entity_str_ID)
+    if not self.selected_base_variable:
+      return
     equation_ID_list = self.entity_behaviours.getEquationIDList(entity_str_ID)
     blocked_ = self.entity_behaviours.getBlocked(entity_str_ID)  # ok that is a copy
     blocked = deepcopy(blocked_)

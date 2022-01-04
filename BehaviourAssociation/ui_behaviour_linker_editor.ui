@@ -246,7 +246,7 @@
            <x>20</x>
            <y>30</y>
            <width>161</width>
-           <height>151</height>
+           <height>170</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
@@ -254,6 +254,13 @@
            <widget class="QRadioButton" name="radioButtonShowVariant">
             <property name="text">
              <string>show</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonMakBase">
+            <property name="text">
+             <string>make base</string>
             </property>
            </widget>
           </item>

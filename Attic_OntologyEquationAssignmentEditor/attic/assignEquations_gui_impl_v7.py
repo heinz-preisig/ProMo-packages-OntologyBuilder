@@ -21,32 +21,33 @@ __status__ = "beta"
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
-from Common.common_resources import M_None
 from Common.common_resources import getOntologyName
+from Common.common_resources import M_None, TEMPLATE_NODE_OBJECT
 from Common.ontology_container import OntologyContainer
 from Common.qt_resources import clearLayout
 from Common.radio_selector_impl import RadioSelector
-# from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
 from Common.record_definitions import EquationAssignment
 from Common.record_definitions import Interface
+from Common.resource_initialisation import checkAndFixResources
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
-from Common.resource_initialisation import checkAndFixResources
-from OntologyBuilder.OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
+from Common.ui_radio_selector_w_sroll_impl import UI_RadioSelector
+from OntologyBuilder.Attic_OntologyEquationAssignmentEditor.assign_equations_gui import Ui_MainWindow
+from OntologyBuilder.OntologyEquationEditor.resources import DotGraphVariableEquations
 from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
 from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
+
+# from OntologyBuilder.OntologyEquationEditor.variable_framework import simulateDeletion
 
 MAX_HEIGHT = 800
 
 
-class UI_EditorEquationAssignment(QtGui.QMainWindow):
-
-  # potential_issues : TODO : is the order important. Adding a network does leave us unordered compared to the old
-  #  approach....???
+class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
 
   def __init__(self):
-    QtGui.QMainWindow.__init__(self)
+    QtWidgets.QMainWindow.__init__(self)
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
@@ -60,10 +61,11 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.ontology_tree = self.ontology_container.ontology_tree
     self.interfaces = self.ontology_container.interfaces
     self.variables = self.ontology_container.variables  # readVariables()
+    self.indices = self.ontology_container.indices
     self.incidence_dictionary, self.inv_incidence_dictionary = makeIncidenceDictionaries(self.variables)
 
-    self.equation_dictionary = self.ontology_container.equation_dictionary
-    # self.__makeEquationDictionary()
+    self.equation_dictionary = {}
+    self.__makeEquationDictionary()
     self.equation_assignment = self.ontology_container.equation_assignment
 
     self.radio_selectors = {}
@@ -95,7 +97,7 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.arc_indicator_item = None
     self.last_arc_coordinate = None
     self.intra_indicator_item = None
-    self.last_interface_coordinat = None
+    self.last_interface_coordinate = None
     self.inter_indicator_item = None
     self.last_inter_coordinate = None
 
@@ -105,18 +107,19 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.inter_table_objects = {}
 
     # icons
-    self.icons = {"edit": QtGui.QIcon("%s/edit.png" % DIRECTORIES["icon_location"]),
-                  "OK"  : QtGui.QIcon("%s/accept.png" % DIRECTORIES["icon_location"]),
-                  "back": QtGui.QIcon("%s/back.png" % DIRECTORIES["icon_location"]),
-                  "left": QtGui.QIcon("%s/left-icon.png" % DIRECTORIES["icon_location"]),
-                  }
-    self.ui.groupBoxEquations.hide()
+    self.icons = {
+            "edit": QtGui.QIcon("%s/edit.png" % DIRECTORIES["icon_location"]),
+            "OK"  : QtGui.QIcon("%s/accept.png" % DIRECTORIES["icon_location"]),
+            "back": QtGui.QIcon("%s/back.png" % DIRECTORIES["icon_location"]),
+            "left": QtGui.QIcon("%s/left-icon.png" % DIRECTORIES["icon_location"]),
+            }
+
     self.__makeEmptyDataStructures()
 
-  # def __makeEquationDictionary(self):
-  #   for var_ID in self.variables:
-  #     for eq_ID in self.variables[var_ID]["equations"]:
-  #       self.equation_dictionary[eq_ID] = self.variables[var_ID]["equations"][eq_ID]
+  def __makeEquationDictionary(self):
+    for var_ID in self.variables:
+      for eq_ID in self.variables[var_ID]["equations"]:
+        self.equation_dictionary[eq_ID] = (var_ID, self.variables[var_ID]["equations"][eq_ID])
 
   def __makeEmptyDataStructures(self):
 
@@ -133,15 +136,15 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
         empty_equation_assignment[object] = self.equation_assignment[object]
 
     self.equation_assignment = empty_equation_assignment
-    #
-    # self.node_table_objects = self.__makeTable("node", self.ui.tableNodes,
-    #                                            self.ontology_container.object_key_list_networks)
-    # self.arc_table_objects = self.__makeTable("arc", self.ui.tableArcs,
-    #                                           self.ontology_container.object_key_list_networks)
-    # self.intra_table_objects = self.__makeTable("intra", self.ui.tableIntrafaces,
-    #                                             self.ontology_container.object_key_list_intra)
-    # self.inter_table_objects = self.__makeTable("inter", self.ui.tableInterfaces,
-    #                                             self.ontology_container.object_key_list_inter)
+
+    self.node_table_objects = self.__makeTable("node", self.ui.tableNodes,
+                                               self.ontology_container.object_key_list_networks)
+    self.arc_table_objects = self.__makeTable("arc", self.ui.tableArcs,
+                                              self.ontology_container.object_key_list_networks)
+    self.intra_table_objects = self.__makeTable("intra", self.ui.tableIntrafaces,
+                                                self.ontology_container.object_key_list_intra)
+    self.inter_table_objects = self.__makeTable("inter", self.ui.tableInterfaces,
+                                                self.ontology_container.object_key_list_inter)
 
   def __makeTable(self, what, ui_table, object_list):
     """
@@ -194,7 +197,7 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     return QtCore.QSize(width, min(height, MAX_HEIGHT))
 
   def __setItem(self, table_widget, row, col, text, icon=None):
-    item = QtGui.QTableWidgetItem()
+    item = QtWidgets.QTableWidgetItem()
 
     if icon:
       item.setIcon(icon)
@@ -238,9 +241,6 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     else:
       var_classes = var_class_list
 
-
-
-
     self.ui.comboBoxNodeVariableClasses.clear()
     self.ui.comboBoxNodeVariableClasses.addItems(var_classes)
 
@@ -256,7 +256,179 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.ui.comboBoxInterfacesVariableClasses.addItems(var_class_list)
 
   def __makeEquationList(self):
-    pass
+    equation_list = {}
+    for eq_ID in self.equation_dictionary:
+      var_ID, equation = self.equation_dictionary[eq_ID]
+      # print(var_ID, eq_ID, equation)
+      if self.current_node_network == equation["network"]:
+        var_class = self.variables[var_ID]["type"]
+        if var_class == "state":
+          equation_list[eq_ID] = (var_ID, var_class, equation["rhs"])
+
+    for eq_ID in equation_list:
+      print(eq_ID, " -- ", equation_list[eq_ID])
+
+    if len(equation_list) > 0:
+      rendered_expressions = {}
+      radio_item_list = []
+      self.inverse_dictionary = {}  # hash: label, value: (var_ID, eq_ID)
+      for eq_ID in equation_list:
+        rendered_expressions[eq_ID] = renderExpressionFromGlobalIDToInternal(equation_list[eq_ID][2], self.variables,
+                                                                             self.indices)
+        var_ID = equation_list[eq_ID][0]
+        rendered_variable = self.variables[equation_list[eq_ID][0]]["aliases"]["internal_code"]
+        print(rendered_variable, rendered_expressions[eq_ID])
+        s = "%s := %s" % (rendered_variable, rendered_expressions[eq_ID])
+        radio_item_list.append(s)
+        self.inverse_dictionary[s] = (var_ID, eq_ID)
+      self.radio = UI_RadioSelector(radio_item_list, [], allowed=1)
+      self.radio.setWindowTitle("select one")
+      self.radio.rejected.connect(self.__gotState)
+      self.radio.exec_()
+
+  def __gotState(self):
+    list = self.radio.getMarked()
+    var_ID, eq_ID = self.inverse_dictionary[list[0]]
+    print("debugging -- exited", list, var_ID, eq_ID)
+    var_equ_tree = DotGraphVariableEquations(self.variables, self.indices, var_ID, self.ontology_name)
+    print("debugging -- dotgrap done")
+    buddies = set()
+    for var_ID in var_equ_tree.tree.IDs:
+      o, str_ID = var_ID.split("_")
+      ID = int(str_ID)
+      if o == "variable":
+        network = self.variables[ID]['network']
+        if network in self.ontology_container.list_leave_networks:
+          buddies.add((ID, network))
+
+        # print("debugging --", network)
+      # print("debugging -- buddies", self.buddies)
+
+    nw, component, dynamics, nature, token = self.selected_node_key
+    node_object = TEMPLATE_NODE_OBJECT %(dynamics, nature)
+
+    self.ontology_container.equation_assignment[node_object] = {
+            "tree"   : var_equ_tree.tree.tree,
+            "IDs"    : var_equ_tree.tree.IDs,
+            "nodes"  : var_equ_tree.tree.nodes,
+            "buddies": buddies
+            }
+
+    print("debugging -- end of buddies")
+
+  #
+  #
+  # def makeTree(self, var_eq_tree, parent_var_ID, d_equs, var_ID):
+  #   """
+  #   interate to find all equations and variables
+  #   :tree: bipartite var/eq tree
+  #   :param d_equs: set of equations to be deleted - list of IDs (integers)
+  #   :param var_ID: variable ID (integer)
+  #   :return: None
+  #   """
+  #
+  #   for eq_id in self.inv_incidence_dictionary[var_ID]:
+  #     if eq_id not in d_equs:
+  #       d_equs.append(eq_id)
+  #       equ_node_ID = var_eq_tree.addNode("equation", parent_var_ID)
+  #       var_node_ID = var_eq_tree.addNode("variable", equ_node_ID)
+  #       lhs, incidence_list = self.incidence_dictionary[eq_id]
+  #       self.makeTree(var_eq_tree, var_node_ID, d_equs, lhs)
+  #
+  # def workTree(self, var_ID):
+  #   d_equs = []  # set()
+  #
+  #   # - key: equation_ID(integer)
+  #   # - value: (lhs - variable_ID, rhs - incidence list (integers) )
+  #
+  #   self.incidence_dictionary, self.inv_incidence_dictionary = self.makeIncidenceDictionaries()
+  #   self.reduceVars(d_equs, var_ID)
+  #
+  #   d_equs_text = ""
+  #   for eq_ID in d_equs:
+  #     lhs, incidence_list = self.incidence_dictionary[eq_ID]
+  #     rhs = self.variables[lhs]["equations"][eq_ID]["rhs"]
+  #     rhs_rendered = renderExpressionFromGlobalIDToInternal(rhs, variables=self.variables, indices=self.indices)
+  #     lhs_rendered = self.variables[lhs]["aliases"]["internal_code"]
+  #     d_equs_text += "\n%s :: %s :=  %s" % (eq_ID, lhs_rendered, rhs_rendered)
+  #   return d_equs, d_equs_text
+  #
+  # def reduceVars(self, d_equs, var_ID):
+  #   """
+  #   interate to find all equations and variables to be deleted
+  #   in most of the cases everything is deleted except the state variables
+  #     because the equations are all dependent on each other.
+  #   :param inv_incidence_dictionary:  "inverse" incidence dictionary
+  #   :param variables: variables (dictionary)
+  #   :param incidence_dictionary: incidence dictionary (var, incidence list)
+  #   :param d_vars: set of variables to be deleted - list of IDs (integers)
+  #   :param d_equs: set of equations to be deleted - list of IDs (integers)
+  #   :param var_ID: variable ID (integer)
+  #   :return: None
+  #   """
+  #
+  #   for eq_id in self.inv_incidence_dictionary[var_ID]:
+  #     if eq_id not in d_equs:
+  #       d_equs.append(eq_id)
+  #       lhs, incidence_list = self.incidence_dictionary[eq_id]
+  #       self.reduceVars(d_equs, lhs)
+
+  # def makeIncidenceDictionaries(self):
+  #   """
+  #   variables may be defined by several equations
+  #
+  #   :param variables: variable dictionary with integrated equation dictionary
+  #   :param expression_network: network on which the expression is defined
+  #   :return: incidence_dictionary
+  #             - key: equation_ID (integer)
+  #             - value: (lhs-variable_ID, rhs-incidence list (integers) )
+  #            inverse incidence matrix as dictionary
+  #             - key : variable ID (integer)
+  #             - value: list of equations (integer)
+  #   """
+  #   incidence_dictionary = {}
+  #   # inv_incidence_dictionary_ = {v: set() for v in self.variables.keys()}
+  #   inv_incidence_dictionary = {v: [] for v in self.variables.keys()}
+  #   for v in self.variables:
+  #     try:
+  #       equations = self.variables[v].equations  # variables as class Variables
+  #     except:
+  #       equations = self.variables[v]["equations"]  # variables from variable dict, the variable file format
+  #     for e in equations:
+  #       if e in [97, 63]:
+  #         print("debugging", e)
+  #       inc_list = equations[e]["incidence_list"]  # self.makeIncidentList(equations[e]["rhs"])
+  #       # c_ = copy(inc_list)
+  #       # c__ = copy(inc_list)
+  #       incidence_dictionary[e] = (v, inc_list)
+  #       inv_incidence_dictionary[v].append(inc_list)
+  #
+  #       # for i in inc_list:
+  #       #   inv_incidence_dictionary_[int(i)].add(e)
+  #       # equations[e]["incidence_list"] = c__
+  #
+  #   # inv_incidence_dictionary = {}
+  #   # for v in inv_incidence_dictionary
+  #   #   inv_incidence_dictionary[v] = sorted(list(inv_incidence_dictionary_[var_ID]))
+  #
+  #   return incidence_dictionary, inv_incidence_dictionary
+
+  # def makeIncidentList(self, equation_ID_coded_string):
+  #   """
+  #   make incidence list for a ID-coded expression
+  #   extracts all variables into a list
+  #   :param equation_ID_coded_string:
+  #   :return: sorted incidence list of variable IDs [integers
+  #   """
+  #   incidence_list = []
+  #   splited = equation_ID_coded_string.split(ID_spacer)
+  #   for i in splited:
+  #     test_string = ID_spacer + i
+  #     # print("debugging", test_string, ID_delimiter["variable"])
+  #     if test_string[0:2] == ID_delimiter["variable"][0:2]:
+  #       inc = i.strip(ID_delimiter["variable"])
+  #       incidence_list.append(inc)
+  #   return sorted(set(incidence_list))
 
   def __resetEquation(self):
     self.radio_selectors["equations"].uncheckGroup("equations")
@@ -298,15 +470,15 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     #   self.current_equation_IDs[index] = ID
     #   index += 1
 
-    self.radio_selectors["equations"] = self.__makeAndAddRadioSelector("equations",
-                                                                       equations,
-                                                                       self.radioReceiverEquations,
-                                                                       selection,
-                                                                       self.ui.horizontalLayoutEquations,
-                                                                       autoexclusive=autoexclusive)
-
-    self.radio_selectors["equations"].show()
-    self.ui.groupBoxEquations.show()
+    # self.radio_selectors["equations"] = self.__makeAndAddRadioSelector("equations",
+    #                                                                    equations,
+    #                                                                    self.radioReceiverEquations,
+    #                                                                    selection,
+    #                                                                    self.ui.horizontalLayoutEquations,
+    #                                                                    autoexclusive=autoexclusive)
+    #
+    # self.radio_selectors["equations"].show()
+    # self.ui.groupBoxEquations.show()
 
   def on_tableNodes_cellPressed(self, row, column):
 
@@ -323,9 +495,10 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     self.selected_node_key = self.node_table_objects[row]
     self.current_node_network = self.selected_node_key[0]
 
-    self.__makeNodeVariableClassList()
-
-    self.current_node_variable_class = self.ui.comboBoxNodeVariableClasses.currentText()
+    self.__makeEquationList()
+    # self.__makeNodeVariableClassList()
+    #
+    # self.current_node_variable_class = self.ui.comboBoxNodeVariableClasses.currentText()
 
   def on_tableArcs_cellPressed(self, row, column):
 
@@ -363,9 +536,9 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
 
     self.__makeInterfaceVariableClassList()
 
-    self.current_inface_variable_class = self.ui.comboBoxinterfaceVariableClasses.currentText()
+    self.current_inface_variable_class = self.ui.comboBoxInterfacesVariableClasses.currentText()
 
-  @QtCore.pyqtSignature("int")
+  # @QtCore.pyqtSignature("int")
   def on_tabWidget_currentChanged(self, index):
     # print("index: ", index)
     if index == 0:
@@ -392,20 +565,23 @@ class UI_EditorEquationAssignment(QtGui.QMainWindow):
     print("write file")
     self.ontology_container.writeMe()
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboBoxNodeVariableClasses_currentIndexChanged(self, entry):
+  # @QtCore.pyqtSignature('QString')
+  def on_comboBoxNodeVariableClasses_currentIndexChanged(self, index):
     # print("debugging got node class entry :", entry)
+    entry = self.ui.comboBoxNodeVariableClasses.currentText()
     self.current_node_variable_class = entry
     self.__makeEquations(entry, -1)
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboBoxArcVariableClasses_currentIndexChanged(self, entry):
+  # @QtCore.pyqtSignature('QString')
+  def on_comboBoxArcVariableClasses_currentIndexChanged(self, index):
+    entry = self.ui.comboBoxArcVariableClasses()
     print(" got arc class entry :", entry)
     self.current_arc_variable_class = entry
     self.__makeEquations(entry, -1)
 
-  @QtCore.pyqtSignature('QString')
-  def on_comboBoxInterfaceVariableClasses_currentIndexChanged(self, entry):
+  # @QtCore.pyqtSignature('QString')
+  def on_comboBoxInterfacesVariableClasses_currentIndexChanged(self, index):
+    entry = self.ui.comboBoxInterfacesVariableClasses.currentText()
     print(" got interface class entry :", entry)
     self.current_interface_variable_class = entry
     self.__makeEquations(entry, -1, autoexclusive=False)

@@ -379,6 +379,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.ui.listLeft.clear()
     self.ui.listRight.clear()
     self.ui.listVariants.clear()
+    self.selected_variant_str_ID = "base"
+    self.__makeVariantList(True)
     obj_str = self.__makeCurrentObjectString()
     if not self.entity_behaviours[obj_str]: #self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"][v.text()]:
       # self.selected_object = v.text()
@@ -401,9 +403,14 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def on_listLeft_itemClicked(self, v):
     row = self.ui.listLeft.row(v)
     print('item clicked', v.text(), row)
+    print("state: ", self.state)
     var_strID, equ_strID = self.leftIndex[row]
     equation_label = v.text()
-    if self.state == "make_base":
+    self.getState()
+    if self.state == "show":
+      return
+
+    elif self.state == "make_base":
       self.current_base_var_ID = int(var_strID)
       self.__makeEquationTextButton(equation_label, self.ui.pushButtonLeft, "click to accept")
     else:  # self.state == "duplicates":
@@ -457,11 +464,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     # if self.ui.radioButtonShowVariant.isChecked():
     #   self.state = "show"
 
+    self.getState()
     print("debugging -- push left button state:", self.state)
 
     # nw_str_ID = self.radio_InterNetworks.getStrID()
     # entity_label_ID = self.radio_Entities.getStrID()
-    entity_label_ID = self.selected_object
+    # entity_label_ID = self.selected_object
 
     if self.state == "make_base":
       variant = "base"
@@ -477,7 +485,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.__makeVariantList(True)
 
       graph_file = var_equ_tree_graph.render()
-      self.selected_variant_str_ID = variant
+      # self.selected_variant_str_ID = variant
       self.ui.pushButtonLeft.hide()
       self.ui.groupBoxControls.show()
       self.ui.listLeft.clear()
@@ -509,7 +517,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       graph_file = var_equ_tree_graph.render()
       self.status_report("generated graph for %s " % (obj_str))
 
-      obj = self.__makeCurrentObjectString()  # TEMPLATE_ENTITY_OBJECT % (self.selected_InterNetwork_strID, component, self.selected_object, "base")
+      obj = self.__makeCurrentObjectString()
       self.entity_behaviours.addVariant(obj, entity_assignments)
       self.__makeVariantList(True)
       # self.ui.radioButtonShowVariant.setChecked(True)
@@ -522,6 +530,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     gets the current variant list and builds the gui list
     """
     self.variant_list = self.__makeVariantStringList()
+    if not self.variant_list:
+      set = False
     self.ui.listVariants.clear()
     self.ui.listVariants.addItems(self.variant_list)
     if set:
@@ -530,7 +540,38 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       return True
     else:
       self.selected_variant_str_ID = "base"
+      self.setState("make_base")
       return False
+
+  def setState(self, state):
+    self.state = state
+    self.ui.groupBoxApplication.show()
+    if state == "show":
+      self.ui.radioButtonShowVariant.setChecked(True)
+    elif state == "make_base":
+      self.ui.radioButtonMakBase.setChecked(True)
+    elif state == "duplicates":
+      self.ui.radioButtonDuplicates.setChecked(True)
+    elif state == "new_variant":
+      self.ui.radioButtonNewVariant.setChecked(True)
+    elif state == "edit_variant":
+      self.ui.radioButtonEditVariant.setChecked(True)
+    elif state == "instantiate_variant":
+      self.ui.radioButtonInstantiateVariant.setChecked(True)
+    
+  def getState(self):
+    if self.ui.radioButtonShowVariant.isChecked():
+      self.state="show"
+    elif self.ui.radioButtonMakBase.isChecked():
+      self.state="make_base"
+    elif self.ui.radioButtonDuplicates.isChecked():
+      self.state="duplicates"
+    elif self.ui.radioButtonNewVariant.isChecked():
+      self.state="new_variant"
+    elif self.ui.radioButtonEditVariant.isChecked():
+      self.state="edit_variant"
+    elif self.ui.radioButtonInstantiateVariant.isChecked():
+      self.state="instantiate_variant"
 
   # push buttons
   def on_pushButtonRight_pressed(self):
@@ -542,7 +583,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.selected_variant_str_ID = self.variant_list[row]
       self.__makeAndDisplayEquationListLeftAndRight()
       self.ui.groupBoxControls.show()
-      self.ui.radioButtonShowVariant.setChecked(True)
+      self.setState("show")
     else:
       self.ui.listLeft.clear()
       self.ui.listRight.clear()
@@ -555,6 +596,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.entity_behaviours.removeVariant(obj)  # nw_str_ID, entity_label_ID, variant)
     deleted_base = self.__makeVariantList(False)
     self.ui.listLeft.clear()
+    self.ui.listRight.clear()
     # self.ui.radioButtonShowVariant.setChecked(True)
     if deleted_base:
       self.current_base_var_ID = "base"
@@ -587,17 +629,18 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     print("debugging -- show variant -- toggle state:", position)
 
     if position:
-      self.state = "show"
+      self.setState("show")
       self.__makeAndDisplayEquationListLeftAndRight()
     else:
       self.ui.listLeft.clear()
 
   def on_radioButtonDuplicates_pressed(self):
     print("debugging -- duplicates")
+    self.setState("duplicates")
+
     if not self.variant_list:
       return
 
-    self.state = "duplicates"
 
     entity_object_str = self.__makeCurrentObjectString()
     self.selected_base_variable = self.entity_behaviours[entity_object_str]["root_variable"]
@@ -962,9 +1005,11 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     print("debugging -- define base")
     self.ui.pushButtonLeft.setText('')
     self.ui.pushButtonLeft.hide()
-    self.ui.groupBoxControls.hide()
+    # self.ui.groupBoxControls.hide()
+    self.ui.groupBoxControls.show()
 
-    self.state = "make_base"
+    self.setState("make_base")
+    self.selected_variant = "base"
     nw = self.selected_InterNetwork_strID
     rules_selector = UI_TwoListSelector()
     rules_selector.setWindowTitle("chose a list of variable classes")
@@ -973,11 +1018,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.rules[nw] = self.ontology_container.variable_types_on_networks[nw]
     variable_equation_list, variable_types_having_equations = self.__makeEquationList_per_variable_type()
 
-    selection = []
-    while selection == []:
-      rules_selector.populateLists(variable_types_having_equations, []) #self.ontology_container.variable_types_on_networks[nw], [])
-      rules_selector.exec_()
-      selection = rules_selector.getSelected()
+    # selection = []
+    # while selection == []:
+    rules_selector.populateLists(variable_types_having_equations, []) #self.ontology_container.variable_types_on_networks[nw], [])
+    rules_selector.exec_()
+    selection = rules_selector.getSelected()
+    if not selection:
+      return
     self.rules[nw] = rules_selector.getSelected()
 
     self.variable_equation_list,variable_types_having_equations = self.__makeEquationList_per_variable_type()
@@ -986,6 +1033,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.leftIndex = self.__makeLeftRightList(left_equations, self.ui.listLeft)
     self.status_report("making base for %s" % self.selected_Entity_ID)
     self.selected_variant = None
+    self.__makeAndDisplayEquationListLeftAndRight()
 
 
     # self.superviseControls()

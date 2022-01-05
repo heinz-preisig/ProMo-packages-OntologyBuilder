@@ -571,10 +571,10 @@ CODE[language]["sign"] = r"\text{sign} \left( %s \right)"
 
 CODE[language]["blockProd"] = r"\displaystyle \prod_{{ {1} \in {2} }} {0}"
 CODE[language]["Root"] = r"Root\left( %s, %s \right)"
-CODE[language]["MixedStack"] = r"MixedStack\left( %s \right)"
-CODE[language]["Stack"] = r"Stack\left( %s \right)"
+CODE[language]["MixedStack"] = r"\text{MixedStack}\left( %s \right)"
+CODE[language]["Stack"] = r"\text{Stack}\left( %s \right)"
 
-CODE[language]["diffSpace"] = "diffSpace(%s)"
+CODE[language]["diffSpace"] = r"\text{diffSpace}(%s)"
 CODE[language]["left"] = r"\left({%s}\right)^{-\epsilon}"
 CODE[language]["right"] = r"\left({%s}\right)^{+\epsilon}"
 CODE[language]["equation"] = "%s = %s"

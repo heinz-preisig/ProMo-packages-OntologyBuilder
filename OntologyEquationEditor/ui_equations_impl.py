@@ -405,7 +405,6 @@ class UI_Equations(QtWidgets.QWidget):
                                                 )
     # Note: think about allowing for editing an equation. It easily destroys the sequence.
     # Note:   by adding a term with a variable that dependes on "later" information......!!! (H)
-    # RULE: editing generates a new equation deleting the old one this retains the sequence which allows for
     # incremental expansions
     # TODO: does not really cover all issues - if one changes an equation, all equations that depend on the variable
     #  would have to be re-done recursively.
@@ -464,7 +463,10 @@ class UI_Equations(QtWidgets.QWidget):
       # make_variable_pngs(self.ontology_container, source=self.variables, ID=var_ID)
 
     else:
-      self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, equ_ID, documentation, equation_record)
+      # this following would change the equation number.... but retain the sequence....
+      # self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, equ_ID, documentation, equation_record)
+    # RULE: editing replaces the existing equation -- consquence - sequence is not retained.
+      self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, old_equ_ID, documentation, equation_record)
       # make_equation_pngs(self.ontology_container, ID=equ_ID)
 
     self.variables.indexVariables()

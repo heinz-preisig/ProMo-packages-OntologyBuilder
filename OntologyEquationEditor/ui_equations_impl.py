@@ -415,6 +415,7 @@ class UI_Equations(QtWidgets.QWidget):
     equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)
     # old_equ_ID = self.current_eq_ID
 
+    # if (not self.status_edit_expr) or (self.status_new_equation):  # TODO: think about
     if (not self.status_edit_expr) or (self.status_new_equation):  # TODO: think about
       old_equ_ID = None
       # equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID

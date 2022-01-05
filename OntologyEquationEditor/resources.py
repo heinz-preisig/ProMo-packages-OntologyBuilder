@@ -543,22 +543,22 @@ CODE[language] = {}
 CODE[language]["bracket"] = r"\left(" + r"%s" + r"\right)"
 CODE[language][","] = ","
 
-CODE[language]["+"] = "%s  + %s"
-CODE[language]["-"] = "%s  - %s"
-CODE[language]["^"] = "%s^{%s}"  # power
-CODE[language][":"] = "%s \, {\odot} \, %s"  # .........................Khatri-Rao product
-CODE[language]["."] = "%s \, . \, %s"  # ...............................expand product
-CODE[language]["|"] = "%s \stackrel{%s}{\,\star\,} %s"  # ..............reduce product
-CODE[language]["BlockReduce"] = "{0} \stackrel{{ {1} \, \in \, {2} }}{{\,\star\,}} {3}"
-CODE[language]["ParDiff"] = "\ParDiff{%s}{%s}"
-CODE[language]["TotalDiff"] = "\TotDiff{%s}{%s}"
-CODE[language]["Integral"] = "\int_{{ {lower!s} }}^{{ {upper!s} }} \, {integrand!s} \enskip d\,{differential!s}"
+CODE[language]["+"] = r"%s  + %s"
+CODE[language]["-"] = r"%s  - %s"
+CODE[language]["^"] = r"%s^{%s}"  # power
+CODE[language][":"] = r"%s \, {\odot} \, %s"  # .........................Khatri-Rao product
+CODE[language]["."] = r"%s \, . \, %s"  # ...............................expand product
+CODE[language]["|"] = r"%s \stackrel{%s}{\,\star\,} %s"  # ..............reduce product
+CODE[language]["BlockReduce"] = r"{0} \stackrel{{ {1} \, \in \, {2} }}{{\,\star\,}} {3}"
+CODE[language]["ParDiff"] = r"\ParDiff{%s}{%s}"
+CODE[language]["TotalDiff"] = r"\TotDiff{%s}{%s}"
+CODE[language]["Integral"] = r"\int_{{ {lower!s} }}^{{ {upper!s} }} \, {integrand!s} \enskip d\,{differential!s}"
 # CODE[language]["Interval"] = r"%s \in \left[ {%s} , {%s} \right] "
-CODE[language]["Product"] = "\prod\left(  {argument!s}   \\right)"
-CODE[language]["Instantiate"] = "Set(%s, %s)"
+CODE[language]["Product"] = r"\prod\left(  {argument!s}   \\right)"
+CODE[language]["Instantiate"] = r"\text{Instantiate}(%s, %s)"
 CODE[language]["max"] = r"\mathbf{max}\left( %s, %s \right)"
 CODE[language]["min"] = r"\mathbf{min}\left( %s, %s \right)"
-CODE[language]["index_diff_state"] = "\dot{%s}"
+CODE[language]["index_diff_state"] = r"\dot{%s}"
 
 for f in UNITARY_NO_UNITS:
   CODE[language][f] = f + r"(%s)"

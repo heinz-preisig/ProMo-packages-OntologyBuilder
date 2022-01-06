@@ -848,6 +848,10 @@ class Variables(OrderedDict):
 
     self.indexVariables()  # indexEquationsInNetworks()
 
+  def addEquation(self, var_ID, eq_ID, documentation, equation_record):
+    self[var_ID].equations[eq_ID] = equation_record
+    print("debugging")
+
   def replaceEquation(self, var_ID, old_equ_ID, new_equ_ID, documentation, equation_record):
     variable_record = self[var_ID]
     variable_record.doc = documentation

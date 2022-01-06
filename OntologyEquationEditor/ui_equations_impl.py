@@ -404,7 +404,7 @@ class UI_Equations(QtWidgets.QWidget):
                                                 incidence_list=incidence_list
                                                 )
     # Note: think about allowing for editing an equation. It easily destroys the sequence.
-    # Note:   by adding a term with a variable that dependes on "later" information......!!! (H)
+    # Note:   by adding a term with a variable that depends on "later" information......!!! (H)
     # incremental expansions
     # TODO: does not really cover all issues - if one changes an equation, all equations that depend on the variable
     #  would have to be re-done recursively.
@@ -412,37 +412,13 @@ class UI_Equations(QtWidgets.QWidget):
     #  equation iri is not important at all in the context of ordering equations for maintaining the correct
     #  computations sequence
 
-    equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)
-    # old_equ_ID = self.current_eq_ID
+    # print("status new variable, new equation, edit expression", self.status_new_variable, self.status_new_equation, self.status_edit_expr)
 
-    # if (not self.status_edit_expr) or (self.status_new_equation):  # TODO: think about
-    if (not self.status_edit_expr) or (self.status_new_equation):  # TODO: think about
-      old_equ_ID = None
-      # equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
-    else:
-      old_equ_ID = self.current_eq_ID
-    if self.status_new_variable:
-      var_ID = self.variables.newProMoVariableIRI()  # globalVariableID(update=True)  # RULE: for global ID
-      # version_change: this section is now inactive because we do not handle tokens in this version
-      # if CONNECTION_NETWORK_SEPARATOR in self.network_for_variable:
-      #   left_nw, right_nw = self.network_for_variable.split(CONNECTION_NETWORK_SEPARATOR)
-      #   tokens_on_nw = self.compile_space.variables.ontology_container.tokens_on_networks
-      #   if tokens_on_nw[left_nw] == tokens_on_nw[right_nw]:
-      #     # RULE: for interfaces, the new variable inherits token if the token exists on both sides
-      #     tokens = self.checked_var.tokens
-      #   else:
-      #     # RULE: for interfaces between networks with different tokens, a token conversion is to be defined
-      #     token_selector = SingleListSelector(tokens_on_nw[right_nw])
-      #     if self.checked_var.tokens:
-      #       token_selector.setWindowTitle(self.checked_var.tokens[0])
-      #     else:
-      #       # Rule: also when there is no token on the left side
-      #       token_selector.setWindowTitle("---")
-      #     token_index = token_selector.exec_()
-      #     tokens = [tokens_on_nw[right_nw][token_index]]
-      #     print("debugging -- tokens:", tokens)
-      # else:
-      #   tokens = self.checked_var.tokens
+    log = (self.status_new_variable, self.status_new_equation, self.status_edit_expr)
+    # new variable true, true, false
+    if log == (True, True, False):
+      var_ID = self.variables.newProMoVariableIRI()
+      equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
       tokens = self.checked_var.tokens  # version_change: and this is the replacement
 
       variable_record = makeCompleteVariableRecord(var_ID,
@@ -461,14 +437,20 @@ class UI_Equations(QtWidgets.QWidget):
                                                    )
 
       self.variables.addNewVariable(ID=var_ID, **variable_record)
-      # make_variable_pngs(self.ontology_container, source=self.variables, ID=var_ID)
 
-    else:
-      # this following would change the equation number.... but retain the sequence....
-      # self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, equ_ID, documentation, equation_record)
+    # new equation to existing variable false, true, false
+    elif log == (False, True, False):
+      var_ID = self.selected_variable_ID
+      equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
+      self.variables.addEquation(var_ID, equ_ID, documentation, equation_record)
+
+
+    # edit equation false, True, true
+    elif log == (False, True, True):
+      var_ID = self.selected_variable_ID
+      equ_ID = self.current_eq_ID
     # RULE: editing replaces the existing equation -- consquence - sequence is not retained.
-      self.variables.replaceEquation(self.selected_variable_ID, old_equ_ID, old_equ_ID, documentation, equation_record)
-      # make_equation_pngs(self.ontology_container, ID=equ_ID)
+      self.variables.replaceEquation(self.selected_variable_ID, equ_ID, equ_ID, documentation, equation_record)
 
     self.variables.indexVariables()
     self.update_space_information.emit()

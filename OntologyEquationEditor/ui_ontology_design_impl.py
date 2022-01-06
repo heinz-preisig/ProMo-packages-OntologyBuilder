@@ -1017,8 +1017,8 @@ class UiOntologyDesign(QMainWindow):
       # self.table_aliases_v.completed.connect(self.__updateAliases_Variables)
       self.table_aliases_v.completed.connect(self.finished_edit_table)
       self.table_aliases_v.show()
-      self.variables.changes["variables"].changedAll()
-      self.variables.changes["equations"].changedAll()
+      # self.variables.changes["variables"].changedAll()
+      # self.variables.changes["equations"].changedAll()
       OK = True
     else:
       self.__writeMessage(" no variables in this network %s" % self.current_network)

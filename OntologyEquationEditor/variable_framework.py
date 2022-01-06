@@ -553,7 +553,7 @@ class Variables(OrderedDict):
     self.ProMoIRI = self.ontology_container.ProMoIRI
 
     # keep track of changes and additions
-    self.changes = TrackChanges()
+    # self.changes = TrackChanges()
 
   def resetProMoIRI(self):
     """
@@ -586,7 +586,7 @@ class Variables(OrderedDict):
       self[ID] = PhysicalVariable(**kwargs)  # NOTE: no check on existence done -- must happen on defining
       self[ID].indices = self.ontology_container.indices  # variable does not know the indices dictionary on definition.
       self.indexVariables()
-      self.changes["variables"].add(ID)
+      # self.changes["variables"].add(ID)
     else:
       raise VarError("no variable ID defined")
     return ID
@@ -602,10 +602,10 @@ class Variables(OrderedDict):
     for ID in variables:
       variables[ID]["indices"] = indices
       self[ID] = PhysicalVariable(**variables[ID])
-      self.changes["variables"].importID(ID)
-    for ID in variables:
-      for eq_ID in variables[ID]["equations"]:
-        self.changes["equations"].importID(eq_ID)
+      # self.changes["variables"].importID(ID)
+    # for ID in variables:
+    #   for eq_ID in variables[ID]["equations"]:
+        # self.changes["equations"].importID(eq_ID)
 
     self.indexVariables()
 
@@ -816,9 +816,9 @@ class Variables(OrderedDict):
   def changeVariableAlias(self, variable_ID, language, new_alias):
     self[variable_ID].aliases[language] = new_alias
     affected_equations = self.inv_incidence_dictionary[variable_ID]
-    self.changes["variables"].changed(variable_ID)
-    for eq_ID in affected_equations:
-      self.changes["equations"].changed(eq_ID)
+    # self.changes["variables"].changed(variable_ID)
+    # for eq_ID in affected_equations:
+    #   self.changes["equations"].changed(eq_ID)
 
   def removeVariable(self, variable_ID):
     """
@@ -828,7 +828,7 @@ class Variables(OrderedDict):
     """
     # print("debugging -- remove variable ", variable_ID, self[variable_ID].label)
     del self[variable_ID]
-    self.changes["variables"].remove(variable_ID)
+    # self.changes["variables"].remove(variable_ID)
     self.indexVariables()
 
   def removeEquation(self, equation_ID):
@@ -844,7 +844,7 @@ class Variables(OrderedDict):
         del equations[equation_ID]
         print("debugging -- remove equation ", equation_ID, "  in variable ", v, self[v].label)
         # record changes
-        self.changes["equations"].remove(equation_ID)
+        # self.changes["equations"].remove(equation_ID)
 
     self.indexVariables()  # indexEquationsInNetworks()
 
@@ -861,7 +861,7 @@ class Variables(OrderedDict):
             })
 
     # record changes
-    self.changes.replaceEquation(old_equ_ID, new_equ_ID)
+    # self.changes.replaceEquation(old_equ_ID, new_equ_ID)
 
   def existSymbol(self, network, label):
     """

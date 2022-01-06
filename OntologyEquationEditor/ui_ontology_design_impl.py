@@ -304,8 +304,8 @@ class UiOntologyDesign(QMainWindow):
     variable_table.exec_()
 
   def on_pushMakeAllVarEqPictures_pressed(self):
-    self.variables.changes["equations"].changedAll()
-    self.variables.changes["variables"].changedAll()
+    # self.variables.changes["equations"].changedAll()
+    # self.variables.changes["variables"].changedAll()
     if not self.compiled_variable_labels:
       self.__writeMessage("compile first")
       self.on_pushCompile_pressed()

@@ -858,11 +858,12 @@ class Variables(OrderedDict):
     # variable_record.index_structures = self.checked_var.index_structures
     # variable_record.units = self.checked_var.units
     # delete old equation first
-    if old_equ_ID:
-      del variable_record.equations[old_equ_ID]
-    variable_record.equations.update({
-            new_equ_ID: equation_record
-            })
+    # if old_equ_ID:
+    #   del variable_record.equations[old_equ_ID]
+    # variable_record.equations.update({
+    #         new_equ_ID: equation_record
+    #         })
+    variable_record.equations[old_equ_ID]=equation_record
 
     # record changes
     # self.changes.replaceEquation(old_equ_ID, new_equ_ID)

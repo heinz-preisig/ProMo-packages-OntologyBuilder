@@ -412,7 +412,7 @@ class UI_Equations(QtWidgets.QWidget):
     #  equation iri is not important at all in the context of ordering equations for maintaining the correct
     #  computations sequence
 
-    # print("status new variable, new equation, edit expression", self.status_new_variable, self.status_new_equation, self.status_edit_expr)
+    print("status new variable, new equation, edit expression", self.status_new_variable, self.status_new_equation, self.status_edit_expr)
 
     log = (self.status_new_variable, self.status_new_equation, self.status_edit_expr)
     # new variable true, true, false
@@ -445,8 +445,8 @@ class UI_Equations(QtWidgets.QWidget):
       self.variables.addEquation(var_ID, equ_ID, documentation, equation_record)
 
 
-    # edit equation false, True, true
-    elif log == (False, True, True):
+    # edit equation false, false, true
+    elif log == (False, False, True):
       var_ID = self.selected_variable_ID
       equ_ID = self.current_eq_ID
     # RULE: editing replaces the existing equation -- consquence - sequence is not retained.

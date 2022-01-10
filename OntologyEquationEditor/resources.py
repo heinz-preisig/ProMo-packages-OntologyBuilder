@@ -1097,7 +1097,7 @@ def getListOfBuddies(ontology_container, var_equ_tree, variable_ID):
   return buddies
 
 
-def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
+def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file=""):
   ontology_location = ontology_container.ontology_location
   ontology_name = ontology_container.ontology_name
   latex_equation_file = FILES["coded_equations"] % (ontology_location, "latex")
@@ -1179,7 +1179,7 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file):
 def showPDF(file_name, ontology_name):
   # shell_name = FILES["latex_shell_ontology_view_exec"]%
   file = os.path.join(DIRECTORIES["graph_locations"] % ontology_name, file_name)
-  args = ["okular", "%s_graph.pdf" % file]
+  args = ["okular", "%s_graph.pdf" % file]                        #TODO: handle this in a shell file.
 
   # shell_name = FILES["latex_shell_ontology_view_exec"]%ontology_name
   # args = ["bash", shell_name, ]

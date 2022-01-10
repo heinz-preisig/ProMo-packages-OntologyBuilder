@@ -19,7 +19,7 @@ from Common.common_resources import putData
 from Common.common_resources import walkDepthFirstFnc
 from Common.ontology_container import OntologyContainer
 from Common.record_definitions_equation_linking import EntityBehaviour
-from Common.record_definitions_equation_linking import NodeArcAssociations
+# from Common.record_definitions_equation_linking import NodeArcAssociations
 from Common.record_definitions_equation_linking import VariantRecord
 from Common.record_definitions_equation_linking import functionGetObjectsFromObjectStringID
 from Common.record_definitions_equation_linking import functionMakeObjectStringID
@@ -33,29 +33,10 @@ from Common.ui_two_list_selector_dialog_impl import UI_TwoListSelector
 from OntologyBuilder.BehaviourAssociation.ui_behaviour_linker_editor import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
 from OntologyBuilder.OntologyEquationEditor.resources import isVariableInExpression
-from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
+from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal, makeLatexDoc, showPDF
 
-# RULE : what variable class in what network for nodes and arcs
-# TODO: integrate into base ontology editor
-
-rules = {
-        "nodes": {
-                "physical": ["state", "diffState"],
-                "control" : ["state", "diffState"],
-                "intra"   : ["state", "diffState"],
-                "inter"   : ["transform"],
-                },
-        "arcs" : {
-                "physical": ["transport"],
-                "control" : ["dataflow"],
-                "inter"   : ["transform"]
-                }
-        }
 
 base_variant = "base"  # RULE: nomenclature for base case
-MAX_NUMBER_OF_VARIANTS = 30  # RULE: there is a maximum total number of variants for all entities
-
-# TODO: could be included into the interface as a choice
 
 pixel_or_text = "text"  # NOTE: variable to set the mode
 
@@ -238,7 +219,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     self.entity_behaviours = EntityBehaviour(entities_list)
 
-    self.node_arc_associations = NodeArcAssociations(networks, self.node_objects, self.arc_objects)
+    # self.node_arc_associations = NodeArcAssociations(networks, self.node_objects, self.arc_objects)
     # self.entity_behaviour_graphs = EntityBehaviourGraphs(networks, entities_list)
 
     equations_label_list, \
@@ -249,9 +230,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     # get existing data
     self.__readVariableAssignmentToEntity()
-
-    # f = FILES["variable_assignment_to_entity_object"] % self.ontology_name
-    # self.node_arc_associations, self.entity_behaviours = readVariableAssignmentToEntity(f)
 
     # interface components
     self.layout_InterNetworks = QtWidgets.QVBoxLayout()  # Vertical Box with horizontal boxes of radio buttons & labels
@@ -275,7 +253,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     self.match_equations_label_list = []
     self.match_equation_ID = {}
-    self.node_arc = "nodes"
+    # self.node_arc = "nodes"
+    self.node_arc = self.ui.tabWidgetNodesArcs.tabText(self.ui.tabWidgetNodesArcs.currentIndex())
 
     # controls
     self.actions = ["show", "duplicates", "new_variant", "edit_variant", "instantiate_variant"]
@@ -300,7 +279,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     data = getData(f)
     if data:
       loaded_entity_behaviours = data["behaviours"]
-      self.node_arc_associations = data["associations"]
+      # self.node_arc_associations = data["associations"]
 
       if loaded_entity_behaviours:
         for entity_str_ID in loaded_entity_behaviours:  # careful there may not be all entities at least during
@@ -348,6 +327,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
   def __makeObjectList(self):
 
+    self.node_arc = self.ui.tabWidgetNodesArcs.tabText(self.ui.tabWidgetNodesArcs.currentIndex())
     if self.node_arc == "nodes":
       ui = self.ui.listNodeObjects
       n = sorted(self.node_objects[self.selected_InterNetwork_strID])
@@ -358,14 +338,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     ui.addItems(n)
 
   def on_tabWidgetNodesArcs_currentChanged(self, index):
-    print("debugging tab", index)
-    if not self.selected_InterNetwork_ID:
-      return
-
-    if index == 0:
-      self.node_arc = "nodes"
-    else:
-      self.node_arc = "arcs"
+    self.node_arc = self.ui.tabWidgetNodesArcs.tabText(self.ui.tabWidgetNodesArcs.currentIndex())
     self.__makeObjectList()
 
   def on_listNodeObjects_itemClicked(self, v):
@@ -392,6 +365,14 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def on_listArcObjects_itemClicked(self, v):
     print('item clicked', v.text())
     self.selected_object = v.text()
+    self.ui.pushButtonLeft.setText('')
+    self.ui.pushButtonLeft.hide()
+    self.ui.groupBoxControls.hide()
+    self.ui.listLeft.clear()
+    self.ui.listRight.clear()
+    self.ui.listVariants.clear()
+    self.selected_variant_str_ID = "base"
+    self.__makeVariantList(True)
     obj_str = self.__makeCurrentObjectString()
     if not self.entity_behaviours[obj_str]:
     # if self.node_arc_associations[self.selected_InterNetwork_strID]["arcs"]:
@@ -447,12 +428,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.selected_InterNetwork_ID = ID
       self.selected_InterNetwork_strID = self.radio_InterNetworks.getStrID()
       self.__makeObjectList()
-
-      #
-      # updating interface
-      # self.radio_Variants.reset()
-      # self.radio_Left.reset()
-      # self.radio_Right.reset()
       self.ui.pushButtonLeft.hide()
       self.ui.pushButtonRight.hide()
       self.ui.listLeft.clear()
@@ -461,21 +436,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
 
   def on_pushButtonLeft_pressed(self):
-    # if self.ui.radioButtonShowVariant.isChecked():
-    #   self.state = "show"
-
     self.getState()
     print("debugging -- push left button state:", self.state)
-
-    # nw_str_ID = self.radio_InterNetworks.getStrID()
-    # entity_label_ID = self.radio_Entities.getStrID()
-    # entity_label_ID = self.selected_object
-
     if self.state == "make_base":
       variant = "base"
       var_ID = self.current_base_var_ID
       obj_str = self.__makeCurrentObjectString()
-      # name = obj_str.replace(", ","-")#.replace("|","_")
       var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, [])
       self.status_report("generated graph for %s" % (obj_str))
       component = self.node_arc.strip("s")
@@ -485,33 +451,29 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.__makeVariantList(True)
 
       graph_file = var_equ_tree_graph.render()
-      # self.selected_variant_str_ID = variant
       self.ui.pushButtonLeft.hide()
       self.ui.groupBoxControls.show()
       self.ui.listLeft.clear()
       self.__makeAndDisplayEquationListLeftAndRight()
       self.ui.groupBoxControls.show()
-      # self.ui.radioButtonShowVariant.setDown(True)#setChecked(True)
 
     elif self.state in ["duplicates", "new_variant", "edit_variant"]:  # accepting
       print("debugging -- accepting >>> %s <<< reduced entity object" % self.state)
 
       var_ID = self.selected_base_variable
       obj_str = self.__makeCurrentObjectString()
-      # name = obj_str.replace(", ","-")#.replace("|","_")      #
 
       self.variant_list = self.__makeVariantStringList()
       if self.state in ["duplicates", "new_variant"]:
         self.selected_variant_str_ID = self.__askForNewVariantName(self.variant_list)
+        self.ui.listLeft.clear()
+        self.ui.listRight.clear()
         if self.state == "duplicates":
-          # name = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % name
-          # self.selected_variant_str_ID = TEMPLATE_ENTITY_OBJECT_REMOVED_DUPLICATES % self.selected_variant_str_ID
           selectedListEquationIDs = self.entity_behaviours.getEquationIDList(obj_str)
           # this is tricky: the right list may include already blocked ones.
           for e in self.rightListEquationIDs:
             if e in selectedListEquationIDs:
               selectedListEquationIDs.remove(e)
-            # [ selectedListEquationIDs.remove(i) for i in self.rightListEquationIDs]
           self.leftListEquationIDs = selectedListEquationIDs
       var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, self.rightListEquationIDs)
       graph_file = var_equ_tree_graph.render()
@@ -520,6 +482,10 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       obj = self.__makeCurrentObjectString()
       self.entity_behaviours.addVariant(obj, entity_assignments)
       self.__makeVariantList(True)
+      #
+      # file_name = obj.replace("|", "__").replace(".","_")
+      # makeLatexDoc(file_name, entity_assignments, self.ontology_container)
+
       # self.ui.radioButtonShowVariant.setChecked(True)
 
     elif self.state == "show":
@@ -611,8 +577,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     for obj in self.entity_behaviours:
       if self.entity_behaviours[obj]:
         self.__makeVariablesToBeValueInitialised(obj)
-    data = {"behaviours"  : self.entity_behaviours,
-            "associations": self.node_arc_associations}
+    data = {"behaviours"  : self.entity_behaviours} #,
+            # "associations": self.node_arc_associations}
 
     # putData(self.entity_behaviours, f)
     putData(data, f)
@@ -674,68 +640,68 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     entity_object_str = self.__makeEntityObjectStrID()
     self.__makeVariablesToBeValueInitialised(entity_object_str)
 
-  def on_pushButtonNodeAssociations_pressed(self):
-    print("debugging -- token topologies network %s" % self.selected_InterNetwork_ID)
-    if not self.selected_InterNetwork_ID:
-      self.status_report("define network first")
-      return
+  # def on_pushButtonNodeAssociations_pressed(self):
+  #   print("debugging -- token topologies network %s" % self.selected_InterNetwork_ID)
+  #   if not self.selected_InterNetwork_ID:
+  #     self.status_report("define network first")
+  #     return
+  #
+  #   self.state = "token_topologies"
+  #   nw = self.radio_InterNetworks.getStrID()
+  #   # node_objects = self.ontology_container.list_node_objects_on_networks_with_tokens[nw]
+  #   node_objects = sorted(self.node_arc_associations[nw]["nodes"].keys())
+  #
+  #   self.match_equations_label_list = []
+  #   self.match_node_equation_inverse = {}
+  #   for ID in range(0, len(self.equation_inverse_index)):
+  #     eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[ID]
+  #     if var_type == "state":
+  #       self.match_equations_label_list.append(equation_label)
+  #       self.match_node_equation_inverse[equation_label] = eq_ID, var_ID
+  #
+  #   selector = UI_MatchPairs(node_objects, self.match_equations_label_list, self.matchNodeReceiver, take_right=False)
+  #   self.update()
+  #   gugus = selector.exec_()
 
-    self.state = "token_topologies"
-    nw = self.radio_InterNetworks.getStrID()
-    # node_objects = self.ontology_container.list_node_objects_on_networks_with_tokens[nw]
-    node_objects = sorted(self.node_arc_associations[nw]["nodes"].keys())
+  # def on_pushButtonArcAssociations_pressed(self):
+  #   print("debugging -- token topologies network %s" % self.selected_InterNetwork_ID)
+  #   if not self.selected_InterNetwork_ID:
+  #     self.status_report("define network first")
+  #     return
+  #
+  #   self.state = "token_topologies"
+  #   nw = self.radio_InterNetworks.getStrID()
+  #   # arc_objects = self.ontology_container.list_arc_objects_on_networks[nw]
+  #   arc_objects = sorted(self.node_arc_associations[nw]["arcs"].keys())
+  #   self.match_equations_label_list = []
+  #   self.match_arc_equation_inverse = {}
+  #   for ID in range(0, len(self.equation_inverse_index)):
+  #     eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[ID]
+  #     if var_type == "transport":
+  #       self.match_equations_label_list.append(equation_label)
+  #       self.match_arc_equation_inverse[equation_label] = eq_ID, var_ID
+  #
+  #   selector = UI_MatchPairs(arc_objects, self.match_equations_label_list, self.matchArcReceiver, take_right=False)
+  #   self.update()
+  #   gugus = selector.exec_()
 
-    self.match_equations_label_list = []
-    self.match_node_equation_inverse = {}
-    for ID in range(0, len(self.equation_inverse_index)):
-      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[ID]
-      if var_type == "state":
-        self.match_equations_label_list.append(equation_label)
-        self.match_node_equation_inverse[equation_label] = eq_ID, var_ID
+  # def matchNodeReceiver(self, selection):
+  #   print("match receiver -- selection", selection)
+  #   nw_str_ID = self.radio_InterNetworks.getStrID()
+  #   for node_object, equation in selection:
+  #     print("object : %s  \n equation : %s" % (node_object, equation))
+  #     eq_ID, var_ID = self.match_node_equation_inverse[equation]
+  #     self.node_arc_associations[nw_str_ID]["nodes"][node_object] = (eq_ID, var_ID)
+  #   print("debugging -- wait")
 
-    selector = UI_MatchPairs(node_objects, self.match_equations_label_list, self.matchNodeReceiver, take_right=False)
-    self.update()
-    gugus = selector.exec_()
-
-  def on_pushButtonArcAssociations_pressed(self):
-    print("debugging -- token topologies network %s" % self.selected_InterNetwork_ID)
-    if not self.selected_InterNetwork_ID:
-      self.status_report("define network first")
-      return
-
-    self.state = "token_topologies"
-    nw = self.radio_InterNetworks.getStrID()
-    # arc_objects = self.ontology_container.list_arc_objects_on_networks[nw]
-    arc_objects = sorted(self.node_arc_associations[nw]["arcs"].keys())
-    self.match_equations_label_list = []
-    self.match_arc_equation_inverse = {}
-    for ID in range(0, len(self.equation_inverse_index)):
-      eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[ID]
-      if var_type == "transport":
-        self.match_equations_label_list.append(equation_label)
-        self.match_arc_equation_inverse[equation_label] = eq_ID, var_ID
-
-    selector = UI_MatchPairs(arc_objects, self.match_equations_label_list, self.matchArcReceiver, take_right=False)
-    self.update()
-    gugus = selector.exec_()
-
-  def matchNodeReceiver(self, selection):
-    print("match receiver -- selection", selection)
-    nw_str_ID = self.radio_InterNetworks.getStrID()
-    for node_object, equation in selection:
-      print("object : %s  \n equation : %s" % (node_object, equation))
-      eq_ID, var_ID = self.match_node_equation_inverse[equation]
-      self.node_arc_associations[nw_str_ID]["nodes"][node_object] = (eq_ID, var_ID)
-    print("debugging -- wait")
-
-  def matchArcReceiver(self, selection):
-    print("match receiver -- selection", selection)
-    nw_str_ID = self.radio_InterNetworks.getStrID()
-    for arc_object, equation in selection:
-      print("object : %s  \n equation : %s" % (arc_object, equation))
-      eq_ID, var_ID = self.match_arc_equation_inverse[equation]
-      self.node_arc_associations[nw_str_ID]["arcs"][arc_object] = (eq_ID, var_ID)
-    print("debugging -- wait")
+  # def matchArcReceiver(self, selection):
+  #   print("match receiver -- selection", selection)
+  #   nw_str_ID = self.radio_InterNetworks.getStrID()
+  #   for arc_object, equation in selection:
+  #     print("object : %s  \n equation : %s" % (arc_object, equation))
+  #     eq_ID, var_ID = self.match_arc_equation_inverse[equation]
+  #     self.node_arc_associations[nw_str_ID]["arcs"][arc_object] = (eq_ID, var_ID)
+  #   print("debugging -- wait")
 
   def __makeVariablesToBeValueInitialised(self, entity_object_str):
     # find the ID for the "value" variable
@@ -780,46 +746,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
                                                             self.ontology_name,
                                                             blocked,
                                                             obj)
-    # self.__makeLatexDoc(var_equ_tree_graph, assignments)
+
+    obj = self.__makeCurrentObjectString()
+    file_name = obj.replace("|", "__").replace(".", "_").replace(" ","_")
+    makeLatexDoc(file_name, assignments, self.ontology_container)
     return var_equ_tree_graph, assignments
 
-  def __makeLatexDoc(self, var_eq_tree_graph, assignments):
 
-    latex_equation_file = FILES["coded_equations"] % (self.ontology_location, "latex")
-    latex_equations = getData(latex_equation_file)
-    variables = self.ontology_container.variables
-    nodes = assignments["nodes"]
-    latex_var_equ = []
-    count = 0
-    for a in nodes:
-      if "variable" in nodes[a]:
-        print("debugging -- found variable:", nodes[a])
-        # v, var_str_ID = nodes[a].split("_")
-      elif "equation" in nodes[a]:
-        print("debugging -- found equation:", nodes[a])
-        e, eq_str_ID = nodes[a].split("_")
-        var_ID = latex_equations[eq_str_ID]["variable_ID"]
-        s = [count, str(var_ID), eq_str_ID, latex_equations[eq_str_ID]["lhs"], latex_equations[eq_str_ID]["rhs"],
-             str(variables[var_ID]["tokens"])]
-        latex_var_equ.append(s)
-        count += 1
-      else:
-        pass
-    print("debugging -- got here")
-
-    nw = self.radio_InterNetworks.getStrID()
-    variant = self.radio_Variants.getStrID()
-    entity = self.radio_Entities.getStrID().replace("|", "_")
-    name = nw + "-" + entity + "-" + variant
-
-    THIS_DIR = dirname(abspath(__file__))
-    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
-    template = FILES["latex_template_equation_list"]
-    body = j2_env.get_template(template).render(equations=latex_var_equ)
-    f_name = FILES["latex_equation_list"] % (self.ontology_name, name)
-    f = open(f_name, 'w')
-    f.write(body)
-    f.close()
 
   def __askForNewVariantName(self, limiting_list):
     dialoge = UI_String("Provide a new variant name", placeholdertext="variant", limiting_list=limiting_list)
@@ -886,28 +819,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     ui.addItems(label_list)
     return index
 
-  # def __makeEquationLists(self):
-  #   component=self.node_arc.strip("s")
-  #   object = TEMPLATE_ENTITY_OBJECT%(self.selected_InterNetwork_strID,component, self.selected_object, self.selected_variant_str_ID) #network, node|arc, object, variant
-  #   entity_data = self.entity_behaviours[object]
-  #   print("debugging")
-
   def __makeEntityObjectStrID(self):
     nw_str_ID = self.radio_InterNetworks.label_indices[self.selected_InterNetwork_ID]
     entity_label_ID = self.radio_Entities.label_indices[self.selected_Entity_ID]
     variant = self.radio_Variants.getStrID()  # label_indices[self.radio_Variants.getStrID()] #selected_variant_ID]
     entity_object_str = functionMakeObjectStringID(nw_str_ID, entity_label_ID, variant)
     return entity_object_str
-
-  # def __makeRadioShowList(self, show):
-  #   radio_show_list = []
-  #   # print("debugging -- halting point")
-  #   for i in self.equation_information:
-  #     eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[i]
-  #     if eq_ID in show:
-  #       radio_show_list.append(i)
-  #
-  #   return radio_show_list
 
   def __makeRightSelector(self):
     show = self.rightListEquationIDs
@@ -916,19 +833,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.equation_right_clean = False
     self.current_right_index = index
 
-  # def __makeAfterChangedBlockedList(self):
-  #
-  #   entity_object_str = self.__makeEntityObjectStrID()
-  #   nw, entity, variant = entity_object_str.split(".")
-  #   self.selected_base_variable = self.entity_behaviours[entity_object_str]["root_variable"]  # var_ID : int
-  #
-  #
-  #   var_ID = self.entity_behaviours[entity_object_str]["root_variable"]  # self.current_base_var_ID
-  #   var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(entity, var_ID)
-  #   graph_file = var_equ_tree_graph.render()
-  #   self.status_report("generated graph for %s " % (self.selected_Entity_ID))
-  #   self.entity_behaviours.addVariant(nw, entity, variant, entity_assignments)
-  #   # self.entity_behaviour_graphs.addVariant(nw, entity, variant, var_equ_tree_graph)
 
   def __makeDuplicateShows(self):
     # nw = self.selected_InterNetwork_ID
@@ -967,45 +871,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     button.show()
     return
 
-  # def __clearEntityInfrastructure(self):
-  #   if not self.entity_layout_clean:
-  #     clearLayout(self.layout_Entities)
-  #   self.selected_Entity_ID = None
-  #   self.__clearVariantInfrastructure()
-  #   self.ui.pushButtonLeft.hide()
-  #   self.ui.pushButtonRight.hide()
-  #   # print("debugging -- clearing entity infrastructure")
-  #   self.entity_layout_clean = True
-  #
-  # def __clearVariantInfrastructure(self):
-  #   if not self.variant_layout_clean:
-  #     clearLayout(self.layout_Variants)
-  #   self.selected_variant_ID = None
-  #   self.__clearEquationInfrastructure()
-  #   # print("debugging -- clearing variant infrastructure")
-  #   self.variant_layout_clean = True
-  #
-  # def __clearEquationInfrastructure(self):
-  #   if not self.equation_left_clean:
-  #     clearLayout(self.layout_Left)
-  #     self.equation_left_clean = True
-  #     # print("debugging -- clearing left ")
-  #   if not self.equation_right_clean:
-  #     clearLayout(self.layout_Right)
-  #     self.equation_left_clean = True
-  #     # print("debugging -- clearing right ")
-  #   self.ui.pushButtonLeft.hide()
-  #   self.ui.pushButtonRight.hide()
-  #   # print("debugging -- clearing equation infrastructure")
 
   def __makeBase(self):
-    # self.ui.groupBoxControls.hide()
-
 
     print("debugging -- define base")
     self.ui.pushButtonLeft.setText('')
     self.ui.pushButtonLeft.hide()
-    # self.ui.groupBoxControls.hide()
     self.ui.groupBoxControls.show()
 
     self.setState("make_base")
@@ -1018,8 +889,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.rules[nw] = self.ontology_container.variable_types_on_networks[nw]
     variable_equation_list, variable_types_having_equations = self.__makeEquationList_per_variable_type()
 
-    # selection = []
-    # while selection == []:
     rules_selector.populateLists(variable_types_having_equations, []) #self.ontology_container.variable_types_on_networks[nw], [])
     rules_selector.exec_()
     selection = rules_selector.getSelected()
@@ -1036,38 +905,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.__makeAndDisplayEquationListLeftAndRight()
 
 
-    # self.superviseControls()
-  #
-  # def __makeEquationList_per_variable_type(self, networks):
-  #
-  #   variable_equation_list = {}
-  #   for nw in networks:
-  #     variable_equation_list[nw] = {}
-  #     for component in rules:
-  #       variable_equation_list[nw][component] = []
-  #
-  #   for nw in networks:
-  #     for e in self.equation_information:
-  #       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e]
-  #
-  #       # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
-  #
-  #       if nw in self.ontology_container.networks:
-  #         nws = list(self.ontology_container.ontology_tree[nw]["parents"])
-  #         nws.append(nw)
-  #         for component in rules:
-  #           selected_var_types = []
-  #           for p_nw in nws:
-  #             if p_nw in rules[component]:
-  #               selected_var_types = rules[component][p_nw]
-  #           for p_nw in nws:
-  #             for selected_var_type in selected_var_types:
-  #               if p_nw == nw_eq and selected_var_type in var_type:
-  #                 # label = "%s>%s>   %s"%(var_ID, eq_ID, equation_label)
-  #                 variable_equation_list[nw][component].append(eq_ID)  # (var_ID, eq_ID, equation_label))
-  #
-  #   return variable_equation_list
-
 
   def __makeEquationList_per_variable_type(self):
 
@@ -1077,9 +914,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     for e in self.equation_information:
       eq_ID, var_ID, var_type, nw_eq, equation_label = self.equation_information[e]
-
-      # (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation) = self.equations[eq_ID]
-
       nws = list(self.ontology_container.ontology_tree[nw]["parents"])
       nws.append(nw)
 

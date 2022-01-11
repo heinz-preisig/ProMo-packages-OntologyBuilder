@@ -1107,11 +1107,14 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file=""):
   variables = ontology_container.variables
 
 
-  var_ID = assignments["root_variable"]
+  # var_ID = assignments["root_variable"]
   # tree = VarEqTree(variables,var_ID,[])
   print("debugging")
-  tree_var_ID = assignments["nodes"][0]
-  walked_nodes = walkDepthFirstFnc(assignments["tree"], 0)
+  # tree_var_ID = assignments["nodes"][0]
+  try:
+    walked_nodes = walkDepthFirstFnc(assignments["tree"], 0)
+  except:
+    print("problem, there is a problem here")
   nodes = []
   for n in walked_nodes:
     nodes.append(assignments["nodes"][n])
@@ -1176,12 +1179,7 @@ def makeLatexDoc(file_name, assignments, ontology_container, dot_graph_file=""):
     pass
 
 
-def showPDF(file_name, ontology_name):
-  # shell_name = FILES["latex_shell_ontology_view_exec"]%
-  file = os.path.join(DIRECTORIES["graph_locations"] % ontology_name, file_name)
-  args = ["okular", "%s_graph.pdf" % file]                        #TODO: handle this in a shell file.
-
-  # shell_name = FILES["latex_shell_ontology_view_exec"]%ontology_name
-  # args = ["bash", shell_name, ]
+def showPDF(file_name):
+  args = ["okular", file_name]
   view_it = subprocess.Popen(args, start_new_session=True)
   out, error = view_it.communicate()

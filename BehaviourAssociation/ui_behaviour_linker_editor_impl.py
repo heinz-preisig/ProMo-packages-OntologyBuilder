@@ -1,3 +1,4 @@
+import os.path
 from copy import deepcopy
 from os.path import abspath
 from os.path import dirname
@@ -181,10 +182,14 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     roundButton(self.ui.pushButtonSave, "save", tooltip="save entity behaviour")
     roundButton(self.ui.pushButtonCancel, "exit", tooltip="cancel and exit")
     roundButton(self.ui.pushButtonDelete, "delete", tooltip="delete current var/eq tree")
+    roundButton(self.ui.pushButtonMakeLatex, "LaTex", tooltip="make latex files for all objects")
+    roundButton(self.ui.pushButtonViewLatex, "variable_show", tooltip="show latex")
 
     self.ui.groupBoxControls.hide()
     self.ui.pushButtonLeft.hide()
     self.ui.pushButtonRight.hide()
+    self.ui.pushButtonMakeLatex.hide()
+    self.ui.pushButtonViewLatex.hide()
 
     # first get ontology
     self.ontology_name = getOntologyName(task=icon_f)
@@ -361,6 +366,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     else:
       print("load")
       self.__makeVariantList(True)
+      self.ui.pushButtonMakeLatex.show()
+      self.ui.pushButtonViewLatex.show()
 
   def on_listArcObjects_itemClicked(self, v):
     print('item clicked', v.text())
@@ -380,6 +387,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.__makeBase()
     else:
       print("load")
+      self.ui.pushButtonMakeLatex.show()
+      self.ui.pushButtonViewLatex.show()
 
   def on_listLeft_itemClicked(self, v):
     row = self.ui.listLeft.row(v)
@@ -600,6 +609,27 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     else:
       self.ui.listLeft.clear()
 
+  def on_pushButtonMakeLatex_pressed(self):
+    non_existing = []
+    for obj in self.entity_behaviours:
+      assignment = self.entity_behaviours[obj]
+      if assignment != None:
+        self.__makeLatexDocument(obj, assignment)
+      else:
+        non_existing.append(obj)
+    if non_existing != []:
+      for obj in non_existing:
+        print("this object does not seem to have an assignment: %s"%obj)
+
+  def on_pushButtonViewLatex_pressed(self):
+    obj = self.__makeCurrentObjectString()
+    file_name = obj.replace("|", "__").replace(".", "_").replace(" ", "_")
+    file = join(DIRECTORIES["latex_location"] % self.ontology_name, file_name) +".pdf"
+    if os.path.exists(file):
+      showPDF(file)
+    else:
+      self.on_pushButtonMakeLatex_pressed()
+
   def on_radioButtonDuplicates_pressed(self):
     print("debugging -- duplicates")
     self.setState("duplicates")
@@ -740,19 +770,19 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   # =============================
 
   def analyseBiPartiteGraph(self, entity, var_ID, blocked):
-    obj = entity  # entity.replace("|", "_")
     var_equ_tree_graph, assignments = AnalyseBiPartiteGraph(var_ID,
                                                             self.ontology_container,
                                                             self.ontology_name,
                                                             blocked,
-                                                            obj)
+                                                            entity)
 
-    obj = self.__makeCurrentObjectString()
-    file_name = obj.replace("|", "__").replace(".", "_").replace(" ","_")
-    makeLatexDoc(file_name, assignments, self.ontology_container)
+    self.__makeLatexDocument(entity, assignments)
     return var_equ_tree_graph, assignments
 
-
+  def __makeLatexDocument(self,obj, assignments):
+    # obj = self.__makeCurrentObjectString()
+    file_name = obj.replace("|", "__").replace(".", "_").replace(" ", "_")
+    makeLatexDoc(file_name, assignments, self.ontology_container)
 
   def __askForNewVariantName(self, limiting_list):
     dialoge = UI_String("Provide a new variant name", placeholdertext="variant", limiting_list=limiting_list)

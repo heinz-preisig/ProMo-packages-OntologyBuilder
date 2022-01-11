@@ -15,13 +15,16 @@ __author__ = 'Preisig, Heinz A'
 
 MAX_HEIGHT = 800
 
+import os
 from PyQt5 import QtWidgets
 
 from Common.resources_icons import roundButton
+from Common.common_resources import DIRECTORIES
 from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
 from OntologyBuilder.OntologyEquationEditor.resources import makeLatexDoc
 from OntologyBuilder.OntologyEquationEditor.resources import showPDF
 from OntologyBuilder.OntologyEquationEditor.variable_table import VariableTable
+
 
 
 class UI_VariableTableShow(VariableTable):
@@ -140,7 +143,8 @@ class UI_VariableTableShow(VariableTable):
 
   def on_pushDot_pressed(self):
     assignments, dot_graph_file, file_name = self.__makeDotGraph()
-    showPDF(file_name, self.ontology_name)
+    file_name = os.path.join(DIRECTORIES["graph_locations"] % self.ontology_name, file_name)
+    showPDF(file_name)
     # print("debugging -- generate graph")
 
   @staticmethod

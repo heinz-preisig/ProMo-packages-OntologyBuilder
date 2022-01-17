@@ -1,21 +1,15 @@
 import os.path
 from copy import deepcopy
-from os.path import abspath
-from os.path import dirname
 from os.path import join
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5.Qt import QStandardItem
-from jinja2 import Environment  # sudo apt-get install python-jinja2
-from jinja2 import FileSystemLoader
 
 from Common.common_resources import TEMPLATE_ENTITY_OBJECT
 from Common.common_resources import getData
 from Common.common_resources import getOntologyName
 from Common.common_resources import indexList
-from Common.common_resources import invertDict
 from Common.common_resources import putData
 from Common.common_resources import walkDepthFirstFnc
 from Common.ontology_container import OntologyContainer
@@ -28,14 +22,14 @@ from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resource_initialisation import checkAndFixResources
 from Common.resources_icons import roundButton
-from Common.ui_match_pairs_impl import UI_MatchPairs
 from Common.ui_string_dialog_impl import UI_String
 from Common.ui_two_list_selector_dialog_impl import UI_TwoListSelector
 from OntologyBuilder.BehaviourAssociation.ui_behaviour_linker_editor import Ui_MainWindow
 from OntologyBuilder.OntologyEquationEditor.resources import AnalyseBiPartiteGraph
 from OntologyBuilder.OntologyEquationEditor.resources import isVariableInExpression
-from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal, makeLatexDoc, showPDF
-
+from OntologyBuilder.OntologyEquationEditor.resources import makeLatexDoc
+from OntologyBuilder.OntologyEquationEditor.resources import renderExpressionFromGlobalIDToInternal
+from OntologyBuilder.OntologyEquationEditor.resources import showPDF
 
 base_variant = "base"  # RULE: nomenclature for base case
 
@@ -360,7 +354,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.selected_variant_str_ID = "base"
     self.__makeVariantList(True)
     obj_str = self.__makeCurrentObjectString()
-    if not self.entity_behaviours[obj_str]: #self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"][v.text()]:
+    if not self.entity_behaviours[
+      obj_str]:  # self.node_arc_associations[self.selected_InterNetwork_strID]["nodes"][v.text()]:
       # self.selected_object = v.text()
       self.__makeBase()
     else:
@@ -382,7 +377,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.__makeVariantList(True)
     obj_str = self.__makeCurrentObjectString()
     if not self.entity_behaviours[obj_str]:
-    # if self.node_arc_associations[self.selected_InterNetwork_strID]["arcs"]:
+      # if self.node_arc_associations[self.selected_InterNetwork_strID]["arcs"]:
       self.selected_object = v.text()
       self.__makeBase()
     else:
@@ -441,8 +436,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.ui.pushButtonRight.hide()
       self.ui.listLeft.clear()
       self.ui.listRight.clear()
-
-
 
   def on_pushButtonLeft_pressed(self):
     self.getState()
@@ -533,20 +526,20 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.ui.radioButtonEditVariant.setChecked(True)
     elif state == "instantiate_variant":
       self.ui.radioButtonInstantiateVariant.setChecked(True)
-    
+
   def getState(self):
     if self.ui.radioButtonShowVariant.isChecked():
-      self.state="show"
+      self.state = "show"
     elif self.ui.radioButtonMakBase.isChecked():
-      self.state="make_base"
+      self.state = "make_base"
     elif self.ui.radioButtonDuplicates.isChecked():
-      self.state="duplicates"
+      self.state = "duplicates"
     elif self.ui.radioButtonNewVariant.isChecked():
-      self.state="new_variant"
+      self.state = "new_variant"
     elif self.ui.radioButtonEditVariant.isChecked():
-      self.state="edit_variant"
+      self.state = "edit_variant"
     elif self.ui.radioButtonInstantiateVariant.isChecked():
-      self.state="instantiate_variant"
+      self.state = "instantiate_variant"
 
   # push buttons
   def on_pushButtonRight_pressed(self):
@@ -564,7 +557,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       self.ui.listRight.clear()
       self.ui.radioButtonShowVariant.setChecked(False)
     print("debugg -- current variant", self.selected_variant_str_ID)
-
 
   def on_pushButtonDelete_pressed(self):
     obj = self.__makeCurrentObjectString()
@@ -586,8 +578,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     for obj in self.entity_behaviours:
       if self.entity_behaviours[obj]:
         self.__makeVariablesToBeValueInitialised(obj)
-    data = {"behaviours"  : self.entity_behaviours} #,
-            # "associations": self.node_arc_associations}
+    data = {"behaviours": self.entity_behaviours}  # ,
+    # "associations": self.node_arc_associations}
 
     # putData(self.entity_behaviours, f)
     putData(data, f)
@@ -619,12 +611,12 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         non_existing.append(obj)
     if non_existing != []:
       for obj in non_existing:
-        print("this object does not seem to have an assignment: %s"%obj)
+        print("this object does not seem to have an assignment: %s" % obj)
 
   def on_pushButtonViewLatex_pressed(self):
     obj = self.__makeCurrentObjectString()
     file_name = obj.replace("|", "__").replace(".", "_").replace(" ", "_")
-    file = join(DIRECTORIES["latex_location"] % self.ontology_name, file_name) +".pdf"
+    file = join(DIRECTORIES["latex_location"] % self.ontology_name, file_name) + ".pdf"
     if os.path.exists(file):
       showPDF(file)
     else:
@@ -636,7 +628,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     if not self.variant_list:
       return
-
 
     entity_object_str = self.__makeCurrentObjectString()
     self.selected_base_variable = self.entity_behaviours[entity_object_str]["root_variable"]
@@ -779,7 +770,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.__makeLatexDocument(entity, assignments)
     return var_equ_tree_graph, assignments
 
-  def __makeLatexDocument(self,obj, assignments):
+  def __makeLatexDocument(self, obj, assignments):
     # obj = self.__makeCurrentObjectString()
     file_name = obj.replace("|", "__").replace(".", "_").replace(" ", "_")
     makeLatexDoc(file_name, assignments, self.ontology_container)
@@ -794,9 +785,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
   def __makeCurrentObjectString(self):
     component = self.node_arc.strip("s")
     object_string = TEMPLATE_ENTITY_OBJECT % (
-    self.selected_InterNetwork_strID, component, self.selected_object, self.selected_variant_str_ID)
+            self.selected_InterNetwork_strID, component, self.selected_object, self.selected_variant_str_ID)
     if object_string not in self.entity_behaviours:
-      self.entity_behaviours[object_string]= None
+      self.entity_behaviours[object_string] = None
     return object_string
 
   def __makeAndDisplayEquationListLeftAndRight(self):
@@ -863,7 +854,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.equation_right_clean = False
     self.current_right_index = index
 
-
   def __makeDuplicateShows(self):
     # nw = self.selected_InterNetwork_ID
     # entity = self.selected_Entity_ID
@@ -901,7 +891,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     button.show()
     return
 
-
   def __makeBase(self):
 
     print("debugging -- define base")
@@ -919,22 +908,22 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.rules[nw] = self.ontology_container.variable_types_on_networks[nw]
     variable_equation_list, variable_types_having_equations = self.__makeEquationList_per_variable_type()
 
-    rules_selector.populateLists(variable_types_having_equations, []) #self.ontology_container.variable_types_on_networks[nw], [])
+    rules_selector.populateLists(variable_types_having_equations,
+                                 [])  # self.ontology_container.variable_types_on_networks[nw], [])
     rules_selector.exec_()
     selection = rules_selector.getSelected()
     if not selection:
       return
     self.rules[nw] = rules_selector.getSelected()
 
-    self.variable_equation_list,variable_types_having_equations = self.__makeEquationList_per_variable_type()
+    self.variable_equation_list, variable_types_having_equations = self.__makeEquationList_per_variable_type()
 
-    left_equations = self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc] #  self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc]
+    left_equations = self.variable_equation_list[self.selected_InterNetwork_strID][
+      self.node_arc]  # self.variable_equation_list[self.selected_InterNetwork_strID][self.node_arc]
     self.leftIndex = self.__makeLeftRightList(left_equations, self.ui.listLeft)
     self.status_report("making base for %s" % self.selected_Entity_ID)
     self.selected_variant = None
     self.__makeAndDisplayEquationListLeftAndRight()
-
-
 
   def __makeEquationList_per_variable_type(self):
 

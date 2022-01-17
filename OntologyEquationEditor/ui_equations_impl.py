@@ -132,7 +132,7 @@ class UI_Equations(QtWidgets.QWidget):
     self.variable_tables = {}
     if self.what == "interface":  # CONNECTION_NETWORK_SEPARATOR in self.network_for_expression:
       [source, sink] = self.network_for_expression.split(CONNECTION_NETWORK_SEPARATOR)
-      networks = {source}
+      network = source
       enabled_var_types = {
               self.network_for_variable: self.variable_types_variable,
               source                   : self.variable_types_expression

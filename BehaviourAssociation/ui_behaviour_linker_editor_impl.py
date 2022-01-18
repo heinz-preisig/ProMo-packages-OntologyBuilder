@@ -178,6 +178,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     roundButton(self.ui.pushButtonDelete, "delete", tooltip="delete current var/eq tree")
     roundButton(self.ui.pushButtonMakeLatex, "LaTex", tooltip="make latex files for all objects")
     roundButton(self.ui.pushButtonViewLatex, "variable_show", tooltip="show latex")
+    roundButton(self.ui.pushButtonUpdate, "update", tooltip="update tree")
 
     self.ui.groupBoxControls.hide()
     self.ui.pushButtonLeft.hide()
@@ -224,7 +225,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     equations_label_list, \
     self.equation_information, \
     self.equation_inverse_index = self.__makeEquationAndIndexLists()
-    # self.variable_equation_list = self.__makeEquationList_per_variable_type(networks)
     self.rules = {}
 
     # get existing data
@@ -492,6 +492,18 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     elif self.state == "show":
       print("debugging -- show don't do anything")
+
+  def on_pushButtonUpdate_pressed(self):
+    obj_str = self.__makeCurrentObjectString()
+    print("debugging -- update pressed %s" % self.state)
+    var_ID = self.selected_base_variable
+    var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, self.rightListEquationIDs)
+    graph_file = var_equ_tree_graph.render()
+    self.status_report("generated graph for %s " % (obj_str))
+
+    self.entity_behaviours.addVariant(obj_str, entity_assignments)
+    self.__makeAndDisplayEquationListLeftAndRight()
+    self.variant_list = self.__makeVariantStringList()
 
   def __makeVariantList(self, set):
     """

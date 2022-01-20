@@ -251,7 +251,7 @@ class UiOntologyDesign(QMainWindow):
 
     new_index = None
     while not (new_index):
-      ui_ask = UI_String("give new model name or type exit ", "model name or exit", limiting_list=exist_list)
+      ui_ask = UI_String("give index name ", "index name or exit", limiting_list=exist_list)
       ui_ask.exec_()
       new_index = ui_ask.getText()
       print("new model name defined", new_index)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1477</width>
-    <height>876</height>
+    <height>1116</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
            <x>0</x>
            <y>0</y>
            <width>237</width>
-           <height>263</height>
+           <height>343</height>
           </rect>
          </property>
         </widget>
@@ -227,7 +227,7 @@
            <x>0</x>
            <y>0</y>
            <width>599</width>
-           <height>547</height>
+           <height>787</height>
           </rect>
          </property>
          <widget class="QWidget" name="horizontalLayoutWidget_2">
@@ -251,6 +251,29 @@
             </widget>
            </item>
           </layout>
+         </widget>
+         <widget class="QGroupBox" name="groupBoxErrorOut">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>560</y>
+            <width>581</width>
+            <height>221</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Error out</string>
+          </property>
+          <widget class="QTextBrowser" name="msgTextBoxErrorOut">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>571</width>
+             <height>201</height>
+            </rect>
+           </property>
+          </widget>
          </widget>
         </widget>
        </widget>
@@ -379,7 +402,7 @@
            <x>0</x>
            <y>0</y>
            <width>599</width>
-           <height>547</height>
+           <height>787</height>
           </rect>
          </property>
          <widget class="QWidget" name="horizontalLayoutWidget">
@@ -403,6 +426,29 @@
             </widget>
            </item>
           </layout>
+         </widget>
+         <widget class="QGroupBox" name="groupBoxStandardOut">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>560</y>
+            <width>581</width>
+            <height>221</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string>Standard Out</string>
+          </property>
+          <widget class="QTextBrowser" name="msgTextBoxStandardOut">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>571</width>
+             <height>201</height>
+            </rect>
+           </property>
+          </widget>
          </widget>
         </widget>
        </widget>

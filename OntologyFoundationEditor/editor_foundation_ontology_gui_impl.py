@@ -1091,7 +1091,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     msg_popup.exec_()
 
   def on_pushGraph_pressed(self):
-    makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="hide")
+    makeOntologyDotGraph(self.ontology_tree, self.ontology_name, show="summary")
 
   def __addFixedRules(self):  # RULE: fixed rules
 

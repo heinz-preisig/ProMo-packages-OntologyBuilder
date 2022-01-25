@@ -404,9 +404,7 @@ class UiOntologyDesign(QMainWindow):
           if "In" in variable_class:
             list_right_variables.append((var, equ_text))
 
-    source_list = list_left_variables
-    sink_list = list_right_variables
-    self.dialog_interface = UI_SourceSinkLinking(source_list, sink_list, self.variables)
+    self.dialog_interface = UI_SourceSinkLinking(left_nw, list_left_variables, right_nw, list_right_variables, self.variables)
     self.dialog_interface.selected.connect(self.makeLinkEquation)
     self.dialog_interface.exec_()
 
@@ -418,8 +416,8 @@ class UiOntologyDesign(QMainWindow):
     rhs = str(self.variables[list[0]])
     print("debugging -- rhs :", rhs)
 
-    source_ID = list[0]
-    sink_ID = list[1]
+    left_ID = int(list[0])
+    right_ID = int(list[1])
 
     # link_equation = makeLinkEquationRecord(lhs_ID=list[1], rhs_ID=list[0], network=self.current_network,
     #                                        incidence_list=self.variables[list[0]].index_structures)
@@ -429,8 +427,8 @@ class UiOntologyDesign(QMainWindow):
                                               network=self.current_network,
                                               doc="interface equation",
                                               incidence_list=incident_list)
-    equ_ID = self.variables.newProMoEquationIRI()
-    self.variables.addEquation(sink_ID, equ_ID, "interface equation", link_equation)
+
+    self.variables.addEquation(right_ID, link_equation)
     print("debugging -- link_equation", link_equation)
 
     # vars_types_on_network_variable = self.ontology_container.interfaces[nw]["internal_variable_classes"]
@@ -671,6 +669,10 @@ class UiOntologyDesign(QMainWindow):
     f.write(body)
     f.close()
 
+  def __cleanStrings(self, string):
+    cleaned_string = string.replace("_"," ").title()
+    return cleaned_string
+
   def __makeLatexDocument(self):
 
     # latex
@@ -679,17 +681,27 @@ class UiOntologyDesign(QMainWindow):
     # language = "latex"
     this_dir = os.path.dirname(os.path.abspath(__file__))
 
+    eqs = self.__getAllEquationsPerType("latex")
+
     # main.tex
-    names_names = []
-    for nw in self.networks + self.interconnection_nws_list + self.intraconnection_nws_list:
-      names_names.append(str(nw).replace(CONNECTION_NETWORK_SEPARATOR, '--'))
+    names_names_for_variables = []
+    nw_list = self.networks  + self.intraconnection_nws_list #+ self.interconnection_nws_list
+    for nw in nw_list:
+      names_names_for_variables.append(str(nw).replace(CONNECTION_NETWORK_SEPARATOR, '--'))
+
+    e_types = sorted( self.variables.equation_type_list )
+    e_types_cleaned = []
+    for e in e_types:
+      e_types_cleaned.append(self.__cleanStrings(e))
+
 
     j2_env = Environment(loader=FileSystemLoader(this_dir), trim_blocks=True)
-    body = j2_env.get_template(FILES["latex_template_main"]).render(ontology=names_names)  # self.networks)
+    body = j2_env.get_template(FILES["latex_template_main"]).render(ontology=names_names_for_variables, equationTypes=e_types_cleaned)  # self.networks)
     f_name = FILES["latex_main"] % self.ontology_name
     f = open(f_name, 'w')
     f.write(body)
     f.close()
+
 
     for nw in self.networks + self.interconnection_nws_list + self.intraconnection_nws_list:
       index_dictionary = self.variables.index_definition_network_for_variable_component_class
@@ -707,14 +719,17 @@ class UiOntologyDesign(QMainWindow):
       f.write(body)
       f.close()
 
-    eqs = self.__getAllEquationsPerType("latex")
 
-    # print("debugging tex rep")
+
+    print("debugging tex rep")
     for e_type in self.variables.equation_type_list:
+      _s = sorted(eqs[e_type].keys())
+      print("debugging -- equation type", e_type)
       j2_env = Environment(loader=FileSystemLoader(this_dir), trim_blocks=True)
       completed_template = j2_env.get_template(FILES["latex_template_equations"]). \
-        render(equations=eqs[e_type], sequence=sorted(eqs[e_type].keys()))
-      f_name = FILES["latex_equations"] % (self.ontology_location, str(e_type))
+        render(equations=eqs[e_type], sequence=_s)
+      o = self.__cleanStrings(str(e_type))
+      f_name = FILES["latex_equations"] % (self.ontology_location, str(o))
       f = open(f_name, 'w')
       f.write(completed_template)
       f.close()

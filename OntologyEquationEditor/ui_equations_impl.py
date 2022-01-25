@@ -411,6 +411,7 @@ class UI_Equations(QtWidgets.QWidget):
     # TODO - so this implies that one can just as well do a graph analysis one one is done. Consequence is that the
     #  equation iri is not important at all in the context of ordering equations for maintaining the correct
     #  computations sequence
+    # RULE: we do not care anymore maintaining the sequence. The bipartite graph analysis takes care of sequencing
 
     print("status new variable, new equation, edit expression", self.status_new_variable, self.status_new_equation, self.status_edit_expr)
 
@@ -441,16 +442,15 @@ class UI_Equations(QtWidgets.QWidget):
     # new equation to existing variable false, true, false
     elif log == (False, True, False):
       var_ID = self.selected_variable_ID
-      equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
-      self.variables.addEquation(var_ID, equ_ID, documentation, equation_record)
+      self.variables.addEquation(var_ID, equation_record)
 
 
     # edit equation false, false, true
     elif log == (False, False, True):
       var_ID = self.selected_variable_ID
-      equ_ID = self.current_eq_ID
+      old_equ_ID = self.current_eq_ID
     # RULE: editing replaces the existing equation -- consquence - sequence is not retained.
-      self.variables.replaceEquation(self.selected_variable_ID, equ_ID, equ_ID, documentation, equation_record)
+      self.variables.replaceEquation(var_ID, old_equ_ID, equation_record)
 
     self.variables.indexVariables()
     self.update_space_information.emit()

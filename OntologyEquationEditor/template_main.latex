@@ -96,21 +96,27 @@
 {% endraw %}
 
 {% for o in ontology -%}
-     \section{ {{ o }} } \input{variables_{{ o }}.tex}
+     \section{ {{ o }} } \input{variables_{{ o }}.tex} \newpage
 {% endfor -%}
 
 {% raw %}
-\newpage
 \section{Equations}
+{% endraw %}
+
+
+{% for o in equationTypes -%}
+     \section{ {{ o }} } \input{equations_{{ o }}.tex} \newpage
+{% endfor -%}
+
 
 %\subsection{Selections}  			{ \input{equations_select}}
 %\newpage
-\subsection{Model equations} 	{ \input{equations_generic}}
-\newpage
+%\subsection{Model equations} 	{ \input{equations_generic}}
+%\newpage
 %\subsection{Instantiations}   { \input{equations_instantiate}}
 %\newpage
 
-
+{% raw %}
 \end{document}
 % ================================== end =========================================
 {% endraw%}

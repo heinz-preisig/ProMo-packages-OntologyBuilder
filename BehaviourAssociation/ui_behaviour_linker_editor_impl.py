@@ -234,6 +234,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
 
     self.entity_behaviours = EntityBehaviour(entities_list)
 
+    self.list_linked_equations = self.__getFilteredEquationList("interface_link_equation")
+    print("debugging")
+
     # self.node_arc_associations = NodeArcAssociations(networks, self.node_objects, self.arc_objects)
     # self.entity_behaviour_graphs = EntityBehaviourGraphs(networks, entities_list)
 
@@ -479,7 +482,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       variant = "base"
       var_ID = self.current_base_var_ID
       obj_str = self.__makeCurrentObjectString()
-      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, [])
+      blocked = self.list_linked_equations
+      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, blocked)
       self.status_report("generated graph for %s" % (obj_str))
       component = self.node_arc.strip("s")
       self.selected_variant_str_ID = "base"
@@ -512,7 +516,9 @@ class MainWindowImpl(QtWidgets.QMainWindow):
             if e in selectedListEquationIDs:
               selectedListEquationIDs.remove(e)
           self.leftListEquationIDs = selectedListEquationIDs
-      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, self.rightListEquationIDs)
+
+      blocked = list(set(self.list_linked_equations) or set(self.rightListEquationIDs))
+      var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, blocked) #self.rightListEquationIDs)
       graph_file = var_equ_tree_graph.render()
       self.status_report("generated graph for %s " % (obj_str))
 
@@ -533,13 +539,24 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     obj_str = self.__makeCurrentObjectString()
     # print("debugging -- update pressed %s" % self.state)
     var_ID = self.selected_base_variable
-    var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, self.rightListEquationIDs)
+    blocked = list(set(self.list_linked_equations) or set(self.rightListEquationIDs))
+    var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, blocked) #self.rightListEquationIDs)
     graph_file = var_equ_tree_graph.render()
     self.status_report("generated graph for %s " % (obj_str))
 
     self.entity_behaviours.addVariant(obj_str, entity_assignments)
     self.__makeAndDisplayEquationListLeftAndRight()
     self.variant_list = self.__makeVariantStringList()
+
+  def __getFilteredEquationList(self, equation_type):
+    equations = []
+    for e in self.ontology_container.equation_dictionary:
+      entry = self.ontology_container.equation_dictionary[e]
+      if entry["type"] == equation_type:
+        equations.append(e)
+
+    print("debugging -- ", equations)
+    return equations
 
   def __makeVariantList(self, set):
     """
@@ -1047,6 +1064,11 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     return radio_selectors, indices
 
   def __makeEquationAndIndexLists(self):
+    """
+    equations : list of equation IDs
+    equation_information : dictionary of tuples
+          eq_ID, var_ID, var_type, nw_eq, equation_label
+    """
     # TODO: drop pixel version and use info being generated in the ontology_container
 
     equations = []

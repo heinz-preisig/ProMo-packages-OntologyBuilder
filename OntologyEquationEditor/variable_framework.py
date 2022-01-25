@@ -848,25 +848,15 @@ class Variables(OrderedDict):
 
     self.indexVariables()  # indexEquationsInNetworks()
 
-  def addEquation(self, var_ID, eq_ID, documentation, equation_record):
-    self[var_ID].equations[eq_ID] = equation_record
+  def addEquation(self, var_ID, equation_record):
+    equ_ID = self.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
+    self[var_ID].equations[equ_ID] = equation_record
+    self.indexVariables()
     print("debugging")
 
-  def replaceEquation(self, var_ID, old_equ_ID, new_equ_ID, documentation, equation_record):
+  def replaceEquation(self, var_ID, old_equ_ID, equation_record):
     variable_record = self[var_ID]
-    variable_record.doc = documentation
-    # variable_record.index_structures = self.checked_var.index_structures
-    # variable_record.units = self.checked_var.units
-    # delete old equation first
-    # if old_equ_ID:
-    #   del variable_record.equations[old_equ_ID]
-    # variable_record.equations.update({
-    #         new_equ_ID: equation_record
-    #         })
     variable_record.equations[old_equ_ID]=equation_record
-
-    # record changes
-    # self.changes.replaceEquation(old_equ_ID, new_equ_ID)
 
   def existSymbol(self, network, label):
     """

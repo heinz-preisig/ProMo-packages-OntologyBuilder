@@ -1069,7 +1069,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     left_variable_types = self.saved_ontology_container.variable_types_on_networks[left_nw]
     root_variable_types = self.saved_ontology_container.variable_types_on_networks["root"]
     enabled_set = set(left_variable_types) - set(root_variable_types)
-    print("debugging -- left vaiables classes:", left_variable_types)
+    print("debugging -- left variables classes:", left_variable_types)
     print("debugging -- enabled_set classes:", enabled_set)
 
     pass
@@ -1101,7 +1101,7 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
             "variable_classes_being_state_variables": [],
             "numerical_value"                       : "value",
             "nodes_allowing_token_injection"        : ["constant"],
-            "nodes_allowing_token_conversion"       : ["dynamic", "event"],
+              "nodes_allowing_token_conversion"       : ["dynamic", "event"],
             "nodes_allowing_token_transfer"         : ["intraface"],
             }
 
@@ -1384,7 +1384,8 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
     # print("debugging -- behaviour selected : ", variable_name)
     # print("debugging -- selected component :",self.current_behaviour_component )
     if self.current_behaviour_component in ["node",
-                                            "graph"]:  # ....RULE: variable classes related to node and graph may
+                                            "graph",
+                                            "arc"]:  # ....RULE: variable classes related to node and graph may
       # RULE: ---continued-- have port variables
       self.__ui_status("behaviour_prop_selected_node")
       if self.current_behaviour_variable in self.ontology["rules"]["variable_classes_having_port_variables"]:

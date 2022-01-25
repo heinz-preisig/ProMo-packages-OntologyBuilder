@@ -4,9 +4,10 @@ from copy import deepcopy
 from os.path import join
 
 from PyQt5 import QtCore
-from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
+from Common.common_resources import Redirect
+from Common.common_resources import Stream
 from Common.common_resources import TEMPLATE_ENTITY_OBJECT
 from Common.common_resources import getData
 from Common.common_resources import getOntologyName
@@ -14,7 +15,6 @@ from Common.common_resources import indexList
 from Common.common_resources import putData
 from Common.common_resources import walkDepthFirstFnc
 from Common.ontology_container import OntologyContainer
-from Common.common_resources import Stream, Redirect
 from Common.record_definitions_equation_linking import EntityBehaviour
 # from Common.record_definitions_equation_linking import NodeArcAssociations
 from Common.record_definitions_equation_linking import VariantRecord
@@ -628,7 +628,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
         try:
           self.__makeVariablesToBeValueInitialised(obj)
         except:
-          print("Error -- something went wrong object: %s"%obj )
+          print("Error -- something went wrong object: %s" % obj)
     data = {"behaviours": self.entity_behaviours}  # ,
     # "associations": self.node_arc_associations}
 
@@ -1047,6 +1047,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     return radio_selectors, indices
 
   def __makeEquationAndIndexLists(self):
+    # TODO: drop pixel version and use info being generated in the ontology_container
 
     equations = []
     equation_information = {}
@@ -1077,34 +1078,34 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       equation_information[count] = (eq_ID, var_ID, var_type, nw_eq, equation_label)
     return equations, equation_information, equation_inverse_index
 
-  def __makeEquationList_keep_not_used(self):
-
-    equations = {}  # tuple
-    equation_variable_dictionary = self.ontology_container.equation_variable_dictionary
-    for eq_ID in equation_variable_dictionary:
-      var_ID, equation = equation_variable_dictionary[eq_ID]
-      var_type = self.ontology_container.variables[var_ID]["type"]
-      nw_eq = self.ontology_container.variables[var_ID]["network"]
-
-      rendered_expressions = renderExpressionFromGlobalIDToInternal(
-              equation["rhs"],
-              self.ontology_container.variables,
-              self.ontology_container.indices)
-
-      rendered_variable = self.ontology_container.variables[var_ID]["aliases"]["internal_code"]
-      rendered_equation = "%s := %s" % (rendered_variable, rendered_expressions)
-      pixelled_equation = self.__make_icon(eq_ID)
-
-      equations[eq_ID] = (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation)
-
-    return equations
-
-  def __make_icon(self, eq_ID):
-
-    template = join(self.location, "equation_%s.png")
-    f = template % eq_ID
-    label = QtWidgets.QLabel()
-    pix = QtGui.QPixmap(f)
-    icon = QtGui.QIcon(pix)
-    size = pix.size()
-    return icon, label, size
+  # def __makeEquationList_keep_not_used(self):
+  #
+  #   equations = {}  # tuple
+  #   equation_variable_dictionary = self.ontology_container.equation_variable_dictionary
+  #   for eq_ID in equation_variable_dictionary:
+  #     var_ID, equation = equation_variable_dictionary[eq_ID]
+  #     var_type = self.ontology_container.variables[var_ID]["type"]
+  #     nw_eq = self.ontology_container.variables[var_ID]["network"]
+  #
+  #     rendered_expressions = renderExpressionFromGlobalIDToInternal(
+  #             equation["rhs"],
+  #             self.ontology_container.variables,
+  #             self.ontology_container.indices)
+  #
+  #     rendered_variable = self.ontology_container.variables[var_ID]["aliases"]["internal_code"]
+  #     rendered_equation = "%s := %s" % (rendered_variable, rendered_expressions)
+  #     pixelled_equation = self.__make_icon(eq_ID)
+  #
+  #     equations[eq_ID] = (var_ID, var_type, nw_eq, rendered_equation, pixelled_equation)
+  #
+  #   return equations
+  #
+  # def __make_icon(self, eq_ID):
+  #
+  #   template = join(self.location, "equation_%s.png")
+  #   f = template % eq_ID
+  #   label = QtWidgets.QLabel()
+  #   pix = QtGui.QPixmap(f)
+  #   icon = QtGui.QIcon(pix)
+  #   size = pix.size()
+  #   return icon, label, size

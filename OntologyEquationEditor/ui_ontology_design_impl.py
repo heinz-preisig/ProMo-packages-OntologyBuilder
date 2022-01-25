@@ -23,27 +23,32 @@ import os
 import subprocess
 from collections import OrderedDict
 
-from pydotplus.graphviz import Node, Dot, Cluster, Edge
-from jinja2 import Environment  # sudo apt-get install python-jinja2
-from jinja2 import FileSystemLoader
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QProgressDialog
 from PyQt5.QtWidgets import QSizePolicy
+from jinja2 import Environment  # sudo apt-get install python-jinja2
+from jinja2 import FileSystemLoader
+from pydotplus.graphviz import Cluster
+from pydotplus.graphviz import Dot
+from pydotplus.graphviz import Edge
+from pydotplus.graphviz import Node
 
 from Common.common_resources import CONNECTION_NETWORK_SEPARATOR
+from Common.common_resources import UI_String
 from Common.common_resources import getData
 from Common.common_resources import getOntologyName
 from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import saveBackupFile
-from Common.common_resources import UI_String
 from Common.ontology_container import OntologyContainer
 from Common.record_definitions import RecordIndex
+from Common.record_definitions import makeCompletEquationRecord
 from Common.resource_initialisation import DIRECTORIES
 from Common.resource_initialisation import FILES
 from Common.resources_icons import getIcon
 from Common.resources_icons import roundButton
+from Common.ui_source_sink_linking_impl import UI_SourceSinkLinking
 from Common.ui_text_browser_popup_impl import UI_FileDisplayWindow
 from OntologyBuilder.OntologyEquationEditor.resources import CODE
 from OntologyBuilder.OntologyEquationEditor.resources import ENABLED_COLUMNS
@@ -61,12 +66,12 @@ from OntologyBuilder.OntologyEquationEditor.ui_ontology_design import Ui_Ontolog
 from OntologyBuilder.OntologyEquationEditor.ui_variabletable_impl import UI_VariableTableDialog
 from OntologyBuilder.OntologyEquationEditor.ui_variabletable_show_impl import UI_VariableTableShow
 from OntologyBuilder.OntologyEquationEditor.variable_framework import IndexStructureError
-from OntologyBuilder.OntologyEquationEditor.variable_framework import makeCompiler
-from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
-from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidentList
 from OntologyBuilder.OntologyEquationEditor.variable_framework import UnitError
 from OntologyBuilder.OntologyEquationEditor.variable_framework import VarError
 from OntologyBuilder.OntologyEquationEditor.variable_framework import Variables  # Indices
+from OntologyBuilder.OntologyEquationEditor.variable_framework import makeCompiler
+from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidenceDictionaries
+from OntologyBuilder.OntologyEquationEditor.variable_framework import makeIncidentList
 
 # RULE: fixed wired for initialisation -- needs to be more generic
 INITIALVARIABLE_TYPES = {
@@ -137,7 +142,6 @@ class UiOntologyDesign(QMainWindow):
     self.ontology_name = getOntologyName(task="task_ontology_equations")
     if not self.ontology_name:
       exit(-1)
-
 
     ### set up editor =================================================
     self.current_network = None  # holds the current ontology space name
@@ -364,7 +368,8 @@ class UiOntologyDesign(QMainWindow):
     if self.ui.radioVariablesAliases.isChecked():
       self.on_radioVariablesAliases_pressed()
     else:
-      self.__setupEdit("interface")
+      # self.__setupEdit("interface")
+      self.__setupEditInterface()
 
   @QtCore.pyqtSlot(str)  # combo_IntraConnectionNetwork
   def on_combo_IntraConnectionNetwork_activated(self, choice):
@@ -377,6 +382,64 @@ class UiOntologyDesign(QMainWindow):
   def on_tabWidget_currentChanged(self, which):
     # print("debugging -- changed tab")
     self.ui.combo_EditVariableTypes.hide()
+
+  def __setupEditInterface(self):
+    nw = self.current_network
+    left_nw = self.ontology_container.interfaces[nw]["left_network"]
+    right_nw = self.ontology_container.interfaces[nw]["right_network"]
+    self.equations = self.ontology_container.equations
+    self.equation_information = self.ontology_container.equation_information
+    self.equation_inverse_index = self.ontology_container.equation_inverse_index
+    print("debugging -- left and right network:", left_nw, right_nw)
+    list_left_variables = []
+    list_right_variables = []
+    for e in range(len(self.equations)):
+      (equ, var, variable_class, nw, equ_text) = self.equation_information[e]
+      index = self.variables[var].index_structures
+      if 2 in index:  # RULE: both must be arcs
+        if nw in left_nw:
+          if "Out" in variable_class:
+            list_left_variables.append((var, equ_text))
+        if nw in right_nw:
+          if "In" in variable_class:
+            list_right_variables.append((var, equ_text))
+
+    source_list = list_left_variables
+    sink_list = list_right_variables
+    self.dialog_interface = UI_SourceSinkLinking(source_list, sink_list, self.variables)
+    self.dialog_interface.selected.connect(self.makeLinkEquation)
+    self.dialog_interface.exec_()
+
+    print("debugging -- variable lists", list_left_variables, list_right_variables)
+
+  def makeLinkEquation(self, list):
+    # print("debugging -- link equation : %s := %s"%(list[1], list[0]))
+    self.variables[list[0]].language = "global_ID"
+    rhs = str(self.variables[list[0]])
+    print("debugging -- rhs :", rhs)
+
+    source_ID = list[0]
+    sink_ID = list[1]
+
+    # link_equation = makeLinkEquationRecord(lhs_ID=list[1], rhs_ID=list[0], network=self.current_network,
+    #                                        incidence_list=self.variables[list[0]].index_structures)
+    incident_list = makeIncidentList(rhs)
+    link_equation = makeCompletEquationRecord(rhs=rhs,
+                                              type="interface_link_equation",
+                                              network=self.current_network,
+                                              doc="interface equation",
+                                              incidence_list=incident_list)
+    equ_ID = self.variables.newProMoEquationIRI()
+    self.variables.addEquation(sink_ID, equ_ID, "interface equation", link_equation)
+    print("debugging -- link_equation", link_equation)
+
+    # vars_types_on_network_variable = self.ontology_container.interfaces[nw]["internal_variable_classes"]
+    # self.ui.combo_EditVariableTypes.clear()
+    # self.ui.combo_EditVariableTypes.addItems(vars_types_on_network_variable)
+    # network_for_variable = nw
+    # network_for_expression = nw  # self.ontology_container.interfaces[nw]["left_network"]
+    # network_variable_source = self.ontology_container.interfaces[nw]["left_network"]
+    # vars_types_on_network_expression = self.ontology_container.interfaces[nw]["left_variable_classes"]
 
   def __setupEdit(self, what):
     """
@@ -542,7 +605,6 @@ class UiOntologyDesign(QMainWindow):
       expression = renderExpressionFromGlobalIDToInternal(expression_ID, self.variables, self.indices)
       compiler = makeCompiler(self.variables, self.indices, lhs_var_ID, equ_ID, language=language)
 
-
       try:
         # print("debugging --  expression being translated into language %s:"%language, expression)
         res = str(compiler(expression))
@@ -583,7 +645,6 @@ class UiOntologyDesign(QMainWindow):
         self.compiled_variable_labels[var_ID] = {}
       self.compiled_variable_labels[var_ID][language] = compiled_label
 
-
     if language == "latex":
       self.__makeLatexDocument()
       # put compiled variable labels into a separate file for convenience -- used in dot graph
@@ -594,7 +655,6 @@ class UiOntologyDesign(QMainWindow):
       putData(compiled_latex_variable_labels, v_name)
 
     self.__makeOWLFile()
-
 
   def __makeOWLFile(self):
 
@@ -707,7 +767,7 @@ class UiOntologyDesign(QMainWindow):
     # msg_box = wait()
     # msg_box.exec()
     self.progress_dialog("compiling")
-    self.make_variable_equation_pngs()#self.variables, self.ontology_container)
+    self.make_variable_equation_pngs()  # self.variables, self.ontology_container)
     # self.__writeMessage("Wrote {} output".format(language), append=True)
     self.__writeMessage("compilation completed")
 
@@ -834,7 +894,7 @@ class UiOntologyDesign(QMainWindow):
     except:
       pass
 
-  def make_variable_equation_pngs(self): #, variables, ontology_container):
+  def make_variable_equation_pngs(self):  # , variables, ontology_container):
     """
     generates pictures of the equations extracting the latex code from the latex equation file
     """
@@ -948,6 +1008,10 @@ class UiOntologyDesign(QMainWindow):
       pass
     try:
       self.table_aliases_i.close()
+    except:
+      pass
+    try:
+      self.dialog_interface.close()
     except:
       pass
     try:

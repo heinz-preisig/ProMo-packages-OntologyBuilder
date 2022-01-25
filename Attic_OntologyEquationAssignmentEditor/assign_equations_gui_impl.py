@@ -43,12 +43,12 @@ class UI_EditorEquationAssignment(QtWidgets.QMainWindow):
                   "physical": "state",
                   "control" : "state",
                   "intra"   : "state",
-                  "inter"   : "transform",
+                  "inter"   : "get",
                   },
           "arcs" : {
                   "physical": "transport",
                   "control" : "dataflow",
-                  "inter"   : "transform"
+                  "inter"   : "get"
                   }
           }
 

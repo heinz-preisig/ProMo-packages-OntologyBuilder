@@ -941,7 +941,7 @@ class VarEqTree():
   def addVariable(self, var_ID, first=False):
     None
 
-  def addEquation(selfself, eq_ID, first=False):
+  def addEquation(self, eq_ID, first=False):
     None
 
   def addLink(self, source_label, sink_label):

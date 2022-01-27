@@ -39,6 +39,7 @@ from Common.common_resources import makeTreeView
 from Common.common_resources import putData
 from Common.common_resources import putDataOrdered
 from Common.common_resources import saveBackupFile
+from Common.pop_up_message_box import makeMessageBox
 from Common.qt_resources import NO
 from Common.qt_resources import YES
 from Common.radio_selector_impl import RadioSelector
@@ -171,10 +172,12 @@ class UI_EditorFoundationOntology(QtWidgets.QMainWindow):
       self.new_variable_file = False
       if OS.path.exists(variable_file):
         # print("debugging -- found equation file", variable_file)
-        reply = QtWidgets.QMessageBox.question(self, "choose",
-                                               "There is a variable file \n -- do you want to delete it and restart "
-                                               "the whole process?",
-                                               YES, NO )
+        # reply = QtWidgets.QMessageBox.question(self, "choose",
+        #                                        "There is a variable file \n -- do you want to delete it and restart "
+        #                                        "the whole process?",
+        #                                        NO, YES )
+        reply = makeMessageBox("There is a variable file \n -- do you want to delete it and restart "
+                                               "the whole process?", ["NO","YES"])
         if reply == YES:
           self.lock_delete = False
           old, new, next = saveBackupFile(variable_file)

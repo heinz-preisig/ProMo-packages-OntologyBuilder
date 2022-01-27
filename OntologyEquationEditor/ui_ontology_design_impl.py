@@ -355,7 +355,7 @@ class UiOntologyDesign(QMainWindow):
       self.ui.combo_EditVariableTypes.show()
       self.on_radioVariables_pressed()
       if self.ontology_container.rules["network_enable_adding_indices"][self.current_network]:
-        print("debugging -- show add index")
+        # print("debugging -- show add index")
         self.ui.pushAddIndex.show()
       else:
         self.ui.pushAddIndex.hide()
@@ -369,7 +369,12 @@ class UiOntologyDesign(QMainWindow):
       self.on_radioVariablesAliases_pressed()
     else:
       # self.__setupEdit("interface")
+      try:
+        self.dialog_interface.close()
+      except:
+        pass
       self.__setupEditInterface()
+      self.__showFilesControl()
 
   @QtCore.pyqtSlot(str)  # combo_IntraConnectionNetwork
   def on_combo_IntraConnectionNetwork_activated(self, choice):
@@ -384,31 +389,46 @@ class UiOntologyDesign(QMainWindow):
     self.ui.combo_EditVariableTypes.hide()
 
   def __setupEditInterface(self):
-    nw = self.current_network
-    left_nw = self.ontology_container.interfaces[nw]["left_network"]
-    right_nw = self.ontology_container.interfaces[nw]["right_network"]
+    left_nw = self.ontology_container.interfaces[self.current_network]["left_network"]
+    right_nw = self.ontology_container.interfaces[self.current_network]["right_network"]
     self.equations = self.ontology_container.equations
     self.equation_information = self.ontology_container.equation_information
     self.equation_inverse_index = self.ontology_container.equation_inverse_index
     print("debugging -- left and right network:", left_nw, right_nw)
-    list_left_variables = []
-    list_right_variables = []
+    set_left_variables = set()
+    set_right_variables = set()
+    list_link_equations = []
     for e in range(len(self.equations)):
       (equ, var, variable_class, nw, equ_text) = self.equation_information[e]
-      index = self.variables[var].index_structures
-      if 2 in index:  # RULE: both must be arcs
+      equ_record = self.ontology_container.equation_dictionary[equ]
+      equ_type = equ_record["type"]
+      equ_nw = equ_record["network"]
+      if "In" in variable_class:
+        print("debugging -- found one", variable_class)
+      index = self.variables[var].index_structures   # index is a list of integers !
+      if (1 in index) or (2 in index):  # RULE: both must be arcs or node
         if nw in left_nw:
           if "Out" in variable_class:
-            list_left_variables.append((var, equ_text))
+            set_left_variables.add(var) #(var, equ_text))
         if nw in right_nw:
           if "In" in variable_class:
-            list_right_variables.append((var, equ_text))
+            set_right_variables.add(var) #(var, equ_text))
+      if equ_type == "interface_link_equation":
+        if equ_nw == self.current_network:
+          list_link_equations.append((var, int(equ_record["incidence_list"][0]), equ))
 
-    self.dialog_interface = UI_SourceSinkLinking(left_nw, list_left_variables, right_nw, list_right_variables, self.variables)
-    self.dialog_interface.selected.connect(self.makeLinkEquation)
-    self.dialog_interface.exec_()
+    print("debugging -- variable lists", set_left_variables, set_right_variables)
 
-    print("debugging -- variable lists", list_left_variables, list_right_variables)
+
+    if (len(set_left_variables) == 0) or (len(set_right_variables) == 0):
+      self.__writeMessage("no link possible")
+    else:
+      self.__writeMessage("define link")
+      self.dialog_interface = UI_SourceSinkLinking(left_nw, sorted(set_left_variables), right_nw, sorted(set_right_variables), list_link_equations, self.variables)
+      self.dialog_interface.selected.connect(self.makeLinkEquation)
+      self.dialog_interface.delete_equ.connect(self.deleteLinkEquation)
+      self.dialog_interface.exec_()
+
 
   def makeLinkEquation(self, list):
     # print("debugging -- link equation : %s := %s"%(list[1], list[0]))
@@ -429,6 +449,8 @@ class UiOntologyDesign(QMainWindow):
                                               incidence_list=incident_list)
 
     self.variables.addEquation(right_ID, link_equation)
+    self.ontology_container.indexEquations()
+
     print("debugging -- link_equation", link_equation)
 
     # vars_types_on_network_variable = self.ontology_container.interfaces[nw]["internal_variable_classes"]
@@ -438,6 +460,11 @@ class UiOntologyDesign(QMainWindow):
     # network_for_expression = nw  # self.ontology_container.interfaces[nw]["left_network"]
     # network_variable_source = self.ontology_container.interfaces[nw]["left_network"]
     # vars_types_on_network_expression = self.ontology_container.interfaces[nw]["left_variable_classes"]
+
+  def deleteLinkEquation(self, equ_ID, var_ID):
+    print("debugging -- deleting equation " , var_ID, equ_ID)
+    self.variables[var_ID].removeEquation(equ_ID)
+    self.ontology_container.indexEquations()
 
   def __setupEdit(self, what):
     """
@@ -513,9 +540,7 @@ class UiOntologyDesign(QMainWindow):
     self.ui_eq.update_space_information.connect(self.__updateVariableTable)
 
     self.ui.combo_EditVariableTypes.show()
-    self.ui.groupFiles.show()
-    self.ui.groupEdit.show()
-    self.ui.pushWrite.show()
+    self.__showFilesControl()
 
   def __hideTable(self):
     if "table_variables" in self.__dir__():
@@ -537,9 +562,7 @@ class UiOntologyDesign(QMainWindow):
     self.table_variables.show()
 
     self.ui.combo_EditVariableTypes.show()
-    self.ui.groupFiles.show()
-    self.ui.pushWrite.show()
-    self.ui.groupEdit.show()
+    self.__showFilesControl()
 
   def on_pushWrite_pressed(self):
     filter = self.ontology_container.variable_record_filter
@@ -893,9 +916,7 @@ class UiOntologyDesign(QMainWindow):
   def finished_edit_table(self, what):
     # print("finished editing table : ", what)
     # self.__makeAliasDictionary()  # check if all variables are defined
-    self.ui.groupEdit.show()
-    self.ui.groupFiles.show()
-    self.ui.pushWrite.show()
+    self.__showFilesControl()
     try:
       self.table_aliases_i.close()
     except:
@@ -908,6 +929,11 @@ class UiOntologyDesign(QMainWindow):
       self.ui_eq.close()
     except:
       pass
+
+  def __showFilesControl(self):
+    self.ui.groupEdit.show()
+    self.ui.groupFiles.show()
+    self.ui.pushWrite.show()
 
   def make_variable_equation_pngs(self):  # , variables, ontology_container):
     """

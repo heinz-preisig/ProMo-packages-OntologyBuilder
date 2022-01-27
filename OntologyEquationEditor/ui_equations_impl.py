@@ -443,6 +443,7 @@ class UI_Equations(QtWidgets.QWidget):
     elif log == (False, True, False):
       var_ID = self.selected_variable_ID
       self.variables.addEquation(var_ID, equation_record)
+      self.ontology_container.indexEquations()
 
 
     # edit equation false, false, true

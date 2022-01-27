@@ -853,6 +853,7 @@ class Variables(OrderedDict):
     self[var_ID].equations[equ_ID] = equation_record
     self.indexVariables()
     print("debugging")
+    self.ontology_container.indexEquations()
 
   def replaceEquation(self, var_ID, old_equ_ID, equation_record):
     variable_record = self[var_ID]

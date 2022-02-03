@@ -16,6 +16,7 @@ from Common.common_resources import putData
 from Common.common_resources import walkDepthFirstFnc
 from Common.ontology_container import OntologyContainer
 from Common.record_definitions_equation_linking import EntityBehaviour
+from Common.pop_up_message_box import makeMessageBox
 # from Common.record_definitions_equation_linking import NodeArcAssociations
 from Common.record_definitions_equation_linking import VariantRecord
 from Common.record_definitions_equation_linking import functionGetObjectsFromObjectStringID
@@ -235,10 +236,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.entity_behaviours = EntityBehaviour(entities_list)
 
     self.list_linked_equations = self.__getFilteredEquationList("interface_link_equation")
-    print("debugging")
-
-    # self.node_arc_associations = NodeArcAssociations(networks, self.node_objects, self.arc_objects)
-    # self.entity_behaviour_graphs = EntityBehaviourGraphs(networks, entities_list)
+    # print("debugging")
 
     equations_label_list, \
     self.equation_information, \
@@ -290,25 +288,6 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     self.selected_variant = None
     self.state = "start"
 
-  # def home(self):
-  #   self.std_outbox = self.ui.msgTextBox  # this is the QtGui.QTextEdit()
-  #   self.std_outbox.moveCursor(QtGui.QTextCursor.Start)
-  #   self.std_outbox.ensureCursorVisible()
-  #   self.std_outbox.setLineWrapColumnOrWidth(500)
-  #   self.std_outbox.setLineWrapMode(QtWidgets.QTextEdit.FixedPixelWidth)
-  #
-  #   # self.err_outbox = self.ui.err_outbox  # this is the QtWidgets.QTextEdit()
-  #   # self.err_outbox.moveCursor(QtGui.QTextCursor.Start)
-  #   # self.err_outbox.ensureCursorVisible()
-  #   # self.err_outbox.setLineWrapColumnOrWidth(500)
-  #   # self.err_outbox.setLineWrapMode(QtWidgets.QTextEdit.FixedPixelWidth)
-  #
-  # def onUpdateStandardOutput(self, text):
-  #   cursor = self.ui.msgTextBox.textCursor()
-  #   cursor.movePosition(QtGui.QTextCursor.End)
-  #   cursor.insertText(text)
-  #   self.ui.msgTextBox.setTextCursor(cursor)
-  #   self.ui.msgTextBox.ensureCursorVisible()
 
   def __readVariableAssignmentToEntity(self):
     f = FILES["variable_assignment_to_entity_object"] % self.ontology_name
@@ -517,7 +496,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
               selectedListEquationIDs.remove(e)
           self.leftListEquationIDs = selectedListEquationIDs
 
-      blocked = list(set(self.list_linked_equations) or set(self.rightListEquationIDs))
+      blocked = list(set(self.list_linked_equations) | set(self.rightListEquationIDs))
       var_equ_tree_graph, entity_assignments = self.analyseBiPartiteGraph(obj_str, var_ID, blocked) #self.rightListEquationIDs)
       graph_file = var_equ_tree_graph.render()
       self.status_report("generated graph for %s " % (obj_str))
@@ -689,6 +668,13 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       showPDF(file)
     else:
       self.on_pushButtonMakeLatex_pressed()
+
+  def on_pushButtonCancel_pressed(self):
+    ans = makeMessageBox("want to exit?")
+    if ans != "OK":
+      return
+    else:
+      self.close()
 
   def on_radioButtonDuplicates_pressed(self):
     # print("debugging -- duplicates")

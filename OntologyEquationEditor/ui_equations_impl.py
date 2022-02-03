@@ -417,7 +417,7 @@ class UI_Equations(QtWidgets.QWidget):
 
     log = (self.status_new_variable, self.status_new_equation, self.status_edit_expr)
     # new variable true, true, false
-    if log == (True, True, False):
+    if log == (True, True, True):
       var_ID = self.variables.newProMoVariableIRI()
       equ_ID = self.variables.newProMoEquationIRI()  # globalEquationID(update=True)  # RULE: for global ID
       tokens = self.checked_var.tokens  # version_change: and this is the replacement

@@ -427,6 +427,8 @@ class MainWindowImpl(QtWidgets.QMainWindow):
       # print("debugging")
 
   def on_listRight_itemClicked(self, v):
+    if self.state == "show":
+      return
     row = self.ui.listRight.row(v)
     # print("debugging -- right item clicked", v.text(), row)
     # if self.state == "duplicates":
@@ -635,7 +637,7 @@ class MainWindowImpl(QtWidgets.QMainWindow):
     print("todo: not yet implemented")
 
   def on_radioButtonShowVariant_pressed(self):
-    # print("debugging -- show variant")
+    print("debugging -- show variant")
     if not self.variant_list:
       return
 

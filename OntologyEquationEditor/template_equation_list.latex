@@ -85,8 +85,9 @@
 {% endraw %}
 
 {%- for a in equations -%}
-  {{a[0]}} &{{a[1]}} &{{a[2]}} &\begin{eq}{{a[3]}}\end{eq} & {% for i in a[4] %}{{ i|replace("[","")|replace("]","")|replace("'","") }}{%- endfor -%} \\
-{%- endfor -%}
+  {{a[0]}} &{{a[1]}} &{{a[2]}} &\begin{eq}{{a[3]}}\end{eq} & {% for i in a[4] %}{{ i|replace("[","")|replace("]","")|replace("'","") }}{%- endfor -%}
+  \\
+{% endfor %}
 
 \end{longtable}
 
